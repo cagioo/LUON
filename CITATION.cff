@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software or its mathematical model, please cite it as below."
+authors:
+  - family-names: "Cagi"
+    given-names: ""
+    orcid: "https://orcid.org/0009-0008-7216-0376"
+title: "Luon Programming Language"
+version: 2.1.1
+date-released: "2026-05-08"
+url: "https://github.com/cagioo/LUON"
+license: Apache-2.0
+keywords:
+  - programming-language
+  - webassembly
+  - compiler
+  - self-hosting
+  - security
+  - obfuscation
+  - wasm
