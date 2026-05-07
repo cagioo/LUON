@@ -1,0 +1,135 @@
+// examples/linked_list.luon — Singly linked list implementation
+// Demonstrates: heap allocation, pointer manipulation, data structures
+// Node layout: [value:i64 | next_ptr:i64] = 16 bytes
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[linked_list] ⊢_Γ {
+
+  // node_new(value) → node_ptr
+  // Allocates a new node with value and next=0 (null)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[node_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Allocate 16 bytes from bump heap
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Advance alloc ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Store value
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Store next = 0 (null)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // Return node ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // list_prepend(head_ptr, value) → new_head_ptr
+  // acc = head_ptr, σ₂ = value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[list_prepend] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Create new node
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Set new_node.next = old_head
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // Return new head
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // list_length(head_ptr) → count
+  // acc = head_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[list_length] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // count++
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        // current = current.next
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // list_sum(head_ptr) → sum of all values
+  ∃!Φ ∈ Hom(𝒞,𝒟)[list_sum] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // sum += current.value
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        // current = current.next
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // main: Build list [10, 20, 30], compute length and sum
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // Initialize heap
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 393216)
+    // Create list: prepend 30, 20, 10
+    (30 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (20 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (10 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Compute sum: should be 60
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_3 ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

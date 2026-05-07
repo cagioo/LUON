@@ -1,0 +1,19 @@
+// Luon WASI Module — system call wrappers
+// WASI indices: 2=proc_exit, 3=args_get, 4=args_sizes_get, 5=fd_close
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[wasi] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[exit] ⊣^{op} {
+    // acc=exit_code → terminates process
+    // proc_exit is import index 2
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[get_args_count] ⊣^{op} {
+    // → acc=number of CLI args
+    // args_sizes_get writes argc at 0x90, buf_size at 0x94
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 144))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

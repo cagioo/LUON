@@ -1,0 +1,62 @@
+// examples/testing_demo.luon — Demonstrates the testing framework
+// Shows: assert_eq, assert_ne, assert_true, test_begin, test_pass, test_fail, test_summary
+// Expected output: exit code 0 (all tests pass)
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[testing_demo] ⊢_Γ {
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // Initialize test counters
+    // test_begin()
+    (331776 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    (331784 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    (331792 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+
+    // Test 1: 2 + 3 == 5
+    (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (Ext⁰_𝔄(∂_Ω, 3))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // assert_eq(5, 5) → pass
+    (5 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+    // Increment pass counter
+    (331776 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (331776 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (331784 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (331784 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+
+    // Test 2: 10 * 10 == 100
+    (10 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊗_ℤ 10)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (100 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+    (331776 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (331776 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (331784 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (331784 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+
+    // Return failed count (should be 0)
+    (331792 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

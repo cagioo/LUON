@@ -1,0 +1,11 @@
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[main] ⊢_Γ {
+// Vesege Institute — Comparison Operator Demo
+// Returns: 1 if arg > 10, 0 otherwise
+// Uses: Gt (greater than) comparison operator
+
+∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+  (∂_Ω ≻_{E₂^{p,q}} σ₀)^{cofiltration}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+}

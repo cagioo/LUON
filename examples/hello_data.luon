@@ -1,0 +1,33 @@
+// Hello World using @data directive (embedded string in WASM data section)
+// Build: python3 luon_assembler.py examples/hello_data.luon hello_data.wasm --wasi
+// Run:   wasmtime run hello_data.wasm
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[hello_data] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // @data embeds string at offset in WASM data section (no manual byte packing)
+    // @data 512 "Hello from Luon via Data Section!\n"
+
+    // IOV at 0x100: [buf_ptr=512, buf_len=34]
+    // (34 << 32) | 512 = 146028888576
+    (256 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+    (146028888576 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+    (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₁₁)
+
+    // fd_write(1, 256, 1, 768)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (256 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (768 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

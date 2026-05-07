@@ -1,0 +1,55 @@
+// Hello World via WASI — correct byte-packed values
+
+// Build: python3 luon_assembler.py examples/hello_wasi.luon hello_wasi.wasm --wasi
+// Run:   wasmtime run hello_wasi.wasm
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[hello_wasi] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // Store "Hello from Luon!\n" at 0x200 using packed i64 stores
+    // "Hello fr" = 8243311830880773448 (LE i64)
+    (512 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+    (8243311830880773448 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+    (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₁₁)
+
+    // "om Luon!" = 2408985400268844399 (LE i64)
+    (520 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+    (2408985400268844399 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+    (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₁₁)
+
+    // '\n' at 0x210
+    (528 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+    (10 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+    (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₁₁)
+
+    // IOV at 0x100: [buf_ptr=512, buf_len=17] = 73014444544 as i64
+    (256 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+    (73014444544 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+    (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₁₁)
+
+    // fd_write(1, 256, 1, 768): σ₂=fd, σ₃=iovs, σ₄=cnt, σ₅=nwritten
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (256 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (768 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

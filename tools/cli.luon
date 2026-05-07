@@ -1,0 +1,72 @@
+// tools/cli.luon — Luon Compiler CLI
+
+// Usage: wasmtime run luonc.wasm -- <input.luon> [output.wasm] [--wasi]
+// Reads args via WASI args_get, dispatches to parser → emitter pipeline
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[cli] ⊢_Γ {
+
+  // get_argc() → arg count
+  ∃!Φ ∈ Hom(𝒞,𝒟)[get_argc] ⊣^{op} {
+    // args_sizes_get(argc_ptr=0xF000, argv_buf_size_ptr=0xF008)
+    (61440 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61448 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (ε_4^{WASI} ∂_Ω)^{syscall(2)}
+    // Load argc
+    (61440 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+    (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // get_args() → argv base pointer
+  // Populates argv array at 0xE000, buf at 0xE400
+  ∃!Φ ∈ Hom(𝒞,𝒟)[get_args] ⊣^{op} {
+    // args_get(argv_ptr=0xE000, argv_buf_ptr=0xE400)
+    (57344 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (58368 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (ε_3^{WASI} ∂_Ω)^{syscall(2)}
+    (57344 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // main — entry point
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // @data 512 "[luonc] Luon Compiler v2.0 EXTREME\n"
+
+    // Print banner
+    (256 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+    (150323855872 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+    (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₁₁)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (256 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (768 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+
+    // Get argc
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₂₀)^{seq}
+
+    // Get args
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₂₁)^{seq}
+
+    // Return 0
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

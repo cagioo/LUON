@@ -1,0 +1,583 @@
+// tools/parser.luon — Native Luon v2 EXTREME Parser
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[parser] ⊢_Γ {
+
+  // scan_line(pos, end) → line_end_pos
+  ∃!Φ ∈ Hom(𝒞,𝒟)[scan_line] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (32 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -σ₂))_{Spec ℤ}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -10))_{Spec ℤ}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // hash_line(pos, len) → FNV-1a hash
+  ∃!Φ ∈ Hom(𝒞,𝒟)[hash_line] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // pos
+    (40 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq} // len
+    (-3750763034362895579 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq} // hash
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break if len == 0
+        
+        ⊢_{Γ}^{⊃I}⟦ // CONTINUE BLOCK
+          // byte = src[pos]
+          (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+          (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+          
+          // if b >= 48 && b <= 57: continue
+          (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Tor₀^𝔄(∂_Ω, -48))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+          (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Tor₀^𝔄(∂_Ω, -58))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+          (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (∂_Ω ≽_{E₂^{p,q}} 0)^{⊇filt}
+          (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+          (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (∂_Ω ≺_{E₂^{p,q}} 0)^{filtration}
+          (∂_Ω ∧_{𝔹} σ₉)^{∧}
+          (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+
+          // if b == 45 ('-') or b == 32 (' ') or b == 95 ('_'): continue
+          (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Tor₀^𝔄(∂_Ω, -45))_{Spec ℤ}
+          (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+          (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+          (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Tor₀^𝔄(∂_Ω, -32))_{Spec ℤ}
+          (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+          (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+          (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Tor₀^𝔄(∂_Ω, -95))_{Spec ℤ}
+          (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+          (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+
+          // if b == 0xCF && next == 0x83 ('σ'): skip 2 bytes
+          (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Tor₀^𝔄(∂_Ω, -207))_{Spec ℤ}
+          (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+          (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+          (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+          (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+          (Tor₀^𝔄(∂_Ω, -131))_{Spec ℤ}
+          (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+          (∂_Ω ∧_{𝔹} σ₉)^{∧}
+          ⊢_{Γ}^{⊃I}⟦
+            (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+            (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+            // skip 1 extra byte (since loop increments by 1)
+            (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+            (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+            (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+            (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+            (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+            (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of continue block
+          ⟧^{⊃E}_{Δ}⊣
+
+          // skip subscript digits (e2 82 8x)
+          (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Tor₀^𝔄(∂_Ω, -226))_{Spec ℤ} // 0xE2
+          (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+          ⊢_{Γ}^{⊃I}⟦
+            (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+            (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+            // skip 2 extra bytes
+            (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (Ext⁰_𝔄(∂_Ω, 2))_{Spec ℤ}
+            (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+            (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (Tor₀^𝔄(∂_Ω, -2))_{Spec ℤ}
+            (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+            (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+            (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+          ⟧^{⊃E}_{Δ}⊣
+
+          // Compute FNV-1a hash
+          (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (∂_Ω ⊕_{GF} σ₆)^{⊕}
+          (∂_Ω ⊗_ℤ 1099511628211)^{⊗L}_{D(𝔄)}
+          (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        ⟧^{⊃E}_{Δ}⊣ // END CONTINUE BLOCK
+        
+        // len -= 1, pos += 1
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // dispatch(hash) -> opcode
+  ∃!Φ ∈ Hom(𝒞,𝒟)[dispatch] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // hash
+    ⊢_{Γ}^{⊃I}⟦
+      ⊢_{Γ}^{⊃I}⟦
+        (4833215907409249767 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (8762512685794832560 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-2784534727670731454 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (3 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (5543789437107753232 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (3939632832870425310 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (5 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-3650645065449768652 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (6 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (413348630739906644 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (7 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (3303469312732886956 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (8 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-4026857797746187518 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (9 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-8113203991206144865 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (10 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-6475713459959600021 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (11 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-539121932313425026 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (12 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-1085189396117621213 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (13 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-5171738221532938838 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (14 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (4287841857904033994 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (15 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-4011855909282216650 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (16 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-6638848135805562770 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (17 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-2932152336338573210 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (18 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-4126939922252157059 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (19 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-2737667341852033621 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (20 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (5600705030278784824 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (21 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (466850259500057285 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (22 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (6358117769997184277 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (23 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-5235895786884639967 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (24 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (7149023023021966144 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (25 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (2277150153833989396 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (26 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-2101340156905584503 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (27 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (2271899113647186989 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (28 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-8017326620583093557 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (29 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (3656911762143003058 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (30 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-3116824346049285093 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (31 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (2886361839818815802 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (32 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-4849646452296068694 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (33 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (1056586616428236766 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (34 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (5472097063462947471 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (35 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-2467332766858169134 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (36 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (-7667923742468352697 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (37 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      ⊢_{Γ}^{⊃I}⟦
+        (3824059082269224449 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ≡_{E_∞} σ₃)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic} // eqz (1 if !=)
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // break if !=
+        (38 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // break out of outer block
+      ⟧^{⊃E}_{Δ}⊣
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⟧^{⊃E}_{Δ}⊣
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // emit_ir(opcode, param_s, param_k) -> void
+  ∃!Φ ∈ Hom(𝒞,𝒟)[emit_ir] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₈₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (σ₈₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₈₀)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // main(file_len) -> void
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (σ₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₉₀)^{seq} // file_len
+    
+    (65536 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₈₀)^{seq} // buffer start
+
+    // Store end_address at mem[32] for scan_line
+    (σ₈₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₉₀))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₉₈)^{seq}
+    (32 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₉₈)
+
+    (512 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₉₁)^{seq}
+    (-3750763034362895579 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₉₂)^{seq}
+    (σ₉₁ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₉₂)
+
+    // Initialize IR out_ptr mem[48] = 131076
+    (131076 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₉₈)^{seq}
+    (48 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₉₈)
+
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₉₃)^{seq} // i=0
+
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₉₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -σ₉₃))_{Spec ℤ}
+        (∂_Ω ≼_{E₂^{p,q}} 0)^{⊆filt} // break if file_len - i <= 0
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+
+        // abs_pos = buffer + i
+        (σ₈₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₉₃))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₉₇)^{seq}
+
+        // call scan_line(abs_pos)
+        (σ₉₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (η_0 ∘_{2-Cat} ∂_Ω)^{Kan} // scan_line
+        (∂_Ω ⊢_{Γ;Δ} σ₉₈)^{seq} // line_end
+        
+        // line_len = line_end - abs_pos
+        (σ₉₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -σ₉₇))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₉₄)^{seq} // line_len
+
+        (40 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₉₄) // mem[40] = line_len
+
+        // call hash_line(abs_pos)
+        (σ₉₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (η_1 ∘_{2-Cat} ∂_Ω)^{Kan} // hash_line
+        (∂_Ω ⊢_{Γ;Δ} σ₉₅)^{seq} // hash
+        
+        // dispatch(hash) -> opcode
+        (σ₉₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (η_2 ∘_{2-Cat} ∂_Ω)^{Kan} // dispatch
+        (∂_Ω ⊢_{Γ;Δ} σ₉₆)^{seq} // opcode
+
+        // if opcode != 0: emit_ir(opcode)
+        ⊢_{Γ}^{⊃I}⟦
+          (σ₉₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+          (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // skip if opcode == 0
+          
+          (σ₉₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (η_3 ∘_{2-Cat} ∂_Ω)^{Kan} // emit_ir
+        ⟧^{⊃E}_{Δ}⊣
+
+        // i += line_len + 1
+        (σ₉₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₉₄))_{Spec ℤ}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₉₃)^{seq}
+        
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule} // loop
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    
+    // Finished parsing. Terminate IR stream with opcode 0.
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (η_3 ∘_{2-Cat} ∂_Ω)^{Kan} // emit_ir(0)
+    
+    // Call emitter_main to generate WASM
+    (η_10 ∘_{2-Cat} ∂_Ω)^{Kan}
+    
+    // return the WASM size
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

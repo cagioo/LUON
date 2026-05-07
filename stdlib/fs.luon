@@ -1,0 +1,132 @@
+// stdlib/fs.luon — Filesystem operations via WASI
+// Functions: file_open, file_read, file_write, file_close, file_seek,
+//            file_size, path_exists, dir_open, dir_read
+// Uses WASI Preview 1 syscalls for portable filesystem access
+// Comparable to: Rust std::fs, Go os, Python os/io
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[fs] ⊢_Γ {
+
+  // file_open(path_ptr, path_len, flags) → fd or -1 on error
+  // acc = path_ptr, σ₂ = path_len, σ₃ = flags (0=read, 1=write, 2=append, 3=create)
+  // Uses WASI path_open with preopened dir fd=3
+  ∃!Φ ∈ Hom(𝒞,𝒟)[file_open] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Scratch: fd_result at 0xF300
+    // WASI path_open(dirfd=3, dirflags=0, path, path_len, oflags, fs_rights_base, fs_rights_inheriting, fdflags, fd_out)
+    // dirfd = 3 (preopened)
+    (3 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // dirflags = 0
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // oflags based on flags
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    // fs_rights_base = full rights
+    (536870911 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    // fd_out at 0xF300
+    (62208 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+    // Call WASI path_open (syscall index 8)
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (ε_8^{WASI} ∂_Ω)^{syscall(9)}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+    // Check error
+    (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      // Success: load fd from 0xF300
+      (62208 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // Error: return -1
+    (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // file_read(fd, buf_ptr, buf_len) → bytes_read or -1
+  // acc = fd, σ₂ = buf_ptr, σ₃ = buf_len
+  ∃!Φ ∈ Hom(𝒞,𝒟)[file_read] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Build IOV at 0xF100: [buf_ptr, buf_len]
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 4294967296)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₅)
+    // nread at 0xF110
+    // WASI fd_read(fd, iovs, iovs_cnt, nread)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    (ε_1^{WASI} ∂_Ω)^{syscall(4)}
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+    // Check error
+    (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // file_write(fd, buf_ptr, buf_len) → bytes_written or -1
+  // acc = fd, σ₂ = buf_ptr, σ₃ = buf_len
+  ∃!Φ ∈ Hom(𝒞,𝒟)[file_write] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Build IOV
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 4294967296)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₅)
+    // WASI fd_write(fd, iovs, iovs_cnt, nwritten)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+    (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // file_close(fd) → 0 on success, errno on error
+  // acc = fd
+  ∃!Φ ∈ Hom(𝒞,𝒟)[file_close] ⊣^{op} {
+    // WASI fd_close(fd)
+    (ε_3^{WASI} ∂_Ω)^{syscall(1)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

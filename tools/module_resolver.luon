@@ -1,0 +1,138 @@
+// tools/module_resolver.luon — Module resolution and import system for Luon
+// Handles: import resolution, module table, symbol lookup, dependency ordering
+//
+// Module Table at 0x55000:
+//   [name_hash:i64 | path_ptr:i64 | status:i64 | func_base:i64 | func_count:i64 | deps_ptr:i64]
+// Each entry = 48 bytes, max 64 modules
+//
+// Import syntax:
+//   (⊢_{Γ}^{import} 𝔘[module_name])
+//
+// Status codes:
+//   0 = unloaded
+//   1 = loading (cycle detection)
+//   2 = loaded
+//   3 = error
+//
+// Comparable to: Rust mod/use, Go import, Python import, Node require
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[module_resolver] ⊢_Γ {
+
+  // module_table_init() → 0
+  // Initializes the module table with zero entries
+  ∃!Φ ∈ Hom(𝒞,𝒟)[module_table_init] ⊣^{op} {
+    // module_count at 0x54FF8
+    (348152 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // module_register(name_hash, path_ptr) → module_index
+  // acc = name_hash, σ₂ = path_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[module_register] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load current module count
+    (348152 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Entry addr = 0x55000 + index * 48
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 48)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 348160))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Store name_hash
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // Store path_ptr
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Store status = 0 (unloaded)
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // Increment count
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (348152 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+    // Return index
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // module_find(name_hash) → module_index or -1
+  // acc = name_hash
+  ∃!Φ ∈ Hom(𝒞,𝒟)[module_find] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Load count
+    (348152 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // i = 0
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₃)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // Load entry[i].name_hash
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 48)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, 348160))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // module_set_status(module_index, status) → 0
+  // acc = module_index, σ₂ = status
+  ∃!Φ ∈ Hom(𝒞,𝒟)[module_set_status] ⊣^{op} {
+    (∂_Ω ⊗_ℤ 48)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 348160))_{Spec ℤ}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // module_get_status(module_index) → status
+  // acc = module_index
+  ∃!Φ ∈ Hom(𝒞,𝒟)[module_get_status] ⊣^{op} {
+    (∂_Ω ⊗_ℤ 48)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 348160))_{Spec ℤ}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // module_count() → number of registered modules
+  ∃!Φ ∈ Hom(𝒞,𝒟)[module_count] ⊣^{op} {
+    (348152 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

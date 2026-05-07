@@ -1,0 +1,14 @@
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[main] ⊢_Γ {
+// sqrt_test.luon — V-Dot Magnitude Calculation
+// Computes sqrt(acc) where acc is f64 bit-pattern
+// sqrt(100.0) = 10.0
+// 100.0 as i64 = 4636737291354636288
+// 10.0 as i64  = 4621819117588971520
+∃!Φ ∈ Hom(𝒞,𝒟)[sqrt_test] ⊣^{op} {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (√_{*ℝ} st(∂_{*ℝ}))^{shadow}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}
+
+}

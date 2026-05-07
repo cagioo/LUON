@@ -1,0 +1,427 @@
+// stdlib/array.luon — Dynamic array (vector) implementation for Luon
+// Functions: array_new, array_push, array_pop, array_get, array_set,
+//            array_len, array_cap, array_clear, array_swap, array_reverse,
+//            array_contains, array_index_of, array_remove, array_insert,
+//            array_slice_copy, array_fill, array_free
+// Layout: [cap:i64 | len:i64 | data_ptr:i64] = 24 bytes header at heap
+// Data: contiguous i64 elements at data_ptr
+// Comparable to: Rust Vec<T>, Go []T, Python list, JS Array
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[array] ⊢_Γ {
+
+  // array_new(initial_cap) → array_ptr
+  // acc = initial capacity (number of elements)
+  // Allocates header (24 bytes) + data (cap * 8 bytes)
+  // Returns pointer to header
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Allocate header: 24 bytes (3 x i64)
+    (24 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    // Call alloc (from memory module, func index depends on linking)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Allocate data: cap * 8 bytes
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Store header fields
+    // header[0] = cap
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // header[8] = len = 0
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // header[16] = data_ptr (allocated after header)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+    // Return header ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_len(arr_ptr) → length
+  // acc = array header pointer
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_len] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_cap(arr_ptr) → capacity
+  // acc = array header pointer
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_cap] ⊣^{op} {
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_push(arr_ptr, value) → new_len
+  // acc = arr_ptr, σ₂ = value to push
+  // NOTE: Does not handle reallocation when len >= cap (caller must ensure capacity)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_push] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load current len
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load data_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Store value at data[len * 8]
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Increment len
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Store new len
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Return new len
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_pop(arr_ptr) → popped value (or 0 if empty)
+  // acc = arr_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_pop] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load len
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // if len == 0, return 0
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // Decrement len
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Store new len
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Load data_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Load value at data[new_len * 8]
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_get(arr_ptr, index) → value at index
+  // acc = arr_ptr, σ₂ = index
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_get] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load data_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load data[index * 8]
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_set(arr_ptr, index, value) → value
+  // acc = arr_ptr, σ₂ = index, σ₃ = value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_set] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load data_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Store value at data[index * 8]
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_clear(arr_ptr) → 0
+  // Resets length to 0 (does not free memory)
+  // acc = arr_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_clear] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_swap(arr_ptr, i, j) → 0
+  // acc = arr_ptr, σ₂ = i, σ₃ = j
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_swap] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load data_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // addr_i = data + i*8
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // addr_j = data + j*8
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    // Load val_i
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    // Load val_j
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+    // Store val_j at addr_i
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₉)
+    // Store val_i at addr_j
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₈)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_contains(arr_ptr, value) → 1 if found, 0 otherwise
+  // acc = arr_ptr, σ₂ = value to search
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_contains] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load len
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load data_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // i = 0
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if i >= len, not found
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // Load data[i]
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        // if data[i] == value, found
+        (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // i++
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_index_of(arr_ptr, value) → index or -1 if not found
+  // acc = arr_ptr, σ₂ = value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_index_of] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load len
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load data_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // i = 0
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_fill(arr_ptr, value, count) → arr_ptr
+  // Fills first `count` elements with `value`
+  // acc = arr_ptr, σ₂ = value, σ₃ = count
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_fill] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load data_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // i = 0
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₃)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // Store value at data[i*8]
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+        // i++
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // Update len = count
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // array_reverse(arr_ptr) → arr_ptr
+  // Reverses array in-place
+  // acc = arr_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_reverse] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load len
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load data_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // lo = 0, hi = len - 1
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if lo >= hi, done
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₇)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // Swap data[lo] and data[hi]
+        // addr_lo = data + lo*8
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        // addr_hi = data + hi*8
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+        // Load both values
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+        // Store swapped
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₁₁)
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₁₀)
+        // lo++, hi--
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

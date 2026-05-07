@@ -1,0 +1,18 @@
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[main] ⊢_Γ {
+// sign_verify_test.luon — Crypto stub test
+
+// Sign: acc = FNV(acc XOR key), Verify: acc = (acc == expected) ? 1 : 0
+// Test: Save original, sign, save sig, restore original, re-sign, verify match
+∃!Φ ∈ Hom(𝒞,𝒟)[sign_verify_test] ⊣^{op} {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (π₁^{ét}(Spec(∂_Ω)) ⋉_{Gal} 42)^{Frob}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (π₁^{ét}(Spec(∂_Ω)) ⋉_{Gal} 42)^{Frob}
+    (π₁^{ét}(Spec(∂_Ω)) ⋊_{Gal} σ₂)^{Frob⁻¹}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}
+
+}

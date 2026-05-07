@@ -1,0 +1,19 @@
+// Étale Cohomology Cryptographic Test — v2 EXTREME Syntax
+// Sign: π₁^{ét} Frobenius action, Verify: inverse Frobenius
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[crypto_v2] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // Save original message to σ₃
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Sign with key=42
+    (π₁^{ét}(Spec(∂_Ω)) ⋉_{Gal} 42)^{Frob}
+    // Save signature to σ₂
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Restore original message
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    // Re-sign original with same key
+    (π₁^{ét}(Spec(∂_Ω)) ⋉_{Gal} 42)^{Frob}
+    // Verify against saved signature
+    (π₁^{ét}(Spec(∂_Ω)) ⋊_{Gal} σ₂)^{Frob⁻¹}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

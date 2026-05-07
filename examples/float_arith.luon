@@ -1,0 +1,22 @@
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[main] ⊢_Γ {
+// Vesege Institute — Float Arithmetic Demo
+// Menggunakan bit-reinterpret architecture
+// Kappa contains i64 bit-pattern of f64
+//
+// 100.0 = 0x4059000000000000 = 4636737291354636288
+// 3.14  = 0x40091EB851EB851F = 4614253070214989087
+// 2.0   = 0x4000000000000000 = 4611686018427387904
+//
+// Menghitung: (arg_as_float + 100.0) * 2.0
+// Hasilnya: arg=0 → (0+100)*2 = 200.0 = 0x4069000000000000 = 4640537203540230144
+
+∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+  // acc = arg (i64 bit pattern, sudah merupakan f64)
+  // FAdd: acc(f64) + 100.0(f64)
+  (st(∂_{*ℝ}) ⊕_{*ℝ} st(4636737291354636288))^{transfer}
+  // FMul: acc(f64) * 2.0(f64)
+  (st(∂_{*ℝ}) ⊗_{*ℝ} st(4611686018427387904))^{transfer}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+}

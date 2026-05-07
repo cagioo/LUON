@@ -1,0 +1,36 @@
+// Luon Memory Module — bump allocator
+
+
+// Heap: 0x60000+ (888KB), alloc_ptr stored at 0x50000 (state seg)
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[memory] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[heap_init] ⊣^{op} {
+    // Initialize alloc pointer to heap base 0x60000
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 393216)
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 393216))_{Spec ℤ}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[alloc] ⊣^{op} {
+    // acc=size → acc=allocated_ptr
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Load current alloc_ptr from state[0] (0x50000)
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // new_ptr = current + size
+    (Ext⁰_𝔄(∂_Ω, σ₂))_{Spec ℤ}
+    // Store new_ptr back
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Return old ptr (allocated address)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

@@ -1,0 +1,34 @@
+// Comprehensive v2 EXTREME syntax test
+// Tests: arithmetic, comparison, loop, save/load state, bitwise
+// Expected: sum of 1..10 XOR 0xFF = (55 XOR 255) = 200
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[comprehensive] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // acc = arg (input N), save to σ₄ as counter
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // acc = 0 (sum accumulator)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Loop: sum += counter, counter--
+    ⊢_{Γ}^{⊃I}⟦
+    μ_{ω₁}^{CK}⟦
+      // if counter <= 0, break
+      (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≼_{E₂^{p,q}} 0)^{⊆filt}
+      (∂_Ω ⊬_{PA}^{Gödel} 1)^{ω-rule}
+      // sum += counter
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+      // counter--
+      (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+      (⊬_{PA}^{Gödel} 0)^{ω-rule}
+    ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // result = sum XOR 0xFF
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω △_{𝔹} 255)^{Aut(𝔽₂)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

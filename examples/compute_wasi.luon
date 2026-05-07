@@ -1,0 +1,68 @@
+// Compute Fibonacci(10) = 55, print result via WASI
+// Build: python3 luon_assembler.py examples/compute_wasi.luon compute.wasm --wasi
+// Run:   wasmtime run compute.wasm
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[compute_wasi] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[fib] ⊣^{op} {
+    // acc=n → acc=fib(n)
+    // σ₂=a=0, σ₃=b=1, σ₄=counter
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // temp = a + b
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        // a = b
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+        // b = temp
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        // counter--
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // @data 512 "Fibonacci(10) = 55\n"
+
+    // IOV at 0x100: [buf=512, len=19] = 81604379136
+    (256 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+    (81604379136 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+    (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₁₁)
+
+    // fd_write(1, 256, 1, 768)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (256 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (768 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+
+    // Compute fib(10) and return it as proof
+    (10 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

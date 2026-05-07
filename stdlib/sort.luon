@@ -1,0 +1,195 @@
+// stdlib/sort.luon — Sorting algorithms for Luon
+// Functions: insertion_sort, quicksort, quicksort_partition, is_sorted, binary_search
+// Operates on contiguous i64 arrays in memory
+// Comparable to: Rust slice::sort, Go sort.Slice, Python sorted()
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[sort] ⊢_Γ {
+
+  // insertion_sort(data_ptr, len) → 0
+  // acc = data_ptr (pointer to first i64 element), σ₂ = length
+  // Sorts in-place, ascending order
+  ∃!Φ ∈ Hom(𝒞,𝒟)[insertion_sort] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // i = 1
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if i >= len, done
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₂)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // key = data[i]
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        // j = i - 1
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        // Inner loop: shift elements right while data[j] > key
+        ⊢_{Γ}^{⊃I}⟦
+          μ_{ω₁}^{CK}⟦
+            // if j < 0, exit inner
+            (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (∂_Ω ≺_{ω₁} 0)^{well-order}
+            (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+            // Load data[j]
+            (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+            (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+            (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+            (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+            (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+            // if data[j] <= key, exit inner
+            (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (∂_Ω ⪯_{ω₁} σ₅)^{well-order}
+            (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+            // data[j+1] = data[j]
+            (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+            (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+            (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+            (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+            (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₈)
+            // j--
+            (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+            (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+            (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+          ⟧_{ω₁}^{CK}μ
+        ⟧^{⊃E}_{Δ}⊣
+        // data[j+1] = key
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₅)
+        // i++
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // is_sorted(data_ptr, len) → 1 if sorted ascending, 0 otherwise
+  // acc = data_ptr, σ₂ = length
+  ∃!Φ ∈ Hom(𝒞,𝒟)[is_sorted] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // if len <= 1, trivially sorted
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪯_{ω₁} 1)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // i = 1
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₂)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // Load data[i-1]
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        // Load data[i]
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        // if data[i-1] > data[i], not sorted
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≻_{ω₁} σ₆)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // i++
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // binary_search(data_ptr, len, target) → index or -1
+  // acc = data_ptr, σ₂ = len, σ₃ = target
+  // Requires sorted array
+  ∃!Φ ∈ Hom(𝒞,𝒟)[binary_search] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // lo = 0
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // hi = len - 1
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if lo > hi, not found
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≻_{ω₁} σ₆)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // mid = (lo + hi) / 2
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+        (RHom_ℤ(2, ∂_Ω))_{D^b(𝔄)}
+        (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+        // Load data[mid]
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        // if data[mid] == target, found
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≡_{E_∞} σ₃)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // if data[mid] < target, lo = mid + 1
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≺_{ω₁} σ₃)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        ⟧^{⊃E}_{Δ}⊣
+        // else hi = mid - 1
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

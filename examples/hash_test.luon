@@ -1,0 +1,12 @@
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[main] ⊢_Γ {
+// Vesege Institute — Hash Operator Demo
+// Applies FNV-like integer mixing to the input argument
+// hash(0) should return a deterministic nonzero value
+// hash(42) should return a different deterministic value
+
+∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+  (H^n_{ét}(Spec(∂_Ω), 𝔾_m))^{Galois}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+}

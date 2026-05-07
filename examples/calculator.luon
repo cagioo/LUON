@@ -1,0 +1,68 @@
+// examples/calculator.luon — Simple integer calculator
+// Demonstrates: arithmetic operations, function calls, register usage
+// Computes: (a + b) * c - d / e where a=10, b=20, c=3, d=100, e=5
+// Expected result: (10+20)*3 - 100/5 = 90 - 20 = 70
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[calculator] ⊢_Γ {
+
+  // add(a, b) → a + b
+  ∃!Φ ∈ Hom(𝒞,𝒟)[add] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, σ₂))_{Spec ℤ}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // mul(a, b) → a * b
+  ∃!Φ ∈ Hom(𝒞,𝒟)[mul] ⊣^{op} {
+    (∂_Ω ⊗_ℤ σ₂)^{⊗L}_{D(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // div(a, b) → a / b
+  ∃!Φ ∈ Hom(𝒞,𝒟)[div] ⊣^{op} {
+    (RHom_ℤ(σ₂, ∂_Ω))_{D^b(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // sub(a, b) → a - b
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sub] ⊣^{op} {
+    (Tor₀^𝔄(∂_Ω, -σ₂))_{Spec ℤ}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // main: compute (10+20)*3 - 100/5
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // step1 = add(10, 20) = 30
+    (10 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (20 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (10 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+
+    // step2 = mul(30, 3) = 90
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (3 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+
+    // step3 = div(100, 5) = 20
+    (100 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (5 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (100 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (η_2 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+
+    // step4 = sub(90, 20) = 70
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_3 ∘_{2-Cat} ∂_Ω)^{Kan}
+
+    // Return 70
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

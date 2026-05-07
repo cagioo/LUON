@@ -1,0 +1,18 @@
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[main] ⊢_Γ {
+// string_test.luon — Byte array read/write test
+
+// Store8: mem[acc] = sigma (lower 8 bits). Load8: acc = mem[acc] (1 byte)
+// Write 72 ('H') to address 1000, then read back
+∃!Φ ∈ Hom(𝒞,𝒟)[string_test] ⊣^{op} {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (72 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (1000 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₂)
+    (1000 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}
+
+}

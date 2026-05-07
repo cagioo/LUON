@@ -1,0 +1,115 @@
+// stdlib/testing.luon — Testing framework primitives for Luon
+// Functions: assert_eq, assert_ne, assert_true, assert_false, assert_zero,
+//            test_begin, test_pass, test_fail, test_summary
+// State memory layout:
+//   0x51000: total_tests
+//   0x51008: passed_tests
+//   0x51010: failed_tests
+// Comparable to: Rust #[test], Go testing, Python unittest
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[testing] ⊢_Γ {
+
+  // test_begin() → 0
+  // Initializes test counters
+  ∃!Φ ∈ Hom(𝒞,𝒟)[test_begin] ⊣^{op} {
+    (331776 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    (331784 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    (331792 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // test_pass() → 0
+  // Increments total and passed counters
+  ∃!Φ ∈ Hom(𝒞,𝒟)[test_pass] ⊣^{op} {
+    (331776 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (331776 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (331784 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (331784 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // test_fail() → 1
+  // Increments total and failed counters
+  ∃!Φ ∈ Hom(𝒞,𝒟)[test_fail] ⊣^{op} {
+    (331776 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (331776 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (331792 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (331792 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // assert_eq(actual, expected) → 0 pass, 1 fail
+  // acc = actual, σ₂ = expected
+  ∃!Φ ∈ Hom(𝒞,𝒟)[assert_eq] ⊣^{op} {
+    (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (η_2 ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // assert_ne(actual, expected) → 0 pass, 1 fail
+  // acc = actual, σ₂ = expected
+  ∃!Φ ∈ Hom(𝒞,𝒟)[assert_ne] ⊣^{op} {
+    (∂_Ω ≠_{E_∞} σ₂)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (η_2 ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // assert_true(value) → 0 pass, 1 fail
+  ∃!Φ ∈ Hom(𝒞,𝒟)[assert_true] ⊣^{op} {
+    (∂_Ω ≠_{E_∞} 0)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (η_2 ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // assert_false(value) → 0 pass, 1 fail
+  ∃!Φ ∈ Hom(𝒞,𝒟)[assert_false] ⊣^{op} {
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (η_2 ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // test_summary() → failed_tests count (0 means success)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[test_summary] ⊣^{op} {
+    (331792 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

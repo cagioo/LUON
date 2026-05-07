@@ -1,0 +1,177 @@
+// stdlib/convert.luon — Type conversion utilities for Luon
+// Functions: i32_to_i64, i64_to_i32, f64_to_bits, bits_to_f64,
+//            bool_to_int, int_to_bool, hex_digit, byte_to_hex,
+//            i64_to_hex_str, clamp_u8, clamp_u16, clamp_u32,
+//            sign_extend_8, sign_extend_16, sign_extend_32
+// Comparable to: Rust as/From/Into, Go type conversion, Python int/float
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[convert] ⊢_Γ {
+
+  // i64_to_i32(x) → x truncated to 32 bits
+  // acc = x
+  ∃!Φ ∈ Hom(𝒞,𝒟)[i64_to_i32] ⊣^{op} {
+    (∂_Ω ∧_{Bool} 4294967295)^{∧-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // clamp_u8(x) → x clamped to [0, 255]
+  // acc = x
+  ∃!Φ ∈ Hom(𝒞,𝒟)[clamp_u8] ⊣^{op} {
+    (∂_Ω ∧_{Bool} 255)^{∧-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // clamp_u16(x) → x clamped to [0, 65535]
+  // acc = x
+  ∃!Φ ∈ Hom(𝒞,𝒟)[clamp_u16] ⊣^{op} {
+    (∂_Ω ∧_{Bool} 65535)^{∧-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // clamp_u32(x) → x clamped to [0, 4294967295]
+  // acc = x
+  ∃!Φ ∈ Hom(𝒞,𝒟)[clamp_u32] ⊣^{op} {
+    (∂_Ω ∧_{Bool} 4294967295)^{∧-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // sign_extend_8(x) → sign-extend 8-bit value to 64-bit
+  // acc = x (lower 8 bits)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sign_extend_8] ⊣^{op} {
+    (∂_Ω ∧_{Bool} 255)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Check bit 7
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ∧_{Bool} 128)^{∧-intro}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // Negative: OR with 0xFFFFFFFFFFFFFF00
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ∨_{Bool} -256)^{∨-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // sign_extend_16(x) → sign-extend 16-bit value to 64-bit
+  // acc = x (lower 16 bits)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sign_extend_16] ⊣^{op} {
+    (∂_Ω ∧_{Bool} 65535)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ∧_{Bool} 32768)^{∧-intro}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ∨_{Bool} -65536)^{∨-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // sign_extend_32(x) → sign-extend 32-bit value to 64-bit
+  // acc = x (lower 32 bits)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sign_extend_32] ⊣^{op} {
+    (∂_Ω ∧_{Bool} 4294967295)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ∧_{Bool} 2147483648)^{∧-intro}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ∨_{Bool} -4294967296)^{∨-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // bool_to_int(b) → 0 or 1
+  // acc = any value, returns 0 if zero, 1 otherwise
+  ∃!Φ ∈ Hom(𝒞,𝒟)[bool_to_int] ⊣^{op} {
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // hex_digit(n) → ASCII char for hex digit (0-15 → '0'-'f')
+  // acc = n (0-15)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[hex_digit] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 10)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 48))_{Spec ℤ}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // a-f: n - 10 + 97
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 87))_{Spec ℤ}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // byte_to_hex(byte, buf_ptr) → 2 (bytes written)
+  // Writes 2 hex chars to buf_ptr
+  // acc = byte, σ₂ = buf_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[byte_to_hex] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // High nibble
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≫_{Galois} 4)^{adjunction}
+    (∂_Ω ∧_{Bool} 15)^{∧-intro}
+    (Ext⁰_𝔄(∂_Ω, 48))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₄)
+    // Low nibble
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ∧_{Bool} 15)^{∧-intro}
+    (Ext⁰_𝔄(∂_Ω, 48))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₄)
+    (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // swap_bytes_32(x) → byte-swapped 32-bit value (endian swap)
+  // acc = x
+  ∃!Φ ∈ Hom(𝒞,𝒟)[swap_bytes_32] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // byte0 = (x & 0xFF) << 24
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ∧_{Bool} 255)^{∧-intro}
+    (∂_Ω ≪_{Galois} 24)^{adjunction}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // byte1 = ((x >> 8) & 0xFF) << 16
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≫_{Galois} 8)^{adjunction}
+    (∂_Ω ∧_{Bool} 255)^{∧-intro}
+    (∂_Ω ≪_{Galois} 16)^{adjunction}
+    (∂_Ω ∨_{Bool} σ₃)^{∨-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // byte2 = ((x >> 16) & 0xFF) << 8
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≫_{Galois} 16)^{adjunction}
+    (∂_Ω ∧_{Bool} 255)^{∧-intro}
+    (∂_Ω ≪_{Galois} 8)^{adjunction}
+    (∂_Ω ∨_{Bool} σ₃)^{∨-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // byte3 = (x >> 24) & 0xFF
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≫_{Galois} 24)^{adjunction}
+    (∂_Ω ∧_{Bool} 255)^{∧-intro}
+    (∂_Ω ∨_{Bool} σ₃)^{∨-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

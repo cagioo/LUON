@@ -1,0 +1,183 @@
+// tools/typechecker.luon — Static type checker foundation for Luon
+// Defines the compile-time type model used by the Luon toolchain.
+// This is the first production-grade semantic phase after parsing.
+//
+// Type IDs:
+//   0 void
+//   1 bool
+//   2 i32
+//   3 i64
+//   4 f32
+//   5 f64
+//   6 ptr
+//   7 str
+//   8 array
+//   9 struct
+//   10 fn
+//   11 result
+//   12 option
+//   13 never
+//
+// Type descriptor layout at TYPE_TABLE_BASE (0x54000):
+//   [kind:i64 | size:i64 | align:i64 | param0:i64 | param1:i64 | name_hash:i64]
+// Each descriptor = 48 bytes
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[typechecker] ⊢_Γ {
+
+  // type_size(type_id) → byte size
+  // acc = type_id
+  ∃!Φ ∈ Hom(𝒞,𝒟)[type_size] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Built-in sizes by type id
+    // void=0, bool=1, i32=4, i64=8, f32=4, f64=8, ptr=8, str=16
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 1)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 2)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 4)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // default 8 bytes for i64/f64/ptr/fn/result/option handles
+    (8 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // type_align(type_id) → alignment
+  // acc = type_id
+  ∃!Φ ∈ Hom(𝒞,𝒟)[type_align] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // bool alignment 1
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 1)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // i32/f32 alignment 4
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 2)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 4)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // default 8
+    (8 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // type_is_numeric(type_id) → 1 if numeric
+  // acc = type_id
+  ∃!Φ ∈ Hom(𝒞,𝒟)[type_is_numeric] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // numeric if 2 <= type_id <= 5
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 2)^{well-order}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪯_{ω₁} 5)^{well-order}
+    (∂_Ω ∧_{Bool} σ₃)^{∧-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // type_can_assign(dst_type, src_type) → 1 if assignment is legal
+  // acc = dst_type, σ₂ = src_type
+  ∃!Φ ∈ Hom(𝒞,𝒟)[type_can_assign] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Exact match always legal
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // i32 -> i64 widening
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 3)^{acyclic}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 2)^{acyclic}
+    (∂_Ω ∧_{Bool} σ₄)^{∧-intro}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // f32 -> f64 widening
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 5)^{acyclic}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 4)^{acyclic}
+    (∂_Ω ∧_{Bool} σ₄)^{∧-intro}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // otherwise false
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // type_error(code, line, col) → error record ptr
+  // acc = error code, σ₂ = line, σ₃ = column
+  // Error layout: [code | line | col | severity] = 32 bytes
+  ∃!Φ ∈ Hom(𝒞,𝒟)[type_error] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // allocate 32 bytes from heap
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 32))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+    // code
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // line
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // col
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // severity = 2 (error)
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 2)
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

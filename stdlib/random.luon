@@ -1,0 +1,74 @@
+// stdlib/random.luon — Pseudo-random number generation
+// Functions: seed, next_u64, range, bool, shuffle_seed
+// Algorithm: xorshift64* — deterministic, fast, non-cryptographic
+// State: 0x51020 stores RNG state
+// Comparable to: Rust rand core, Go math/rand, Python random (non-crypto)
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[random] ⊢_Γ {
+
+  // seed(value) → 0
+  // acc = seed value (0 will be replaced with default)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[seed] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (88172645463393265 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    ⟧^{⊃E}_{Δ}⊣
+    (331808 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // next_u64() → pseudo-random u64
+  ∃!Φ ∈ Hom(𝒞,𝒟)[next_u64] ⊣^{op} {
+    (331808 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // If state is zero, seed default
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (88172645463393265 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    ⟧^{⊃E}_{Δ}⊣
+    // xorshift64*: x ^= x >> 12; x ^= x << 25; x ^= x >> 27; x *= constant
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≫_{Galois} 12)^{adjunction}
+    (∂_Ω ⊕_{Bool} σ₂)^{⊕-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≪_{Galois} 25)^{adjunction}
+    (∂_Ω ⊕_{Bool} σ₂)^{⊕-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≫_{Galois} 27)^{adjunction}
+    (∂_Ω ⊕_{Bool} σ₂)^{⊕-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Store updated state
+    (331808 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Return x * 2685821657736338717
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 2685821657736338717)^{⊗L}_{D(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // range(max) → random number in [0, max)
+  // acc = max
+  ∃!Φ ∈ Hom(𝒞,𝒟)[range] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω mod_{ℤ} σ₂)^{Euclidean}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // bool() → 0 or 1
+  ∃!Φ ∈ Hom(𝒞,𝒟)[bool] ⊣^{op} {
+    (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ∧_{Bool} 1)^{∧-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

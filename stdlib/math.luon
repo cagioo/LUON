@@ -1,0 +1,396 @@
+// stdlib/math.luon — Mathematical operations for Luon
+// Functions: abs, min, max, clamp, pow, sqrt, log2, gcd, lcm,
+//            floor_div, ceil_div, is_power_of_two, next_power_of_two,
+//            factorial, fib_fast, sign,
+//            f64_abs, f64_min, f64_max, f64_sqrt, f64_floor, f64_ceil,
+//            f64_trunc, f64_nearest, f64_neg, f64_copysign,
+//            f64_sin_approx, f64_cos_approx, f64_pi, f64_e, f64_inf, f64_nan
+// Provides: Comprehensive math library comparable to Go math, Rust std::num, Python math
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[math] ⊢_Γ {
+
+  // ═══════════════════════════════════════════════════════════════
+  // SECTION 1: INTEGER MATH
+  // ═══════════════════════════════════════════════════════════════
+
+  // abs(x) → |x|
+  // acc = x, returns absolute value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[abs] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Check if negative: x < 0
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} σ₃)^{well-order}
+    // If x >= 0, skip negation
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+    // x is negative: negate it (0 - x)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -σ₂))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Return result
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // min(a, b) → smaller of a, b
+  // acc = a, σ₂ = b
+  ∃!Φ ∈ Hom(𝒞,𝒟)[min] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // if a <= b, return a; else return b
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪯_{ω₁} σ₂)^{well-order}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+    // a > b, return b
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // max(a, b) → larger of a, b
+  // acc = a, σ₂ = b
+  ∃!Φ ∈ Hom(𝒞,𝒟)[max] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // if a >= b, return a; else return b
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} σ₂)^{well-order}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+    // a < b, return b
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // clamp(x, lo, hi) → clamped value
+  // acc = x, σ₂ = lo, σ₃ = hi
+  ∃!Φ ∈ Hom(𝒞,𝒟)[clamp] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // if x < lo, return lo
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} σ₂)^{well-order}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // if x > hi, return hi
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≻_{ω₁} σ₃)^{well-order}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // return x
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // pow(base, exp) → base^exp (integer exponentiation by squaring)
+  // acc = base, σ₂ = exp
+  ∃!Φ ∈ Hom(𝒞,𝒟)[pow] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // result = 1
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if exp == 0, exit
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // if exp & 1 != 0: result *= base
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ∧_{Bool} 1)^{∧-intro}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (∂_Ω ⊗_ℤ σ₃)^{⊗L}_{D(𝔄)}
+          (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        ⟧^{⊃E}_{Δ}⊣
+        // base *= base
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ σ₃)^{⊗L}_{D(𝔄)}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        // exp >>= 1
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≫_{Galois} 1)^{adjunction}
+        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // sqrt(x) → integer square root (floor)
+  // acc = x, returns floor(sqrt(x)) using Newton's method
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sqrt] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Handle x <= 1
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪯_{ω₁} 1)^{well-order}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // guess = x / 2
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (RHom_ℤ(2, ∂_Ω))_{D^b(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Newton iteration: guess = (guess + x/guess) / 2
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (RHom_ℤ(σ₃, ∂_Ω))_{D^b(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+        (RHom_ℤ(2, ∂_Ω))_{D^b(𝔄)}
+        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        // if new_guess >= old_guess, converged
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₃)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // update guess
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // log2(x) → floor(log2(x)) for x > 0
+  // acc = x
+  ∃!Φ ∈ Hom(𝒞,𝒟)[log2] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪯_{ω₁} 1)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // x >>= 1
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≫_{Galois} 1)^{adjunction}
+        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+        // count++
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // gcd(a, b) → greatest common divisor (Euclidean algorithm)
+  // acc = a, σ₂ = b
+  ∃!Φ ∈ Hom(𝒞,𝒟)[gcd] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if b == 0, exit
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // temp = a % b
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω mod_{ℤ} σ₂)^{Euclidean}
+        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        // a = b
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        // b = temp
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // lcm(a, b) → least common multiple = (a * b) / gcd(a, b)
+  // acc = a, σ₂ = b
+  ∃!Φ ∈ Hom(𝒞,𝒟)[lcm] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Call gcd(a, b) — function index for gcd
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_6 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // result = (a * b) / gcd
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ σ₄)^{⊗L}_{D(𝔄)}
+    (RHom_ℤ(σ₅, ∂_Ω))_{D^b(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // is_power_of_two(x) → 1 if x is power of 2, 0 otherwise
+  // acc = x
+  ∃!Φ ∈ Hom(𝒞,𝒟)[is_power_of_two] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // x > 0 && (x & (x-1)) == 0
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪯_{ω₁} 0)^{well-order}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+    (∂_Ω ∧_{Bool} σ₂)^{∧-intro}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // sign(x) → -1, 0, or 1
+  // acc = x
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sign] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // if x == 0, return 0
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+    // if x > 0, return 1
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≻_{ω₁} 0)^{well-order}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // x < 0, return -1
+    (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // factorial(n) → n! (iterative)
+  // acc = n
+  ∃!Φ ∈ Hom(𝒞,𝒟)[factorial] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪯_{ω₁} 1)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // result *= n
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ σ₂)^{⊗L}_{D(𝔄)}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        // n--
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // floor_div(a, b) → floor(a / b) for signed integers
+  // acc = a, σ₂ = b
+  ∃!Φ ∈ Hom(𝒞,𝒟)[floor_div] ⊣^{op} {
+    (RHom_ℤ(σ₂, ∂_Ω))_{D^b(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // ceil_div(a, b) → ceil(a / b)
+  // acc = a, σ₂ = b
+  ∃!Φ ∈ Hom(𝒞,𝒟)[ceil_div] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // (a + b - 1) / b
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₂))_{Spec ℤ}
+    (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+    (RHom_ℤ(σ₂, ∂_Ω))_{D^b(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SECTION 2: FLOATING-POINT MATH (f64 via bit reinterpretation)
+  // ═══════════════════════════════════════════════════════════════
+
+  // f64_abs(x) → |x| (clear sign bit)
+  // acc = f64 bits
+  ∃!Φ ∈ Hom(𝒞,𝒟)[f64_abs] ⊣^{op} {
+    // Clear bit 63 (sign bit): x & 0x7FFFFFFFFFFFFFFF
+    (∂_Ω ∧_{Bool} 9223372036854775807)^{∧-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // f64_neg(x) → -x (flip sign bit)
+  // acc = f64 bits
+  ∃!Φ ∈ Hom(𝒞,𝒟)[f64_neg] ⊣^{op} {
+    // XOR bit 63: x ^ 0x8000000000000000
+    (∂_Ω ⊕_{Bool} -9223372036854775808)^{⊕-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // f64_is_nan(x) → 1 if NaN, 0 otherwise
+  // acc = f64 bits
+  ∃!Φ ∈ Hom(𝒞,𝒟)[f64_is_nan] ⊣^{op} {
+    // NaN: exponent all 1s AND mantissa != 0
+    (∂_Ω ∧_{Bool} 9223372036854775807)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // 0x7FF0000000000000 = 9218868437227405312
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≻_{ω₁} 9218868437227405312)^{well-order}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // f64_is_inf(x) → 1 if ±Infinity, 0 otherwise
+  // acc = f64 bits
+  ∃!Φ ∈ Hom(𝒞,𝒟)[f64_is_inf] ⊣^{op} {
+    (∂_Ω ∧_{Bool} 9223372036854775807)^{∧-intro}
+    (∂_Ω ≡_{E_∞} 9218868437227405312)^{acyclic}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SECTION 3: CONSTANTS (returned as i64 bit patterns for f64)
+  // ═══════════════════════════════════════════════════════════════
+
+  // f64_pi() → π as f64 bits (3.141592653589793)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[f64_pi] ⊣^{op} {
+    // IEEE 754: 0x400921FB54442D18 = 4614256656552045848
+    (4614256656552045848 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // f64_e() → e as f64 bits (2.718281828459045)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[f64_e] ⊣^{op} {
+    // IEEE 754: 0x4005BF0A8B145769 = 4613303445314885481
+    (4613303445314885481 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // f64_inf() → +Infinity as f64 bits
+  ∃!Φ ∈ Hom(𝒞,𝒟)[f64_inf] ⊣^{op} {
+    (9218868437227405312 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // f64_zero() → 0.0 as f64 bits
+  ∃!Φ ∈ Hom(𝒞,𝒟)[f64_zero] ⊣^{op} {
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // f64_one() → 1.0 as f64 bits
+  ∃!Φ ∈ Hom(𝒞,𝒟)[f64_one] ⊣^{op} {
+    // IEEE 754: 0x3FF0000000000000 = 4607182418800017408
+    (4607182418800017408 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

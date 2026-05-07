@@ -1,0 +1,257 @@
+// stdlib/fmt.luon — Formatted output utilities for Luon
+// Functions: print_char, print_newline, print_space, print_bool,
+//            print_hex, print_hex_byte, print_i64, print_u64,
+//            print_bytes, print_separator, println_int, println_str
+// Uses: io.write_stdout internally via WASI fd_write
+// Scratch: 0xF200-0xF2FF for formatting buffers
+// Comparable to: Rust println!/format!, Go fmt, Python print/f-string
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[fmt] ⊢_Γ {
+
+  // print_char(ch) → 1
+  // Writes a single ASCII character to stdout
+  // acc = character code (e.g. 65 = 'A')
+  ∃!Φ ∈ Hom(𝒞,𝒟)[print_char] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Store char at scratch 0xF200
+    (61952 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₂)
+    // Build IOV at 0xF100: buf_ptr=0xF200, buf_len=1
+    (61952 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊗_ℤ 4294967296)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // fd_write(fd=1, iovs=0xF100, iovs_cnt=1, nwritten=0xF110)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // print_newline() → 1
+  // Writes '\n' (0x0A) to stdout
+  ∃!Φ ∈ Hom(𝒞,𝒟)[print_newline] ⊣^{op} {
+    (10 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // print_space() → 1
+  // Writes ' ' (0x20) to stdout
+  ∃!Φ ∈ Hom(𝒞,𝒟)[print_space] ⊣^{op} {
+    (32 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // print_bool(value) → 1
+  // Writes "true" or "false" to stdout
+  // acc = value (0 = false, nonzero = true)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[print_bool] ⊣^{op} {
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      // "false" = 66 61 6C 73 65 at 0xF200
+      (61952 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 102)
+      (61953 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 97)
+      (61954 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 108)
+      (61955 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 115)
+      (61956 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 101)
+      // Write 5 bytes
+      (5 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (∂_Ω ⊗_ℤ 4294967296)^{⊗L}_{D(𝔄)}
+      (Ext⁰_𝔄(∂_Ω, 61952))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+      (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+      (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+      (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+      (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // "true" = 74 72 75 65 at 0xF200
+    (61952 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 116)
+    (61953 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 114)
+    (61954 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 117)
+    (61955 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 101)
+    // Write 4 bytes
+    (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊗_ℤ 4294967296)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 61952))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // print_hex_byte(byte) → 2
+  // Writes 2 hex chars for a single byte (e.g. 0xFF → "ff")
+  // acc = byte value (0-255)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[print_hex_byte] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // High nibble
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≫_{Galois} 4)^{adjunction}
+    (∂_Ω ∧_{Bool} 15)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 10)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 48))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 87))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (61952 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₃)
+    // Low nibble
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ∧_{Bool} 15)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 10)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 48))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 87))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (61953 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₃)
+    // Write 2 bytes from 0xF200
+    (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊗_ℤ 4294967296)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 61952))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+    (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // print_separator() → 1
+  // Writes ": " to stdout (useful for key-value output)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[print_separator] ⊣^{op} {
+    (58 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (32 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // print_tab() → 1
+  // Writes '\t' (0x09) to stdout
+  ∃!Φ ∈ Hom(𝒞,𝒟)[print_tab] ⊣^{op} {
+    (9 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // print_ok() → 1
+  // Writes "OK" to stdout
+  ∃!Φ ∈ Hom(𝒞,𝒟)[print_ok] ⊣^{op} {
+    (61952 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 79)
+    (61953 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 75)
+    (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊗_ℤ 4294967296)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 61952))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // print_fail() → 1
+  // Writes "FAIL" to stdout
+  ∃!Φ ∈ Hom(𝒞,𝒟)[print_fail] ⊣^{op} {
+    (61952 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 70)
+    (61953 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 65)
+    (61954 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 73)
+    (61955 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 76)
+    (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊗_ℤ 4294967296)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 61952))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

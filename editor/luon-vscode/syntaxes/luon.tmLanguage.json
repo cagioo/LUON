@@ -1,0 +1,264 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "scopeName": "source.luon",
+  "name": "Luon",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#module-declaration" },
+    { "include": "#function-declaration" },
+    { "include": "#operators-v2" },
+    { "include": "#control-flow" },
+    { "include": "#memory-ops" },
+    { "include": "#wasi-syscalls" },
+    { "include": "#registers" },
+    { "include": "#constants" },
+    { "include": "#types" },
+    { "include": "#brackets" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.luon",
+          "match": "//.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.luon",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.luon",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "module-declaration": {
+      "patterns": [
+        {
+          "name": "keyword.declaration.module.luon",
+          "match": "∀ₛₚₑ𝒸\\s+Ψ\\s+∈\\s+𝔘"
+        },
+        {
+          "name": "entity.name.namespace.luon",
+          "match": "(?<=𝔘\\[)[\\w]+(?=\\])"
+        }
+      ]
+    },
+    "function-declaration": {
+      "patterns": [
+        {
+          "name": "keyword.declaration.function.luon",
+          "match": "∃!Φ\\s+∈\\s+Hom\\(𝒞,𝒟\\)"
+        },
+        {
+          "name": "entity.name.function.luon",
+          "match": "(?<=Hom\\(𝒞,𝒟\\)\\[)[\\w]+(?=\\])"
+        },
+        {
+          "name": "keyword.other.adjoint.luon",
+          "match": "⊣\\^\\{op\\}"
+        }
+      ]
+    },
+    "operators-v2": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arithmetic.add.luon",
+          "match": "Ext⁰_𝔄"
+        },
+        {
+          "name": "keyword.operator.arithmetic.sub.luon",
+          "match": "Tor₀\\^𝔄"
+        },
+        {
+          "name": "keyword.operator.arithmetic.mul.luon",
+          "match": "⊗_ℤ"
+        },
+        {
+          "name": "keyword.operator.arithmetic.div.luon",
+          "match": "RHom_ℤ"
+        },
+        {
+          "name": "keyword.operator.arithmetic.mod.luon",
+          "match": "mod_\\{ℤ\\}"
+        },
+        {
+          "name": "keyword.operator.bitwise.and.luon",
+          "match": "∧_\\{Bool\\}"
+        },
+        {
+          "name": "keyword.operator.bitwise.or.luon",
+          "match": "∨_\\{Bool\\}"
+        },
+        {
+          "name": "keyword.operator.bitwise.xor.luon",
+          "match": "⊕_\\{Bool\\}"
+        },
+        {
+          "name": "keyword.operator.bitwise.shl.luon",
+          "match": "≪_\\{Galois\\}"
+        },
+        {
+          "name": "keyword.operator.bitwise.shr.luon",
+          "match": "≫_\\{Galois\\}"
+        },
+        {
+          "name": "keyword.operator.comparison.eq.luon",
+          "match": "≡_\\{E_∞\\}"
+        },
+        {
+          "name": "keyword.operator.comparison.ne.luon",
+          "match": "≠_\\{E_∞\\}"
+        },
+        {
+          "name": "keyword.operator.comparison.lt.luon",
+          "match": "≺_\\{ω₁\\}"
+        },
+        {
+          "name": "keyword.operator.comparison.gt.luon",
+          "match": "≻_\\{ω₁\\}"
+        },
+        {
+          "name": "keyword.operator.comparison.le.luon",
+          "match": "⪯_\\{ω₁\\}"
+        },
+        {
+          "name": "keyword.operator.comparison.ge.luon",
+          "match": "⪰_\\{ω₁\\}"
+        }
+      ]
+    },
+    "control-flow": {
+      "patterns": [
+        {
+          "name": "keyword.control.block.luon",
+          "match": "⊢_\\{Γ\\}\\^\\{⊃I\\}"
+        },
+        {
+          "name": "keyword.control.loop.luon",
+          "match": "μ_\\{ω₁\\}\\^\\{CK\\}"
+        },
+        {
+          "name": "keyword.control.branch.luon",
+          "match": "⊬_\\{PA\\}\\^\\{Gödel\\}"
+        },
+        {
+          "name": "keyword.control.return.luon",
+          "match": "⊥_\\{𝒯\\}→\\^\\{ex falso\\}⊤_\\{𝒯\\}"
+        },
+        {
+          "name": "keyword.control.call.luon",
+          "match": "η_\\d+\\s+∘_\\{2-Cat\\}"
+        },
+        {
+          "name": "keyword.control.nop.luon",
+          "match": "id_\\{𝒞\\}"
+        }
+      ]
+    },
+    "memory-ops": {
+      "patterns": [
+        {
+          "name": "keyword.operator.memory.store.luon",
+          "match": "⊨_\\{𝕂,Γ\\}\\^\\{κ-forcing\\}\\s+↦"
+        },
+        {
+          "name": "keyword.operator.memory.load.luon",
+          "match": "⊩_\\{𝕂,Σ\\}\\^\\{Γ-generic\\}\\s+↤"
+        },
+        {
+          "name": "keyword.operator.memory.store8.luon",
+          "match": "↦₈_𝒯"
+        },
+        {
+          "name": "keyword.operator.memory.load8.luon",
+          "match": "↤₈_𝒯"
+        }
+      ]
+    },
+    "wasi-syscalls": {
+      "patterns": [
+        {
+          "name": "support.function.wasi.luon",
+          "match": "ε_\\d+\\^\\{WASI\\}"
+        },
+        {
+          "name": "keyword.other.syscall.luon",
+          "match": "syscall\\(\\d+\\)"
+        }
+      ]
+    },
+    "registers": {
+      "patterns": [
+        {
+          "name": "variable.language.accumulator.luon",
+          "match": "∂_Ω"
+        },
+        {
+          "name": "variable.parameter.register.luon",
+          "match": "σ[₀₁₂₃₄₅₆₇₈₉]+[₀₁₂₃₄₅₆₇₈₉]*"
+        },
+        {
+          "name": "variable.parameter.register.named.luon",
+          "match": "σ₀"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.numeric.integer.luon",
+          "match": "(?<=[( ,])(-?\\d+)(?=[) ,])"
+        },
+        {
+          "name": "constant.language.bottom.luon",
+          "match": "⊥(?!_)"
+        },
+        {
+          "name": "constant.language.top.luon",
+          "match": "⊤(?!_)"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "support.type.integer.luon",
+          "match": "ℤ"
+        },
+        {
+          "name": "support.type.boolean.luon",
+          "match": "𝔹"
+        },
+        {
+          "name": "support.type.real.luon",
+          "match": "ℝ"
+        },
+        {
+          "name": "support.type.category.luon",
+          "match": "[𝒞𝒟𝒯𝔄𝔘]"
+        }
+      ]
+    },
+    "brackets": {
+      "patterns": [
+        {
+          "name": "punctuation.section.block.begin.luon",
+          "match": "⟦"
+        },
+        {
+          "name": "punctuation.section.block.end.luon",
+          "match": "⟧"
+        }
+      ]
+    }
+  }
+}

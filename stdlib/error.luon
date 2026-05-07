@@ -1,0 +1,146 @@
+// stdlib/error.luon — Standard error codes and error handling for Luon
+// Defines canonical error codes used across the standard library.
+// All error codes are positive integers. 0 = success/no error.
+// Comparable to: Rust std::io::ErrorKind, Go errors, C errno, WASI errno
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[error] ⊢_Γ {
+
+  // ═══════════════════════════════════════════════════════════════
+  // ERROR CODE CONSTANTS
+  // Return these from functions to indicate specific failures.
+  // Convention: acc = error_code_constant()
+  // ═══════════════════════════════════════════════════════════════
+
+  // err_none() → 0 (success)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_none] ⊣^{op} {
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_not_found() → 1
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_not_found] ⊣^{op} {
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_permission() → 2
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_permission] ⊣^{op} {
+    (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_io() → 3
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_io] ⊣^{op} {
+    (3 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_out_of_memory() → 4
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_out_of_memory] ⊣^{op} {
+    (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_out_of_bounds() → 5
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_out_of_bounds] ⊣^{op} {
+    (5 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_invalid_argument() → 6
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_invalid_argument] ⊣^{op} {
+    (6 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_overflow() → 7
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_overflow] ⊣^{op} {
+    (7 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_divide_by_zero() → 8
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_divide_by_zero] ⊣^{op} {
+    (8 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_type_mismatch() → 9
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_type_mismatch] ⊣^{op} {
+    (9 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_parse() → 10
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_parse] ⊣^{op} {
+    (10 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_eof() → 11
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_eof] ⊣^{op} {
+    (11 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_timeout() → 12
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_timeout] ⊣^{op} {
+    (12 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_already_exists() → 13
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_already_exists] ⊣^{op} {
+    (13 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_not_supported() → 14
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_not_supported] ⊣^{op} {
+    (14 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_full() → 15
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_full] ⊣^{op} {
+    (15 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // err_empty() → 16
+  ∃!Φ ∈ Hom(𝒞,𝒟)[err_empty] ⊣^{op} {
+    (16 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ERROR UTILITIES
+  // ═══════════════════════════════════════════════════════════════
+
+  // is_error(code) → 1 if error (code > 0), 0 if success
+  // acc = error code
+  ∃!Φ ∈ Hom(𝒞,𝒟)[is_error] ⊣^{op} {
+    (∂_Ω ≻_{ω₁} 0)^{well-order}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // is_success(code) → 1 if success (code == 0), 0 otherwise
+  // acc = error code
+  ∃!Φ ∈ Hom(𝒞,𝒟)[is_success] ⊣^{op} {
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // error_or_default(code, default_value, success_value) → value
+  // If code == 0, return success_value; else return default_value
+  // acc = code, σ₂ = default_value, σ₃ = success_value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[error_or_default] ⊣^{op} {
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

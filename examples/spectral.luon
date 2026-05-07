@@ -1,0 +1,62 @@
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[main] ⊢_Γ {
+// Vesege Institute — Mode Spektral: V-Dot Particle Cloud
+// Menghitung partikel visible spectrum (lambda > 380.0nm)
+//
+// Memory layout: data is loaded at 0x10000 (65536) by runtime
+// arg = ukuran data dalam bytes (dioverride oleh runtime)
+// Setiap partikel = 56 bytes
+
+∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+  // Hitung jumlah partikel: arg / 56
+  (RHom_ℤ(56, ∂_Ω))_{D^b(𝔄)}
+  (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+
+  // s4 = result counter (0)
+  (0 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+  (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+  // s5 = loop index (0)
+  (0 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+  (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+
+  // 380.0 as i64 bits = 4643211215818981376
+  (4643211215818981376 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+  (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+
+  ⊢_{Γ}^{⊃I}⟦
+  μ_{ω₁}^{CK}⟦
+    // if s5 >= count → break
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≽_{E₂^{p,q}} σ₂)^{⊇filt}
+    (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+
+    // address = 0x10000 + s5 * 56 + 24 (lambda offset)
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 56)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 65560))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+
+    // Compare: lambda > 380.0 (as f64)
+    (st(∂_{*ℝ}) ≻_{*ℝ} st(σ₆))^{Loeb}
+
+    // If result == 0, skip increment
+    ⊢_{Γ}^{⊃I}⟦
+      (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+      (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    ⟧^{⊃E}_{Δ}⊣
+
+    // s5++ and loop
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+  ⟧_{ω₁}^{CK}μ
+  ⟧^{⊃E}_{Δ}⊣
+
+  (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+}

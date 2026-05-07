@@ -1,0 +1,25 @@
+// Non-Standard Analysis Float Test — v2 EXTREME Syntax
+// Hyperreal arithmetic: (3.14 + 2.86) * 1.5 = 9.0
+// 3.14 = i64 4614253070214989087, 2.86 = i64 4613937818241073152
+// 1.5 = i64 4609434218613702656
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[float_v2] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // Load 3.14 as bit-reinterpret
+    (4614253070214989087 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Load 2.86
+    (4613937818241073152 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Embed to hyperreal field, add
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (st(∂_{*ℝ}) ⊕_{*ℝ} st(σ₃))^{transfer}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Load 1.5, multiply
+    (4609434218613702656 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (st(∂_{*ℝ}) ⊗_{*ℝ} st(σ₃))^{transfer}
+    // Result: 9.0 = i64 4621256167635468288
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

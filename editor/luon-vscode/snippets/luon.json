@@ -1,0 +1,135 @@
+{
+  "Module Declaration": {
+    "prefix": "module",
+    "body": [
+      "∀ₛₚₑ𝒸 Ψ ∈ 𝔘[${1:module_name}] ⊢_Γ {",
+      "  $0",
+      "}"
+    ],
+    "description": "Declare a new Luon module"
+  },
+  "Function Declaration": {
+    "prefix": "func",
+    "body": [
+      "∃!Φ ∈ Hom(𝒞,𝒟)[${1:function_name}] ⊣^{op} {",
+      "  $0",
+      "  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}",
+      "}"
+    ],
+    "description": "Declare a new function"
+  },
+  "Main Function": {
+    "prefix": "main",
+    "body": [
+      "∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {",
+      "  $0",
+      "  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}",
+      "}"
+    ],
+    "description": "Declare main entry point"
+  },
+  "Block": {
+    "prefix": "block",
+    "body": [
+      "⊢_{Γ}^{⊃I}⟦",
+      "  $0",
+      "⟧^{⊃E}_{Δ}⊣"
+    ],
+    "description": "Block scope"
+  },
+  "Loop": {
+    "prefix": "loop",
+    "body": [
+      "⊢_{Γ}^{⊃I}⟦",
+      "  μ_{ω₁}^{CK}⟦",
+      "    $0",
+      "    (⊬_{PA}^{Gödel} σ₀)^{ω-rule}",
+      "  ⟧_{ω₁}^{CK}μ",
+      "⟧^{⊃E}_{Δ}⊣"
+    ],
+    "description": "Loop construct"
+  },
+  "Return": {
+    "prefix": "ret",
+    "body": "⊥_{𝒯}→^{ex falso}⊤_{𝒯}",
+    "description": "Return from function"
+  },
+  "Load Constant": {
+    "prefix": "const",
+    "body": "(${1:value} ⊣_{Δ;Γ} ∂_Ω)^{axiom}",
+    "description": "Load constant into accumulator"
+  },
+  "Store to Register": {
+    "prefix": "store",
+    "body": "(∂_Ω ⊢_{Γ;Δ} σ${1:2})^{seq}",
+    "description": "Store accumulator to register"
+  },
+  "Load from Register": {
+    "prefix": "load",
+    "body": "(σ${1:2} ⊣_{Δ;Γ} ∂_Ω)^{co-seq}",
+    "description": "Load register to accumulator"
+  },
+  "Add": {
+    "prefix": "add",
+    "body": "(Ext⁰_𝔄(∂_Ω, ${1:operand}))_{Spec ℤ}",
+    "description": "Add to accumulator"
+  },
+  "Subtract": {
+    "prefix": "sub",
+    "body": "(Tor₀^𝔄(∂_Ω, -${1:operand}))_{Spec ℤ}",
+    "description": "Subtract from accumulator"
+  },
+  "Multiply": {
+    "prefix": "mul",
+    "body": "(∂_Ω ⊗_ℤ ${1:operand})^{⊗L}_{D(𝔄)}",
+    "description": "Multiply accumulator"
+  },
+  "Divide": {
+    "prefix": "div",
+    "body": "(RHom_ℤ(${1:divisor}, ∂_Ω))_{D^b(𝔄)}",
+    "description": "Divide accumulator"
+  },
+  "Branch If Zero": {
+    "prefix": "brz",
+    "body": [
+      "(∂_Ω ≡_{E_∞} ⊥)^{acyclic}",
+      "(∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}"
+    ],
+    "description": "Branch if accumulator is zero"
+  },
+  "Call Function": {
+    "prefix": "call",
+    "body": "(η_${1:index} ∘_{2-Cat} ∂_Ω)^{Kan}",
+    "description": "Call function by index"
+  },
+  "Memory Store": {
+    "prefix": "mstore",
+    "body": "(⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ${1:value})",
+    "description": "Store value to memory address in accumulator"
+  },
+  "Memory Load": {
+    "prefix": "mload",
+    "body": "(⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)",
+    "description": "Load value from memory address in accumulator"
+  },
+  "WASI Syscall": {
+    "prefix": "wasi",
+    "body": "(ε_${1:0}^{WASI} ∂_Ω)^{syscall(${2:1})}",
+    "description": "WASI system call"
+  },
+  "Full Program Template": {
+    "prefix": "program",
+    "body": [
+      "// ${1:description}",
+      "",
+      "∀ₛₚₑ𝒸 Ψ ∈ 𝔘[${2:program_name}] ⊢_Γ {",
+      "",
+      "  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {",
+      "    $0",
+      "    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}",
+      "  }",
+      "}"
+    ],
+    "description": "Full Luon program template"
+  }
+}

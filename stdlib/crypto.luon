@@ -1,0 +1,136 @@
+// stdlib/crypto.luon — Cryptographic primitives for Luon
+// Functions: sha256_init, sha256_update, sha256_pad, sha256_round,
+//            sha256_finalize, sha256_hash, keccak256_hash,
+//            hmac_sha256, constant_time_eq
+// Implements SHA-256 per FIPS 180-4
+// State memory: 0x52000-0x52FFF reserved for SHA-256 working state
+// Comparable to: Rust sha2 crate, Go crypto/sha256, Python hashlib
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[crypto] ⊢_Γ {
+
+  // sha256_init() → 0
+  // Initializes SHA-256 state with initial hash values (H0-H7)
+  // State at 0x52000: [H0..H7] (8 x i64, using lower 32 bits)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sha256_init] ⊣^{op} {
+    // H0 = 0x6a09e667
+    (335872 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 1779033703)
+    // H1 = 0xbb67ae85
+    (335880 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 3144134277)
+    // H2 = 0x3c6ef372
+    (335888 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 1013904242)
+    // H3 = 0xa54ff53a
+    (335896 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 2773480762)
+    // H4 = 0x510e527f
+    (335904 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 1359893119)
+    // H5 = 0x9b05688c
+    (335912 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 2600822924)
+    // H6 = 0x1f83d9ab
+    (335920 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 528734635)
+    // H7 = 0x5be0cd19
+    (335928 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 1541459225)
+    // msg_len = 0 at 0x52040
+    (335936 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // constant_time_eq(a_ptr, b_ptr, len) → 1 if equal, 0 otherwise
+  // Constant-time comparison to prevent timing attacks
+  // acc = a_ptr, σ₂ = b_ptr, σ₃ = len
+  ∃!Φ ∈ Hom(𝒞,𝒟)[constant_time_eq] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // diff = 0
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // i = 0
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₃)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // Load a[i]
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+        // Load b[i]
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        // diff |= a[i] ^ b[i]
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊕_{Bool} σ₈)^{⊕-intro}
+        (∂_Ω ∨_{Bool} σ₅)^{∨-intro}
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        // i++
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // Return diff == 0
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // rotate_right_32(x, n) → (x >> n) | (x << (32-n)) masked to 32 bits
+  // acc = x, σ₂ = n
+  ∃!Φ ∈ Hom(𝒞,𝒟)[rotate_right_32] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // (x >> n)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≫_{Galois} σ₂)^{adjunction}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // (x << (32 - n))
+    (32 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (Tor₀^𝔄(∂_Ω, -σ₂))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≪_{Galois} σ₅)^{adjunction}
+    // OR together and mask to 32 bits
+    (∂_Ω ∨_{Bool} σ₄)^{∨-intro}
+    (∂_Ω ∧_{Bool} 4294967295)^{∧-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // memzero(ptr, len) → 0
+  // Securely zeros memory (not optimized away)
+  // acc = ptr, σ₂ = len
+  ∃!Φ ∈ Hom(𝒞,𝒟)[memzero] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₂)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 0)
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

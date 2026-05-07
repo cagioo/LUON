@@ -1,0 +1,19 @@
+// Kripke Forcing Memory Test — v2 EXTREME Syntax
+// Store byte 'L' (76) to mem[2000], load back
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[memory_v2] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // acc = 2000 (target address)
+    (2000 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // acc = 76 ('L'), store byte via Kripke forcing
+    (76 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load address, store byte
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₃)
+    // Load byte back via generic filter extraction
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

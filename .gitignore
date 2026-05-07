@@ -1,0 +1,29 @@
+# Python
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Rust
+target/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Debug output
+*.log
+output.txt
+
+# Temporary
+*.tmp
+*.bak

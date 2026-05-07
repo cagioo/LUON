@@ -1,0 +1,86 @@
+// stdlib/io.luon — I/O operations for Luon WASI runtime
+// Functions: write_stdout, write_stderr, print_str, print_int
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[io] ⊢_Γ {
+
+  // write_stdout(buf_ptr, buf_len) → bytes_written
+  // acc = buf_ptr, σ₂ = buf_len (set by caller)
+  // Uses IOV scratch at 0xF100, nwritten at 0xF110
+  ∃!Φ ∈ Hom(𝒞,𝒟)[write_stdout] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Build IOV at 0xF100: [buf_ptr, buf_len] as two i32
+    // Pack as i64: (buf_len << 32) | buf_ptr
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 4294967296)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // fd_write(fd=1, iovs=0xF100, iovs_cnt=1, nwritten=0xF110)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // write_stderr(buf_ptr, buf_len) → bytes_written
+  // acc = buf_ptr, σ₂ = buf_len
+  ∃!Φ ∈ Hom(𝒞,𝒟)[write_stderr] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 4294967296)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // fd_write(fd=2, ...)
+    (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (61696 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (61712 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (ε_0^{WASI} ∂_Ω)^{syscall(4)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // print_str(ptr, len) → 0
+  // Convenience: just calls write_stdout
+  // acc = ptr, σ₂ = len
+  ∃!Φ ∈ Hom(𝒞,𝒟)[print_str] ⊣^{op} {
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // print_int(value) → 0
+  // Writes decimal of acc to stdout using itoa at scratch buffer 0xF200
+  // acc = value to print
+  ∃!Φ ∈ Hom(𝒞,𝒟)[print_int] ⊣^{op} {
+    // Set σ₂ = buffer at 0xF200 for itoa
+    (61952 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Call itoa (func 3 = itoa in string module, but inline here)
+    // itoa returns length in acc
+    // Use length for write_stdout
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

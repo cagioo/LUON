@@ -1,0 +1,211 @@
+// stdlib/enum.luon — Enum / Algebraic Data Type support for Luon
+// Provides tagged union types with variant dispatch.
+//
+// Enum layout in memory:
+//   [tag:i64 | payload:i64...] (tag + N payload fields)
+//
+// Enum Descriptor Table:
+//   [name_hash:i64 | variant_count:i64 | max_payload_size:i64 | variants_ptr:i64] = 32 bytes
+// Variant Descriptor:
+//   [name_hash:i64 | tag:i64 | payload_size:i64] = 24 bytes
+//
+// Syntax for enum declaration:
+//   ∃!Ξ ∈ ℰ[enum_name] ⊢_{Γ} {
+//     (variant_name : payload_size)
+//     ...
+//   }
+//
+// Comparable to: Rust enum, Haskell ADT, Swift enum, TypeScript discriminated union
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[enum] ⊢_Γ {
+
+  // enum_define(name_hash, variant_count) → enum_descriptor_ptr
+  // acc = name_hash, σ₂ = variant_count
+  ∃!Φ ∈ Hom(𝒞,𝒟)[enum_define] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Allocate: 32 header + variant_count * 24
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 24)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 32))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Bump alloc
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+    // Store header
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // max_payload_size = 0
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // variants_ptr
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 32))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₈)
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // enum_add_variant(desc_ptr, variant_index, name_hash, payload_size) → tag
+  // acc = desc_ptr, σ₂ = variant_index, σ₃ = name_hash, σ₄ = payload_size
+  ∃!Φ ∈ Hom(𝒞,𝒟)[enum_add_variant] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Load variants_ptr
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // variant_addr = variants_ptr + index * 24
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 24)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    // Store name_hash
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // Store tag = variant_index
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Store payload_size
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Update max_payload_size if needed
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≻_{ω₁} σ₉)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+      (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    ⟧^{⊃E}_{Δ}⊣
+    // Return tag
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // enum_create(tag, payload) → enum_instance_ptr
+  // Creates an enum value with given tag and single payload
+  // acc = tag, σ₂ = payload
+  ∃!Φ ∈ Hom(𝒞,𝒟)[enum_create] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Allocate 16 bytes (tag + 1 payload)
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₅)
+    // Store tag
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // Store payload
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // enum_tag(instance_ptr) → tag value
+  // acc = instance_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[enum_tag] ⊣^{op} {
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // enum_payload(instance_ptr) → payload value
+  // acc = instance_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[enum_payload] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // enum_is_variant(instance_ptr, expected_tag) → 1 if match, 0 otherwise
+  // acc = instance_ptr, σ₂ = expected_tag
+  ∃!Φ ∈ Hom(𝒞,𝒟)[enum_is_variant] ⊣^{op} {
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // enum_match(instance_ptr, tag0_fn, tag1_fn, tag2_fn, tag3_fn) → result
+  // Simple 4-way dispatch based on tag value
+  // acc = instance_ptr, σ₂..σ₅ = function indices for each variant
+  // Calls the function matching the tag, passing payload in accumulator
+  ∃!Φ ∈ Hom(𝒞,𝒟)[enum_match] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // Load tag
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    // Load payload
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    // Dispatch on tag
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (η_σ₂ ∘_{2-Cat} ∂_Ω)^{Kan}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 1)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (η_σ₃ ∘_{2-Cat} ∂_Ω)^{Kan}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 2)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (η_σ₄ ∘_{2-Cat} ∂_Ω)^{Kan}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // Default: tag 3
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_σ₅ ∘_{2-Cat} ∂_Ω)^{Kan}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

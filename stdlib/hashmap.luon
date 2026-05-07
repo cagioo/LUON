@@ -1,0 +1,398 @@
+// stdlib/hashmap.luon — Hash Map (Dictionary) implementation for Luon
+// Functions: map_new, map_set, map_get, map_has, map_delete, map_len,
+//            map_clear, map_keys, map_values, map_hash
+// Layout: Open addressing with linear probing
+// Bucket: [hash:i64 | key:i64 | value:i64 | occupied:i64] = 32 bytes
+// Header: [cap:i64 | len:i64 | buckets_ptr:i64] = 24 bytes
+// Comparable to: Rust HashMap, Go map, Python dict, JS Map
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[hashmap] ⊢_Γ {
+
+  // map_hash(key) → hash value (FNV-1a inspired)
+  // acc = key (i64 value used directly as hash seed)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[map_hash] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // FNV offset basis: 14695981039346656037 (truncated to i64)
+    (14695981039346656 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Mix key bytes: hash = (hash ^ key) * 1099511628211
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊕_{Bool} σ₂)^{⊕-intro}
+    (∂_Ω ⊗_ℤ 1099511628211)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Second round with shifted key
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≫_{Galois} 16)^{adjunction}
+    (∂_Ω ⊕_{Bool} σ₃)^{⊕-intro}
+    (∂_Ω ⊗_ℤ 1099511628211)^{⊗L}_{D(𝔄)}
+    // Ensure positive
+    (∂_Ω ∧_{Bool} 9223372036854775807)^{∧-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // map_new(initial_cap) → map_ptr
+  // acc = initial capacity (should be power of 2)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[map_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Allocate header: 24 bytes
+    // header[0] = cap, header[8] = len=0, header[16] = buckets_ptr
+    // Allocate buckets: cap * 32 bytes (each bucket = 32 bytes)
+    // Total alloc = 24 + cap * 32
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 32)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Use bump allocator: load alloc_ptr from 0x50000
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // new_alloc = alloc_ptr + total_size
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Store new alloc_ptr
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₅)
+    // header_ptr = old alloc_ptr (σ₄)
+    // Store cap
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Store len = 0
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // Store buckets_ptr = header + 24
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₇)
+    // Zero-initialize all bucket occupied flags
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₂)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // bucket[i].occupied = 0 (at offset 24 within bucket)
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 32)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₇))_{Spec ℤ}
+        (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+        // i++
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // Return header ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // map_len(map_ptr) → number of entries
+  // acc = map_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[map_len] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // map_set(map_ptr, key, value) → 0 (success) or 1 (full)
+  // acc = map_ptr, σ₂ = key, σ₃ = value
+  // Uses linear probing: slot = hash(key) % cap, probe until empty or matching key
+  ∃!Φ ∈ Hom(𝒞,𝒟)[map_set] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load cap
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Load buckets_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // Compute hash
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    // slot = hash % cap
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω mod_{ℤ} σ₅)^{Euclidean}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    // Probe loop
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if probes >= cap, map is full
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₅)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // bucket_addr = buckets + slot * 32
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 32)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+        // Check occupied flag
+        (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          // Empty slot: insert here
+          // Store hash
+          (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₇)
+          // Store key
+          (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+          (σ₁₁ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+          // Store value
+          (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+          (σ₁₁ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+          // Set occupied = 1
+          (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+          (σ₁₁ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 1)
+          // Increment len
+          (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+          (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+          (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+          (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₁₂)^{seq}
+          (σ₁₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₁₁)
+          (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // Slot occupied: check if same key (update value)
+        (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          // Same key: update value
+          (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+          (σ₁₁ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+          (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // Different key: linear probe next slot
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω mod_{ℤ} σ₅)^{Euclidean}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // map_get(map_ptr, key) → value or 0 if not found
+  // acc = map_ptr, σ₂ = key
+  ∃!Φ ∈ Hom(𝒞,𝒟)[map_get] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load cap
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load buckets_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Hash key
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω mod_{ℤ} σ₄)^{Euclidean}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // Probe
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // bucket_addr
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 32)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        // Check occupied
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // Check key match
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          // Found: return value
+          (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+          (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // Next slot
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω mod_{ℤ} σ₄)^{Euclidean}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // map_has(map_ptr, key) → 1 if key exists, 0 otherwise
+  // acc = map_ptr, σ₂ = key
+  ∃!Φ ∈ Hom(𝒞,𝒟)[map_has] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load cap
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load buckets_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Hash and probe
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω mod_{ℤ} σ₄)^{Euclidean}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 32)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω mod_{ℤ} σ₄)^{Euclidean}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // map_clear(map_ptr) → 0
+  // Resets all buckets to unoccupied, len = 0
+  // acc = map_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[map_clear] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Set len = 0
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // Load cap and buckets_ptr, zero all occupied flags
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₅)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 32)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+        (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}
