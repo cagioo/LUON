@@ -1,3 +1,6 @@
-github: []
+# Sponsor button configuration for LUON
+# These links appear when users click the "♥ Sponsor" button
 
-custom: []
+github: cagioo
+custom:
+  - "https://discord.gg/47q8J5PgD"

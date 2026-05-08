@@ -40,21 +40,25 @@
 
 ## 1. Introduction
 
-**Luon** is a systems-level programming language designed for WebAssembly (WASM), sandboxed execution, and the Vesege ecosystem. It combines a low-level accumulator-based execution model with a distinctive mathematical syntax known as **v2 EXTREME syntax**.
+**Luon** is a military-grade security programming language designed for WebAssembly (WASM), sandboxed execution, and the Vesege ecosystem. It combines a low-level accumulator-based execution model with a distinctive mathematical syntax known as **v2 EXTREME syntax**.
 
-Luon is built around three principles:
+Luon is built around five principles:
 
-1. **Portability** — programs compile to WASM and can run on WASI-compatible runtimes.
-2. **Transparency** — the compiler, runtime, standard library, and tools are open-source.
-3. **Mathematical Identity** — Luon uses symbolic notation inspired by type theory, category theory, logic, algebra, and formal systems.
+1. **Security Absolutism** — every design decision serves security first. The language is intentionally anti-quantum, anti-hacker, anti-AI, and anti-reverse engineering.
+2. **Intentional Complexity** — Luon is designed to be impossible to learn without official documentation. The steep learning curve is a deliberate security feature, not a deficiency.
+3. **Syntax-Level Obfuscation** — unlike other languages that add obfuscation at the compiler output level, Luon source code itself is already a form of obfuscation through pure mathematical logic notation.
+4. **Portability** — programs compile to WASM and can run on WASI-compatible runtimes.
+5. **Mathematical Identity** — Luon uses symbolic notation inspired by type theory, category theory, logic, algebra, and formal systems. Conventional keywords (`if`, `else`, `for`, `while`, `let`, `var`, `print`) are strictly forbidden.
 
-Luon is not intended to be a generic scripting language first. Its primary direction is:
+Luon is not intended to be a generic scripting language or a developer-friendly language. Its primary direction is:
 
-- sandboxed computation,
-- smart-contract-style execution,
-- deterministic runtimes,
+- military-grade sandboxed computation,
+- smart-contract-style execution with deterministic guarantees,
+- anti-reverse-engineering binary output (metamorphic + sealed executables),
 - WASM-native systems programming,
 - Vesege VM and blockchain infrastructure.
+
+> **Important:** The difficulty of reading and writing Luon IS the product. The complexity IS the security. Any proposal to add conventional syntax, readable keywords, or "developer experience" improvements that reduce complexity is a violation of Luon's core vision.
 
 ---
 
@@ -64,27 +68,46 @@ Luon is not intended to be a generic scripting language first. Its primary direc
 
 | Goal | Description |
 |---|---|
+| Security absolutism | Every design decision serves security first. Anti-quantum, anti-hacker, anti-AI, anti-reverse engineering. |
+| Intentional complexity | The steep learning curve is a deliberate security feature. Impossible to learn without official documentation. |
+| Syntax-level obfuscation | Source code itself is already obfuscated through mathematical notation. No conventional keywords. |
 | WASM-first | Luon targets WebAssembly as its primary backend. |
-| Deterministic execution | Programs should be predictable and suitable for consensus-sensitive environments. |
+| Deterministic execution | Programs must be predictable and suitable for consensus-sensitive environments. |
 | Self-hosting | The compiler must be able to compile itself. |
-| Sandboxed runtime | Execution should be isolated through WASM memory and runtime limits. |
+| Sandboxed runtime | Execution is isolated through WASM memory and runtime limits. |
 | Minimal trusted base | Core runtime is small and auditable. |
-| Strong standard library foundation | Basic programming tasks must be supported directly. |
-| Open-source readiness | Repository must be clean, buildable, and well-documented. |
+| Metamorphic output | Every compilation produces a different binary (time+urandom seed). |
+| Anti-reverse engineering | 6-pass obfuscation engine + sealed executable format (.lse). |
 
-### 2.2 Non-Goals for the Current Release
+### 2.2 Permanent Non-Goals (Will NEVER Be Implemented)
 
-The current release does **not** yet provide a full high-level ergonomic syntax comparable to Python, TypeScript, Go, or Rust. Luon 2.1.1 focuses first on a correct low-level foundation:
+The following are **permanently rejected** because they violate Luon's security vision:
 
-- compiler and WASM backend,
-- runtime model,
-- standard library primitives,
-- type-system foundation,
-- module resolver foundation,
-- structs/enums runtime support,
-- testing and CI foundation.
+- Conventional keywords (`if`, `else`, `for`, `while`, `let`, `var`, `const`, `print`, `true`, `false`)
+- Readable syntax patterns from other languages (Rust, Go, Python, TypeScript)
+- Developer-friendly shortcuts, syntactic sugar, or ergonomic improvements
+- REPL (interactive learning tool — destroys learning curve defense)
+- Web playground (allows trying without documentation)
+- String literals (`"hello"`) — manual byte writing is a security feature
+- Method syntax (`.push()`) — index-based calls are a security feature
+- Named function calls — `η_N` index dispatch is a security feature
+- Threading, concurrency, channels, mutex (non-deterministic — destroys blockchain consensus)
+- Networking/HTTP from within WASM (destroys sandbox isolation)
+- Garbage collection (non-deterministic pauses destroy blockchain finality)
+- Reflection/introspection (reverse engineering tool for attackers)
 
-High-level syntax, LSP, package management, generics, traits, closures, and advanced concurrency are planned for later stages.
+### 2.3 What CAN Be Added
+
+New features may add **capability** without normalizing syntax:
+
+- More data types (unsigned integers, slices, ranges, tuples)
+- Type system features (generics, traits, ownership, lifetimes) — via mathematical notation
+- Memory safety (borrow checker, arena allocator, bounds checking)
+- Compiler optimizations (constant folding, dead code elimination, inlining)
+- Tooling (LSP, formatter, linter, package manager) — for authorized developers only
+- WASM spec features (SIMD, tail calls, component model, multi-memory)
+- Security features (capability-based security, sandboxed module permissions)
+- Standard library expansion (more collections, crypto, serialization)
 
 ---
 
@@ -1201,63 +1224,96 @@ See `CONTRIBUTING.md` for full guidelines.
 
 ## 24. Current Limitations
 
-Luon 2.1.1 is a strong foundation but not yet a fully mature general-purpose language.
+Luon 2.1.1 is a strong foundation. The following are genuine technical limitations (NOT design choices):
 
 Known limitations:
 
 1. The CLI is still a foundation and needs complete command dispatch.
 2. Module resolver exists but is not fully integrated into the compiler pipeline.
 3. Type checker exists but requires deeper compiler integration.
-4. Function calls still rely heavily on function indices.
+4. Function calls rely on function indices (this is BY DESIGN for security — not a limitation).
 5. Array and hashmap bounds checks need strengthening.
 6. Allocator has no `free` or `realloc` yet.
 7. Formatter, linter, and LSP are not yet implemented.
 8. Package manager is specified but not implemented.
-9. High-level ergonomic syntax is not yet available.
-10. Generics, traits, closures, iterators, and concurrency are planned but not complete.
+9. Generics, traits, iterators are planned but not complete.
+10. Ownership/borrow checker not yet implemented.
+
+> **Note:** The absence of conventional syntax (`if/else`, `for`, `while`, `let`, `print`, string literals) is NOT a limitation — it is a deliberate security feature. See Section 2.2.
 
 ---
 
 ## 25. Roadmap
 
-### 25.1 Basic Completion Phase
+> **Guiding Principle:** All new features MUST use Luon v2 EXTREME mathematical notation. Conventional syntax will NEVER be added.
 
-Priority:
+### 25.1 Basic Completion Phase (P0)
 
-- complete CLI commands,
+Priority — capability additions without syntax normalization:
+
+- complete CLI commands (`luon build/run/check/test/version`),
 - integrate module resolver into build flow,
 - integrate typechecker into parser/emitter pipeline,
-- add symbol table and function-name resolution,
-- improve stdlib safety checks,
-- provide more beginner examples.
+- multiple parameters via register convention (mathematical notation),
+- multiple return values via register packing,
+- `free()` / `realloc()` / arena allocator,
+- array/hashmap bounds checking,
+- integer overflow detection,
+- division by zero handling,
+- unsigned integer types (`u8`, `u16`, `u32`, `u64`),
+- smaller integer types (`i8`, `i16`).
 
-### 25.2 Medium Phase
+### 25.2 Medium Phase (P1)
 
-Priority:
+Priority — competitive capability with mathematical syntax:
 
-- formatter (`luon fmt`),
-- linter (`luon lint`),
-- package manifest implementation,
-- project build system,
-- documentation generator,
-- bounds checking,
-- allocator improvements,
-- real test runner in Luon.
+- generics (via mathematical notation, NOT `<T>` syntax),
+- traits/interfaces (via mathematical notation),
+- full pattern matching (extend `enum_match` to N-way dispatch),
+- iterators (capability, not syntax sugar),
+- slice type (ptr + len),
+- range type,
+- ownership / borrow checker (SECURITY — memory safety),
+- lifetimes (SECURITY),
+- formatter (`luon fmt` — canonical style for math syntax),
+- linter (`luon lint` — unreachable code, memory hazards),
+- LSP server (for authorized developers only),
+- package manager (`luon add`, lockfile, dependency resolver).
 
-### 25.3 Advanced Phase
+### 25.3 Advanced Phase (P2)
 
-Priority:
+Priority — world-class without compromising vision:
 
-- language server protocol,
-- debugger and source maps,
-- generics,
-- traits/interfaces,
-- closures and lambdas,
-- iterators,
-- pattern matching syntax,
-- concurrency model,
-- package registry,
-- profiler and benchmark framework.
+- macro system (via mathematical notation),
+- compile-time evaluation (comptime),
+- WASM Component Model (WIT interfaces),
+- WASM SIMD (128-bit performance),
+- WASM Tail Calls (TCO),
+- debugger and source maps (internal tooling),
+- constant folding, dead code elimination, inlining,
+- incremental compilation,
+- link-time optimization (LTO),
+- conditional compilation,
+- build profiles (debug/release),
+- capability-based security,
+- sandboxed module permissions,
+- profiler and benchmark framework,
+- fuzzing (`luon fuzz`),
+- code coverage (`luon cover`).
+
+### 25.4 Permanently Rejected (Will NEVER Be Implemented)
+
+See Section 2.2 for the complete list. Summary:
+
+- No conventional keywords (`if`, `else`, `for`, `while`, `let`, `var`, `print`, `true`, `false`)
+- No readable syntax patterns from other languages
+- No REPL, no web playground
+- No threading, concurrency, channels, mutex
+- No networking/HTTP from within WASM sandbox
+- No garbage collection
+- No reflection/introspection
+- No regular expressions (ReDoS vulnerability)
+- No string literals, string interpolation, or method syntax
 
 ---
 
@@ -1265,4 +1321,4 @@ Priority:
 
 This document is the official technical reference for the Luon programming language. It must be updated whenever the language architecture, compiler pipeline, runtime, standard library, public repository policy, or roadmap changes.
 
-Luon is open-source and community-driven. Its long-term goal is to become a reliable, auditable, WASM-first systems language suitable for sandboxed applications and the Vesege ecosystem.
+Luon is open-source and community-driven. Its long-term goal is to become the most secure, auditable, WASM-first systems language — where the difficulty of the language itself is the first layer of defense. The steep learning curve is not a bug to be fixed; it is the core product.

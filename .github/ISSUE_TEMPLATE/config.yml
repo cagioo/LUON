@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Ask a Question
+    url: https://github.com/cagioo/LUON/discussions/categories/q-a
+    about: Use Discussions for questions — Issues are for bugs and feature requests only.
+  - name: 🎮 Join Discord Community
+    url: https://discord.gg/47q8J5PgD
+    about: Chat with the community and get real-time support.
+  - name: 📖 Read Documentation
+    url: https://github.com/cagioo/LUON/blob/main/LUON_DOCUMENTATION.md
+    about: Check the full technical reference before reporting issues.

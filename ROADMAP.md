@@ -6,6 +6,30 @@
 
 ---
 
+## Vision & Mission (NON-NEGOTIABLE)
+
+> **Luon is a military-grade security language. Every design decision serves security FIRST.**
+
+### Core Principles
+
+1. **Anti-Quantum, Anti-Hacker, Anti-AI, Anti-Reverse Engineering** — Luon must be impossible to reverse engineer, impossible for AI to understand without context, and resistant to quantum computing attacks.
+
+2. **Steep Learning Curve = Security Feature** — Luon is INTENTIONALLY designed to be impossible to learn without official documentation. This is not a bug — it is the first layer of defense.
+
+3. **Conventional Syntax = VIOLATION** — Keywords like `if`, `else`, `for`, `while`, `let`, `var`, `print`, `true`, `false`, and "readable" syntax patterns from other languages (Rust, Go, Python, TypeScript) are **STRICTLY FORBIDDEN**. Luon uses pure mathematical logic notation (`branch_if` → `⊥_{𝒯}→^{...}`, loop → `μ`, register → `σ`, etc.).
+
+4. **Obfuscation from Syntax Level** — Other languages add obfuscation at compiler output level. Luon adds obfuscation from **the syntax level itself**. Luon source code IS already a form of obfuscation.
+
+5. **Capability May Be Added, Normal Syntax NEVER** — New features may add capability (more data types, operations, stdlib), but MUST use Luon v2 EXTREME mathematical notation, never conventional syntax.
+
+### What This Means for Development
+
+- **DO:** Add new operators, type system features, memory safety, stdlib modules, compiler optimizations, security features — all using mathematical notation.
+- **DO NOT:** Add readable keywords, syntactic sugar, developer-friendly shortcuts, REPL, playground, or anything that makes Luon "easy to learn."
+- **The difficulty IS the product.** The complexity IS the security.
+
+---
+
 ## Overview
 
 This roadmap tracks every major component of the Luon programming language from genesis to production. Each item shows its **current status** and which release delivered it.
@@ -366,6 +390,61 @@ This roadmap tracks every major component of the Luon programming language from 
 
 ---
 
+## ⛔ Will Not Implement (ANTI-VISION — Permanently Rejected)
+
+> These features are **permanently rejected** because they violate Luon's core security vision. Any AI agent or contributor who proposes these will be overruled.
+
+### Rejected: Conventional Syntax (Anti-Readability)
+
+| Feature | Reason for Rejection |
+|---|---|
+| Variable declaration (`let`, `var`, `const`) | Register manual `σ₀`–`σ₁₂₇` is a SECURITY FEATURE. Keywords make code readable to AI and attackers. |
+| Named function calls (by name) | `η_N` (call by index) is a SECURITY FEATURE. Readable function names enable reverse engineering. |
+| `if`/`else` statements | `branch_if` / `⊥_{𝒯}→^{...}` is a SECURITY FEATURE. `if/else` keywords are a direct violation. |
+| `while` loop keyword | `μ` loop primitive is a SECURITY FEATURE. `while` keyword is too conventional. |
+| `for` loop / `for-each` | Absence of `for` loop is a SECURITY FEATURE. `for i in 0..10` is too readable. |
+| `print()` / `println()` | Manual WASI `fd_write` is a SECURITY FEATURE. Built-in `print()` is too easy. |
+| String literals (`"hello"`) | Manual byte writing to memory is a SECURITY FEATURE. String literals are too readable. |
+| Boolean literals (`true`/`false`) | 0/1 integer is a SECURITY FEATURE. `true`/`false` keywords are too conventional. |
+| Array literals (`[1, 2, 3]`) | Manual memory write initialization is a SECURITY FEATURE. |
+| String concatenation (`+`) | `memcpy` manual is a SECURITY FEATURE. |
+| String interpolation (`fmt!`) | Manual WASI fd_write is a SECURITY FEATURE. |
+| Type inference (`let x = 42`) | Types must be explicit via mathematical notation. |
+| Implicit return | Return must be explicit via `⊥_{𝒯}→^{ex falso}⊤_{𝒯}`. |
+| Operator overloading | Luon already has unique mathematical notation. |
+| Method syntax (`.push()`) | `array_push(arr, 42)` via index call is a SECURITY FEATURE. |
+| Impl blocks | Rust-style `impl` syntax is too readable. |
+| Closures / Lambdas (`\|x\| x + 1`) | Too conventional and readable. |
+| Destructuring (`let (x, y) = p`) | Access must be via manual offset. |
+| Error propagation (`?`) | Syntactic sugar makes error handling too easy to read. |
+| Try/catch / panic/recover | `try/catch` keywords are too conventional. |
+| Defer / cleanup | `defer` keyword is too readable. Resource cleanup must be manual. |
+| REPL | Makes Luon too easy to learn interactively. Learning curve is a SECURITY FEATURE. |
+| Playground (web-based) | Allows trying Luon without reading documentation. Destroys learning curve defense. |
+| Unsafe blocks (`unsafe {}`) | Gives illusion of safety without ownership model. Safety via WASM sandbox. |
+
+### Rejected: Anti-Security (Breaks Sandbox/Determinism)
+
+| Feature | Reason for Rejection |
+|---|---|
+| Networking / HTTP | Destroys sandbox isolation. Network access from WASM = data exfiltration risk. |
+| Concurrency / Threading | Threading = non-determinism = blockchain consensus destruction. |
+| Channels (message passing) | Introduces non-determinism and timing side-channels. |
+| Mutex / Lock | Threading model is non-deterministic. Contra single-threaded WASM sandbox. |
+| WASM Threads (SharedArrayBuffer) | Spectre/Meltdown attack vector. Non-deterministic execution. |
+| WASM GC | GC pause non-deterministic destroys blockchain finality. Bump allocator is deterministic. |
+| Reflection / Introspection | Destroys 6-pass WASM obfuscation engine. Runtime type inspection = reverse engineering tool. |
+| Regular expressions | Regex engine vulnerable to ReDoS (exponential backtracking). DoS vector in blockchain VM. |
+
+### Rejected: Over-Engineering (Impractical for Self-Hosting 27KB Compiler)
+
+| Feature | Reason for Rejection |
+|---|---|
+| Algebraic effects | CPS transformation too complex for self-hosting compiler. |
+| Dependent types | Dependent type checker too complex for self-hosting compiler. |
+| GADTs | Not relevant for blockchain VM. Over-engineering. |
+
+---
 
 ## Progress Summary
 
