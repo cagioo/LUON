@@ -1,35 +1,40 @@
-## Description
-<!-- Describe your changes clearly and concisely -->
+## Summary
+<!-- What changed in this PR? Keep this concise and specific. -->
 
 
-## Type of Change
-<!-- Check the relevant option -->
-- [ ] 🐛 Bug fix (non-breaking change that fixes an issue)
-- [ ] ✨ New feature (non-breaking change that adds functionality)
-- [ ] 💥 Breaking change (fix or feature that would cause existing functionality to change)
-- [ ] 📚 Documentation update
-- [ ] 🔧 Tooling / CI / Build
-- [ ] ♻️ Refactor (no functional change)
-- [ ] 🧪 Test addition or update
+## Security Alignment
+<!-- Explain how this preserves Luon's security-first vision. -->
+- [ ] No conventional syntax or readable keyword shortcuts were added
+- [ ] Deterministic execution is preserved
+- [ ] WASM sandbox boundaries are preserved
+- [ ] No secrets, personal data, binaries, AI logs, or internal-only artifacts are included
+- [ ] The change adds capability without reducing intentional language complexity
 
-## Related Issues
-<!-- Link related issues: Fixes #123, Closes #456 -->
-
-
-## Changes Made
-<!-- List the specific changes made -->
+## Files Changed
+<!-- List the main files changed and why. -->
 - 
 
-## Testing
-<!-- How did you test these changes? -->
-- [ ] Existing tests pass (`./tests/run_tests.sh`)
-- [ ] New tests added (if applicable)
-- [ ] Manual testing performed
+## Validation
+<!-- List every validation step actually run. Do not check boxes for tests not run. -->
+- [ ] Native runtime build passed (`gcc -O2 -o luon runtime/luon_vm.c`)
+- [ ] Test suite passed (`./tests/run_tests.sh`)
+- [ ] Documentation/handover updated
+- [ ] Public repository hygiene checked
 
-## Checklist
-- [ ] My code follows the project's coding conventions
-- [ ] I have updated documentation accordingly
-- [ ] I have added tests that prove my fix/feature works
-- [ ] All new and existing tests pass
-- [ ] My changes do NOT introduce conventional keywords (`if`, `else`, `for`, `while`, `let`, `var`, `print`)
-- [ ] Internal repo has been synced with these changes
+## Handover Checklist
+<!-- Reference the handover/roadmap item updated, if applicable. -->
+- Handover item:
+- Checklist status:
+
+## Related Issue / Project Item
+<!-- Use Closes #123 when this PR completes an issue. -->
+Closes #
+
+## Issues / Constraints
+<!-- Note blockers, limitations, or follow-up tasks. Write "None" if there are none. -->
+
+
+## Status
+- [ ] Ready to merge
+- [ ] Needs review
+- [ ] Blocked

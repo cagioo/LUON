@@ -1,12 +1,17 @@
 # Python
-
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Rust
+# Rust / native build output
 target/
+luon
+*.o
+*.so
+*.dylib
+*.dll
+*.exe
 
 # OS
 .DS_Store
@@ -15,15 +20,37 @@ Thumbs.db
 *.swo
 *~
 
-# IDE
+# IDE / local machine config
 .vscode/
 .idea/
 *.iml
+.luon/
 
-# Debug output
+# Debug output / logs
 *.log
 output.txt
+*.ai.log
 
-# Temporary
+# Temporary / backup
 *.tmp
 *.bak
+
+# Secrets / credentials / environment
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+credentials.*
+*secret*
+*token*
+
+# Internal-only artifacts
+artifacts/
+*.lse
+
+# Local/private operational files
+handover.md
+handover2.md
+.kilo/

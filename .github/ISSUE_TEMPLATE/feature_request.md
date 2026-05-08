@@ -1,22 +1,35 @@
 ---
-name: Feature Request
-about: Suggest a new feature for Luon
+name: Feature Task
+description: Track one Luon roadmap feature implementation task
 title: "[FEATURE] "
-labels: enhancement
+labels: ["feature", "roadmap", "needs-validation"]
 assignees: ''
 ---
 
-## Problem
-A clear description of the problem this feature would solve.
+## Goal
+<!-- What should be implemented? Reference the handover/roadmap item. -->
 
-## Proposed Solution
-How you think this should work.
 
-## Alternatives Considered
-Other approaches you've thought about.
+## Security Alignment
+<!-- Explain why this is compatible with Luon's security-first vision. -->
+- [ ] No conventional syntax or readable keyword shortcuts
+- [ ] Deterministic execution preserved
+- [ ] WASM sandbox boundaries preserved
+- [ ] Adds capability without reducing intentional complexity
 
-## Use Cases
-Who benefits from this feature and how.
+## Implementation Checklist
+- [ ] Internal repo updated first
+- [ ] Function and logic reviewed
+- [ ] Bug/security risk reviewed
+- [ ] Build/tests passed
+- [ ] Handover checklist updated
+- [ ] CHANGELOG `Unreleased` updated
+- [ ] GitHub mirror synced
+- [ ] Pull Request opened
 
-## Additional Context
-Any other context, examples, or references.
+## Acceptance Criteria
+<!-- What must be true before this task can be closed? -->
+- 
+
+## Constraints / Notes
+<!-- Known limitations, dependencies, or follow-up tasks. -->
