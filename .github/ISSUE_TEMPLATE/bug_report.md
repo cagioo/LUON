@@ -1,30 +1,49 @@
 ---
 name: Bug Report
-about: Report a bug to help us improve Luon
+description: Report a reproducible Luon bug or regression
 title: "[BUG] "
-labels: bug
+labels: ["bug", "needs-triage"]
 assignees: ''
 ---
 
 ## Description
-A clear and concise description of the bug.
+<!-- Clear and concise bug description. -->
+
+
+## Security Impact
+<!-- Does this affect determinism, sandboxing, obfuscation, memory safety, or secret handling? -->
+- [ ] Determinism affected
+- [ ] Sandbox boundary affected
+- [ ] Memory safety affected
+- [ ] Obfuscation / reverse-engineering resistance affected
+- [ ] Secret / repository hygiene affected
+- [ ] No known security impact
 
 ## Steps to Reproduce
-1. Create a `.luon` file with the following content:
-```
-(paste your code here)
-```
-2. Run: `luon run file.luon -a <argument>`
-3. See error
+1. Create or use this `.luon` file:
+   ```luon
+   // paste minimal reproduction here
+   ```
+2. Run:
+   ```bash
+   ./luon run file.luon -a <argument>
+   ```
+3. Observe the result.
 
 ## Expected Behavior
-What you expected to happen.
+
 
 ## Actual Behavior
-What actually happened. Include full error output.
+<!-- Include full error output if safe. Do not paste secrets or tokens. -->
+
 
 ## Environment
-- **Luon version**: (`luon version`)
-- **OS**: 
-- **Python version**: (`python3 --version`)
-- **Rust version** (if applicable): (`rustc --version`)
+- Luon version / commit:
+- OS:
+- C compiler:
+- WASM runtime, if applicable:
+
+## Validation Already Tried
+- [ ] Rebuilt runtime
+- [ ] Ran test suite
+- [ ] Checked recent changes

@@ -17,6 +17,12 @@
 //   11 result
 //   12 option
 //   13 never
+//   14 i8
+//   15 i16
+//   16 u8
+//   17 u16
+//   18 u32
+//   19 u64
 //
 // Type descriptor layout at TYPE_TABLE_BASE (0x54000):
 //   [kind:i64 | size:i64 | align:i64 | param0:i64 | param1:i64 | name_hash:i64]
@@ -29,7 +35,8 @@
   ∃!Φ ∈ Hom(𝒞,𝒟)[type_size] ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
     // Built-in sizes by type id
-    // void=0, bool=1, i32=4, i64=8, f32=4, f64=8, ptr=8, str=16
+    // void=0, bool=1, i8/u8=1, i16/u16=2, i32/u32/f32=4,
+    // i64/u64/f64/ptr/fn handles=8, str/result/option descriptors=16
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
     ⊢_{Γ}^{⊃I}⟦
@@ -54,7 +61,59 @@
       (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
       ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
     ⟧^{⊃E}_{Δ}⊣
-    // default 8 bytes for i64/f64/ptr/fn/result/option handles
+    // str/result/option descriptors are 16 bytes
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 7)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (16 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 11)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (16 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 12)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (16 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // i8/u8 are 1 byte
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 14)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 16)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // i16/u16 are 2 bytes
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 15)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 17)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // u32 is 4 bytes
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 18)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // default 8 bytes for i64/u64/f64/ptr/fn/handles
     (8 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
@@ -63,14 +122,39 @@
   // acc = type_id
   ∃!Φ ∈ Hom(𝒞,𝒟)[type_align] ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
-    // bool alignment 1
+    // bool/i8/u8 alignment 1
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (∂_Ω ≡_{E_∞} 1)^{acyclic}
     ⊢_{Γ}^{⊃I}⟦
       (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
       ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
     ⟧^{⊃E}_{Δ}⊣
-    // i32/f32 alignment 4
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 14)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 16)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // i16/u16 alignment 2
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 15)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 17)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // i32/u32/f32 alignment 4
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (∂_Ω ≡_{E_∞} 2)^{acyclic}
     ⊢_{Γ}^{⊃I}⟦
@@ -79,6 +163,12 @@
     ⟧^{⊃E}_{Δ}⊣
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (∂_Ω ≡_{E_∞} 4)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 18)^{acyclic}
     ⊢_{Γ}^{⊃I}⟦
       (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
       ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
@@ -92,13 +182,21 @@
   // acc = type_id
   ∃!Φ ∈ Hom(𝒞,𝒟)[type_is_numeric] ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
-    // numeric if 2 <= type_id <= 5
+    // numeric if 2 <= type_id <= 5 OR 14 <= type_id <= 19
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (∂_Ω ⪰_{ω₁} 2)^{well-order}
     (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (∂_Ω ⪯_{ω₁} 5)^{well-order}
     (∂_Ω ∧_{Bool} σ₃)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 14)^{well-order}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪯_{ω₁} 19)^{well-order}
+    (∂_Ω ∧_{Bool} σ₅)^{∧-intro}
+    (∂_Ω ∨_{Bool} σ₄)^{∨-intro}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
@@ -135,8 +233,142 @@
       (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
       ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
     ⟧^{⊃E}_{Δ}⊣
+    // signed integer widening: i8 -> i16/i32/i64
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 15)^{acyclic}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 2)^{acyclic}
+    (∂_Ω ∨_{Bool} σ₄)^{∨-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 3)^{acyclic}
+    (∂_Ω ∨_{Bool} σ₄)^{∨-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 14)^{acyclic}
+    (∂_Ω ∧_{Bool} σ₄)^{∧-intro}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // signed integer widening: i16 -> i32/i64
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 2)^{acyclic}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 3)^{acyclic}
+    (∂_Ω ∨_{Bool} σ₄)^{∨-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 15)^{acyclic}
+    (∂_Ω ∧_{Bool} σ₄)^{∧-intro}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // unsigned integer widening: u8 -> u16/u32/u64
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 17)^{acyclic}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 18)^{acyclic}
+    (∂_Ω ∨_{Bool} σ₄)^{∨-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 19)^{acyclic}
+    (∂_Ω ∨_{Bool} σ₄)^{∨-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 16)^{acyclic}
+    (∂_Ω ∧_{Bool} σ₄)^{∧-intro}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // unsigned integer widening: u16 -> u32/u64
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 18)^{acyclic}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 19)^{acyclic}
+    (∂_Ω ∨_{Bool} σ₄)^{∨-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 17)^{acyclic}
+    (∂_Ω ∧_{Bool} σ₄)^{∧-intro}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // unsigned integer widening: u32 -> u64
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 18)^{acyclic}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 19)^{acyclic}
+    (∂_Ω ∧_{Bool} σ₄)^{∧-intro}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
     // otherwise false
     (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // type_is_signed_integer(type_id) → 1 if signed integer
+  // acc = type_id
+  ∃!Φ ∈ Hom(𝒞,𝒟)[type_is_signed_integer] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 14)^{acyclic}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 15)^{acyclic}
+    (∂_Ω ∨_{Bool} σ₃)^{∨-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 2)^{acyclic}
+    (∂_Ω ∨_{Bool} σ₃)^{∨-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 3)^{acyclic}
+    (∂_Ω ∨_{Bool} σ₃)^{∨-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // type_is_unsigned_integer(type_id) → 1 if unsigned integer
+  // acc = type_id
+  ∃!Φ ∈ Hom(𝒞,𝒟)[type_is_unsigned_integer] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 16)^{well-order}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪯_{ω₁} 19)^{well-order}
+    (∂_Ω ∧_{Bool} σ₃)^{∧-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // type_is_integer(type_id) → 1 if signed or unsigned integer
+  // acc = type_id
+  ∃!Φ ∈ Hom(𝒞,𝒟)[type_is_integer] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 14)^{well-order}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪯_{ω₁} 19)^{well-order}
+    (∂_Ω ∧_{Bool} σ₃)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 2)^{acyclic}
+    (∂_Ω ∨_{Bool} σ₄)^{∨-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 3)^{acyclic}
+    (∂_Ω ∨_{Bool} σ₄)^{∨-intro}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 

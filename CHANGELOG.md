@@ -7,6 +7,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## Unreleased
+
+### Added — P0 Type System Capability
+- Added expanded integer type IDs to `tools/typechecker.luon`: `i8`, `i16`, `u8`, `u16`, `u32`, and `u64`.
+- Added size/alignment rules for narrow signed and unsigned integer types.
+- Added integer classification helpers: `type_is_integer`, `type_is_signed_integer`, and `type_is_unsigned_integer`.
+- Added safe widening assignment rules for signed and unsigned integer families.
+
+### Added — Professional GitHub Delivery Workflow
+- Added mandatory GitHub Project-based delivery workflow to the handover process: Project item → Issue → Branch → Pull Request → Changelog → Merge.
+- Upgraded Pull Request template with required Summary, Security Alignment, Files Changed, Validation, Handover Checklist, Issues/Constraints, and Status sections.
+- Upgraded Issue templates for feature tasks and bug reports with security alignment, validation, and repository hygiene checkpoints.
+
+### Security
+- Added explicit public repository hygiene requirements: no API keys, credentials, personal data, local binaries, sealed artifacts, AI logs, or machine-specific configuration.
+- Added PR-level checks to ensure Luon's no-conventional-syntax policy and deterministic sandbox model are preserved.
+
+### Validation
+- Audited the public GitHub mirror for common secret/token/key/artifact patterns.
+
+---
+
 ## [2.1.1] — Singularity Patch — 2026-05-07
 
 ### Added — Standard Library Completion (20 modules total)

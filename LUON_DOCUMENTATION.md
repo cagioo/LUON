@@ -414,6 +414,12 @@ The type-system foundation is implemented in `tools/typechecker.luon`.
 | 11 | `result` | 16 | Tagged result pair |
 | 12 | `option` | 16 | Tagged optional pair |
 | 13 | `never` | 0 | Non-returning computation |
+| 14 | `i8` | 1 | 8-bit signed integer |
+| 15 | `i16` | 2 | 16-bit signed integer |
+| 16 | `u8` | 1 | 8-bit unsigned integer |
+| 17 | `u16` | 2 | 16-bit unsigned integer |
+| 18 | `u32` | 4 | 32-bit unsigned integer |
+| 19 | `u64` | 8 | 64-bit unsigned integer |
 
 ### 8.2 Type Functions
 
@@ -422,6 +428,9 @@ The type-system foundation is implemented in `tools/typechecker.luon`.
 | `type_size(type_id)` | Returns byte size. |
 | `type_align(type_id)` | Returns ABI alignment. |
 | `type_is_numeric(type_id)` | Returns whether the type is numeric. |
+| `type_is_integer(type_id)` | Returns whether the type is an integer. |
+| `type_is_signed_integer(type_id)` | Returns whether the type is signed integer. |
+| `type_is_unsigned_integer(type_id)` | Returns whether the type is unsigned integer. |
 | `type_can_assign(dst, src)` | Returns whether assignment is legal. |
 | `type_error(code, line, col)` | Creates a type error record. |
 
@@ -430,9 +439,10 @@ The type-system foundation is implemented in `tools/typechecker.luon`.
 Current assignment compatibility:
 
 1. Exact type match is allowed.
-2. `i32 → i64` widening is allowed.
-3. `f32 → f64` widening is allowed.
-4. Other conversions require explicit conversion helpers.
+2. Signed widening is allowed: `i8 → i16 → i32 → i64`.
+3. Unsigned widening is allowed: `u8 → u16 → u32 → u64`.
+4. `f32 → f64` widening is allowed.
+5. Other conversions require explicit conversion helpers.
 
 ---
 

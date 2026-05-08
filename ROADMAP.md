@@ -274,8 +274,8 @@ This roadmap tracks every major component of the Luon programming language from 
 | Traits / Interfaces | 🔲 | P1 | Behavior contracts |
 | Type annotations in source | 🔲 | P1 | Via mathematical notation, NOT `fn(a: i64)` style |
 | Scope / block scoping | 🔲 | P1 | Lexical scoping in compiler |
-| Unsigned integer types (u8/u16/u32/u64) | 🔲 | P1 | Crypto & bit manipulation |
-| Smaller integer types (i8/i16) | 🔲 | P1 | Memory efficiency |
+| Unsigned integer types (u8/u16/u32/u64) | ✅ | P1 | Added to typechecker with size/alignment/numeric classification and widening rules |
+| Smaller integer types (i8/i16) | ✅ | P1 | Added to typechecker with signed widening rules |
 
 ### 4.2 Advanced Language Features (P1)
 
