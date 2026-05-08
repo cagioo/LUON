@@ -1,10 +1,7 @@
 # Sponsor button configuration for LUON
 # These links appear when users click the "♥ Sponsor" button
 
-# GitHub Sponsors (uncomment when profile is approved)
-# github: cagioo
+ko_fi: cagir
 
-# Direct donation & community links
 custom:
-  - "https://vesege.com"
-  - "https://discord.gg/47q8J5PgD"
+  - "https://saweria.co/cagi"
