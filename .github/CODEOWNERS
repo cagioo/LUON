@@ -1,0 +1,27 @@
+# CODEOWNERS — Luon Programming Language
+# These owners will be automatically requested for review on PRs
+# that modify files matching the patterns below.
+
+# Default: Founder reviews everything
+*                           @cagioo
+
+# Core compiler — critical path
+/bootstrap/                 @cagioo
+/tools/                     @cagioo
+/runtime/                   @cagioo
+
+# Standard library
+/stdlib/                    @cagioo
+
+# Documentation
+/docs/                      @cagioo
+README.md                   @cagioo
+LUON_DOCUMENTATION.md       @cagioo
+ROADMAP.md                  @cagioo
+
+# CI/CD and repo config
+/.github/                   @cagioo
+
+# Security-sensitive files
+SECURITY.md                 @cagioo
+/runtime/luon_vm.c          @cagioo

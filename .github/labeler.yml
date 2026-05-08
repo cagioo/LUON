@@ -1,0 +1,48 @@
+# Auto-labeler configuration
+# Automatically applies labels to PRs based on changed file paths
+
+compiler:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'bootstrap/**'
+      - 'tools/**'
+
+runtime:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'runtime/**'
+
+stdlib:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'stdlib/**'
+
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docs/**'
+      - '*.md'
+      - 'LUON_DOCUMENTATION.md'
+      - 'LUON_REFERENCE.md'
+
+ci/cd:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/**'
+
+editor:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'editor/**'
+
+examples:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'examples/**'
+
+security:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'SECURITY.md'
+      - 'runtime/luon_vm.c'
+      - 'stdlib/crypto.luon'
