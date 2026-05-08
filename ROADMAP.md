@@ -257,8 +257,8 @@ This roadmap tracks every major component of the Luon programming language from 
 | `free()` / dealloc | 🔲 | P0 | Free-list or arena allocator |
 | `realloc()` / grow | 🔲 | P0 | Resize allocations |
 | Allocator alignment | 🔲 | P0 | Proper alignment for types |
-| Integer overflow detection | 🔲 | P0 | Runtime trap or wrap flag |
-| Division by zero handling | 🔲 | P0 | Result-based error return |
+| Integer overflow detection | ✅ | P0 | Added deterministic checked add/sub helper foundations in `stdlib/error.luon` |
+| Division by zero handling | ✅ | P0 | Added `check_divisor_nonzero` helper returning canonical error code |
 
 ---
 

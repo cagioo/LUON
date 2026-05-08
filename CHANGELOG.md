@@ -9,6 +9,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Unreleased
 
+### Added — P0 Checked Arithmetic Safety
+- Added deterministic arithmetic safety helpers to `stdlib/error.luon`:
+  - `check_divisor_nonzero`
+  - `checked_add_i64_result`
+  - `checked_sub_i64_result`
+- Added canonical `err_overflow` / `err_divide_by_zero` integration points for future compiler/runtime checked arithmetic.
+
 ### Added — P0 Type System Capability
 - Added expanded integer type IDs to `tools/typechecker.luon`: `i8`, `i16`, `u8`, `u16`, `u32`, and `u64`.
 - Added size/alignment rules for narrow signed and unsigned integer types.
