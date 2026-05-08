@@ -687,6 +687,15 @@ Defines canonical error codes:
 | 15 | full |
 | 16 | empty |
 
+Safety helpers:
+
+- `is_error(code)`
+- `is_success(code)`
+- `error_or_default(code, default_value, success_value)`
+- `check_divisor_nonzero(divisor)`
+- `checked_add_i64_result(a, b, result)`
+- `checked_sub_i64_result(a, b, result)`
+
 #### `testing.luon`
 
 Testing counters are stored at:
@@ -895,6 +904,18 @@ Option layout: [tag | value]
 tag 0 = None
 tag 1 = Some(value)
 ```
+
+### 13.3 Checked Arithmetic Safety Helpers
+
+`stdlib/error.luon` provides deterministic helper functions for arithmetic safety without adding conventional syntax:
+
+```text
+check_divisor_nonzero(divisor) -> 0 | err_divide_by_zero
+checked_add_i64_result(a, b, result) -> 0 | err_overflow
+checked_sub_i64_result(a, b, result) -> 0 | err_overflow
+```
+
+These helpers are designed for compiler/runtime integration. They preserve Luon's explicit low-level execution model while providing standardized error codes for overflow and division-by-zero handling.
 
 ---
 

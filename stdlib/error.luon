@@ -143,4 +143,97 @@
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
+
+  // ═══════════════════════════════════════════════════════════════
+  // CHECKED ARITHMETIC SAFETY HELPERS
+  // Deterministic safety hooks for overflow and division checks.
+  // ═══════════════════════════════════════════════════════════════
+
+  // check_divisor_nonzero(divisor) → 0 if safe, err_divide_by_zero otherwise
+  // acc = divisor
+  ∃!Φ ∈ Hom(𝒞,𝒟)[check_divisor_nonzero] ⊣^{op} {
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (8 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // checked_add_i64_result(a, b, result) → 0 if safe, err_overflow otherwise
+  // acc = a, σ₂ = b, σ₃ = result after addition
+  ∃!Φ ∈ Hom(𝒞,𝒟)[checked_add_i64_result] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // positive + positive must not become negative
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≻_{ω₁} 0)^{well-order}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≻_{ω₁} 0)^{well-order}
+    (∂_Ω ∧_{Bool} σ₅)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 0)^{well-order}
+    (∂_Ω ∧_{Bool} σ₅)^{∧-intro}
+    ⊢_{Γ}^{⊃I}⟦
+      (7 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // negative + negative must not become non-negative
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 0)^{well-order}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 0)^{well-order}
+    (∂_Ω ∧_{Bool} σ₅)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 0)^{well-order}
+    (∂_Ω ∧_{Bool} σ₅)^{∧-intro}
+    ⊢_{Γ}^{⊃I}⟦
+      (7 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // checked_sub_i64_result(a, b, result) → 0 if safe, err_overflow otherwise
+  // acc = a, σ₂ = b, σ₃ = result after subtraction
+  ∃!Φ ∈ Hom(𝒞,𝒟)[checked_sub_i64_result] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // non-negative - negative must not become negative
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 0)^{well-order}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 0)^{well-order}
+    (∂_Ω ∧_{Bool} σ₅)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 0)^{well-order}
+    (∂_Ω ∧_{Bool} σ₅)^{∧-intro}
+    ⊢_{Γ}^{⊃I}⟦
+      (7 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // negative - positive must not become non-negative
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 0)^{well-order}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≻_{ω₁} 0)^{well-order}
+    (∂_Ω ∧_{Bool} σ₅)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 0)^{well-order}
+    (∂_Ω ∧_{Bool} σ₅)^{∧-intro}
+    ⊢_{Γ}^{⊃I}⟦
+      (7 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
 }
