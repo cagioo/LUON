@@ -252,7 +252,7 @@ This roadmap tracks every major component of the Luon programming language from 
 
 | Component | Status | Priority | Description |
 |---|---|---|---|
-| Array bounds checking | 🔲 | P0 | Trap on out-of-bounds access |
+| Array bounds checking | ✅ | P0 | Added `array_check_index` helper returning canonical `err_out_of_bounds` |
 | HashMap bounds checking | 🔲 | P0 | Trap on invalid key |
 | `free()` / dealloc | 🔲 | P0 | Free-list or arena allocator |
 | `realloc()` / grow | 🔲 | P0 | Resize allocations |

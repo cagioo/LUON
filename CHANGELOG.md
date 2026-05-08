@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Unreleased
 
+### Added — P0 Array Bounds Safety
+- Added `array_check_index` to `stdlib/array.luon`, returning canonical `err_out_of_bounds` for invalid negative or out-of-range indices.
+
 ### Added — P0 Checked Arithmetic Safety
 - Added deterministic arithmetic safety helpers to `stdlib/error.luon`:
   - `check_divisor_nonzero`
