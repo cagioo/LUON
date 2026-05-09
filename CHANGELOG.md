@@ -26,6 +26,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **`examples/stack_demo.luon`** — Stack push/pop demonstration (push 10, 20, 42 → pop returns 42)
 - **`examples/deque_demo.luon`** — Deque FIFO demonstration (push_back 100, 200 → pop_front returns 100)
 
+### Changed — Documentation
+- Updated `LUON_DOCUMENTATION.md` — Added stack, deque, time module docs; updated allocator to free-list; updated repo tree; stdlib count 20→23
+- Updated `ROADMAP.md` — Phase 3 progress 20%→35%, 87 components delivered
+
 ### Added — P0 Free-List Allocator (Phase 3)
 - Upgraded `stdlib/memory.luon` from bump-only to free-list allocator with deallocation support.
 - Added `mem_free(ptr)` — returns freed block to linked free-list for reuse.

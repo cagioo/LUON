@@ -142,10 +142,13 @@ LUON/
 │   ├── random.luon
 │   ├── result.luon
 │   ├── sort.luon
+│   ├── stack.luon
 │   ├── string.luon
 │   ├── struct.luon
 │   ├── testing.luon
-│   └── wasi.luon
+│   ├── time.luon
+│   ├── wasi.luon
+│   └── deque.luon
 │
 ├── tools/
 │   ├── cli.luon               # Native CLI foundation
@@ -248,22 +251,28 @@ One WASM page is 64 KiB, so 30 pages provide approximately 1.875 MiB.
 
 ### 5.3 Heap Allocator
 
-The current allocator is a bump allocator:
+The current allocator is a **free-list allocator** with first-fit search:
 
 ```text
 alloc(size):
-  ptr = heap_pointer
-  heap_pointer += size
-  return ptr
+  scan free-list for block >= size (first-fit)
+  if found: unlink and return
+  else: bump-allocate from heap_pointer
+
+free(ptr):
+  prepend block to free-list
+
+realloc(ptr, new_size):
+  allocate new_size, copy old data, free old block
 ```
 
 Properties:
 
-- Fast allocation.
-- No fragmentation.
-- No `free` yet.
-- No reallocation yet.
-- Alignment and bounds checks are planned improvements.
+- First-fit free-list with fallback to bump allocation.
+- `mem_free(ptr)` returns blocks to the free-list for reuse.
+- `mem_realloc(ptr, old_size, new_size)` for in-place reallocation.
+- `alloc_aligned(size, alignment)` for aligned allocations.
+- Block header: `[size:i64 | next:i64]` = 16 bytes per free block.
 
 ---
 
@@ -492,7 +501,7 @@ The resolver exists today as a foundation. Full compiler integration is part of 
 
 ## 10. Standard Library
 
-Luon 2.1.1 ships with 20 standard library modules.
+Luon ships with **23 standard library modules**.
 
 ### 10.1 Core Modules
 
@@ -626,6 +635,47 @@ Functions include:
 - `map_len`
 - `map_clear`
 
+#### `stack.luon`
+
+LIFO stack data structure.
+
+Layout:
+
+```text
+[cap:i64 | len:i64 | data_ptr:i64]
+```
+
+Functions:
+
+- `stack_new(capacity)` — allocate stack with minimum capacity 8
+- `stack_push(stack_ptr, value)` — push value, returns new length
+- `stack_pop(stack_ptr)` — pop top value (0 if empty)
+- `stack_peek(stack_ptr)` — read top value without removing
+- `stack_len(stack_ptr)` — current element count
+- `stack_cap(stack_ptr)` — capacity
+- `stack_is_empty(stack_ptr)` — 1 if empty
+- `stack_clear(stack_ptr)` — reset length to 0
+- `stack_check_overflow(stack_ptr)` — 0 if space, 15 (err_full) if full
+
+#### `deque.luon`
+
+Ring-buffer double-ended queue.
+
+Layout:
+
+```text
+[cap:i64 | len:i64 | head:i64 | tail:i64 | data_ptr:i64]
+```
+
+Functions:
+
+- `deque_new(capacity)` — allocate deque with minimum capacity 8
+- `deque_push_back(deque_ptr, value)` — append to tail
+- `deque_pop_front(deque_ptr)` — remove from head (FIFO)
+- `deque_len(deque_ptr)` — current element count
+- `deque_is_empty(deque_ptr)` — 1 if empty
+- `deque_clear(deque_ptr)` — reset all indices to 0
+
 #### `sort.luon`
 
 Sorting and search utilities.
@@ -743,6 +793,18 @@ Functions:
 - `clock_time`
 - `clock_monotonic`
 - `env_count`
+
+#### `time.luon`
+
+WASI clock utilities for timing and benchmarking.
+
+Functions:
+
+- `time_now_ns()` — nanoseconds since epoch (realtime clock)
+- `time_monotonic_ns()` — nanoseconds from monotonic clock
+- `time_elapsed_ns(start)` — elapsed nanoseconds since start
+- `time_to_millis(ns)` — convert nanoseconds to milliseconds
+- `time_to_seconds(ns)` — convert nanoseconds to seconds
 
 ### 10.6 Utility Modules
 
