@@ -1,0 +1,65 @@
+// examples/time_demo.luon — Time measurement demonstration
+// Demonstrates: WASI clock_time_get, elapsed time calculation, integer division
+// Expected output: elapsed milliseconds for 10000 busy-loop iterations
+// Uses: WASI syscall 7 (clock_time_get), monotonic clock (id=1)
+// Memory: 0xF030 (61488) = scratch for time result
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[time_demo] ⊢_Γ {
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // === Get start time (monotonic clock) ===
+    // σ₂=clock_id(1=monotonic), σ₃=precision(1ns), σ₄=time_ptr(0xF030)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (61488 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (ε_7^{WASI} ∂_Ω)^{syscall(3)}
+    // Load start_ns from 0xF030
+    (61488 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+
+    // === Busy loop: count to 10000 ===
+    // σ₅ = counter, initialized to 0
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // Check: if counter >= 10000, break out of block (depth 1)
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} 10000)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // counter++
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        // Continue loop (branch to depth 0 = loop head)
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+
+    // === Get end time (monotonic clock, same params) ===
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (61488 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (ε_7^{WASI} ∂_Ω)^{syscall(3)}
+    // Load end_ns from 0xF030
+    (61488 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+
+    // === elapsed_ns = end_ns - start_ns ===
+    // acc = end_ns, σ₁₀ = start_ns → acc = end_ns - start_ns
+    (Tor₀^𝔄(∂_Ω, σ₁₀))_{Spec ℤ}
+
+    // === Convert to milliseconds: elapsed_ms = elapsed_ns / 1_000_000 ===
+    (RHom_ℤ(1000000, ∂_Ω))_{D^b(𝔄)}
+
+    // acc = elapsed milliseconds for 10000 iterations
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

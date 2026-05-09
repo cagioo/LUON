@@ -25,6 +25,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added — Examples
 - **`examples/stack_demo.luon`** — Stack push/pop demonstration (push 10, 20, 42 → pop returns 42)
 - **`examples/deque_demo.luon`** — Deque FIFO demonstration (push_back 100, 200 → pop_front returns 100)
+- **`examples/time_demo.luon`** — WASI clock elapsed time measurement (monotonic clock, busy loop, ns→ms conversion)
+
+### Fixed — Stdlib Bugs (via line-by-line audit)
+- **`stdlib/deque.luon`** — Removed dead `acc *= cap` multiply in `deque_push_back` (line 88)
+- **`stdlib/time.luon`** — Fixed register collision in `time_elapsed_ns`: start_ns moved from σ₂ to σ₁₀ to avoid WASI param conflict
+- **`stdlib/time.luon`** — Fixed division operator in `time_to_millis`/`time_to_seconds`: changed from f64 divide (`⊘_{𝕂}`) to i64 integer divide (`RHom_ℤ`)
 
 ### Changed — Documentation
 - Updated `LUON_DOCUMENTATION.md` — Added stack, deque, time module docs; updated allocator to free-list; updated repo tree; stdlib count 20→23
