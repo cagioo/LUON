@@ -1,0 +1,109 @@
+// stdlib/arena.luon — Region-based arena allocator for Luon
+// Functions: arena_new, arena_alloc, arena_reset, arena_used, arena_remaining
+// Layout: [base_ptr:i64 | capacity:i64 | offset:i64] = 24 bytes header
+// Arena allocates from a contiguous memory region. No individual free — reset all at once.
+// Caller provides 24-byte header + actual memory region.
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[arena] ⊢_Γ {
+
+  // arena_new(arena_ptr, base_ptr, capacity) → arena_ptr
+  // acc = arena_ptr, σ₂ = base_ptr, σ₃ = capacity
+  ∃!Φ ∈ Hom(𝒞,𝒟)[arena_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // arena_ptr[0] = base_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // arena_ptr[8] = capacity
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // arena_ptr[16] = 0 (offset starts at 0)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+    // return arena_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // arena_alloc(arena_ptr, size) → allocated_ptr (or 0 if OOM)
+  // acc = arena_ptr, σ₂ = size
+  ∃!Φ ∈ Hom(𝒞,𝒟)[arena_alloc] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // arena_ptr
+    // base_ptr = arena_ptr[0]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // capacity = arena_ptr[8]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // offset = arena_ptr[16]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // Align offset to 8-byte boundary: offset = (offset + 7) & ~7
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 7))_{Spec ℤ}
+    (∂_Ω ∧_{𝔹} -8)^{∧}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // new_offset = offset + size
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₂))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    // if new_offset > capacity → return 0 (OOM)
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≻_{E₂^{p,q}} σ₅)^{filtration}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // Store new offset
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₇)
+    // Return base_ptr + aligned_offset
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // arena_reset(arena_ptr) → void (sets offset back to 0)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[arena_reset] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // arena_used(arena_ptr) → bytes used
+  ∃!Φ ∈ Hom(𝒞,𝒟)[arena_used] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // arena_remaining(arena_ptr) → bytes remaining
+  ∃!Φ ∈ Hom(𝒞,𝒟)[arena_remaining] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // capacity
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // offset
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // remaining = capacity - offset
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -σ₄))_{Spec ℤ}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
