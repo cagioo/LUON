@@ -54,6 +54,9 @@ typedef struct {
     u8     *memory;
     int     mem_pages;
     i64     globals[256];
+    int     func_nparams[MAX_FUNCS]; /* param count per function */
+    int     type_nparams[64];        /* param count per type */
+    int     func_type[MAX_FUNCS];    /* type index per function */
 } Module;
 
 /* ═══ LEB128 Decoding ═══ */
@@ -92,7 +95,24 @@ static int parse_module(const u8 *data, int len, Module *m) {
         int ssz = (int)read_uleb(data, &pos);
         int send = pos + ssz;
 
-        if (sid == 5) { /* Memory */
+        if (sid == 1) { /* Type section */
+            int cnt = (int)read_uleb(data, &pos);
+            for (int i = 0; i < cnt && i < 64; i++) {
+                pos++; /* skip 0x60 */
+                int np = (int)read_uleb(data, &pos);
+                m->type_nparams[i] = np;
+                for (int j = 0; j < np; j++) pos++; /* skip param types */
+                int nr = (int)read_uleb(data, &pos);
+                for (int j = 0; j < nr; j++) pos++; /* skip result types */
+            }
+        } else if (sid == 3) { /* Function section */
+            int cnt = (int)read_uleb(data, &pos);
+            for (int i = 0; i < cnt && i < MAX_FUNCS; i++) {
+                int ti = (int)read_uleb(data, &pos);
+                m->func_type[i] = ti;
+                m->func_nparams[i] = (ti < 64) ? m->type_nparams[ti] : 1;
+            }
+        } else if (sid == 5) { /* Memory */
             int cnt = (int)read_uleb(data, &pos);
             for (int i = 0; i < cnt; i++) {
                 int flags = data[pos++];
@@ -149,7 +169,7 @@ static int find_export(Module *m, const char *name) {
 /* ═══ VM Execution ═══ */
 static int call_depth = 0;
 
-static i64 vm_exec(Module *m, int fidx, i64 arg) {
+static i64 vm_exec(Module *m, int fidx, i64 *args, int nargs) {
     if (fidx < 0 || fidx >= m->n_funcs) {
         fprintf(stderr, "Error: invalid function index %d\n", fidx);
         return 0;
@@ -164,7 +184,7 @@ static i64 vm_exec(Module *m, int fidx, i64 arg) {
     u8 *code = f->code;
     int clen = f->code_len;
     i64 locals[MAX_LOCALS] = {0};
-    locals[0] = arg;
+    for (int i = 0; i < nargs && i < MAX_LOCALS; i++) locals[i] = args[i];
 
     i64 stack[MAX_STACK];
     int sp = 0;
@@ -226,7 +246,14 @@ static i64 vm_exec(Module *m, int fidx, i64 arg) {
             break;
         }
         case 0x0F: { i64 r=sp>0?stack[sp-1]:0; call_depth--; return r; }
-        case 0x10: { int fi=(int)read_uleb(code,&pos); i64 a=POP(); PUSH(vm_exec(m,fi,a)); break; }
+        case 0x10: {
+            int fi=(int)read_uleb(code,&pos);
+            int np=m->func_nparams[fi]; if(np<1) np=1;
+            i64 cargs[16]={0};
+            for(int i=np-1;i>=0;i--) cargs[i]=POP();
+            PUSH(vm_exec(m,fi,cargs,np));
+            break;
+        }
         case 0x1A: POP(); break;
         case 0x1B: { i64 c=POP(),b=POP(),a=POP(); PUSH(c!=0?a:b); break; }
         case 0x20: { int i=(int)read_uleb(code,&pos); PUSH(i<MAX_LOCALS?locals[i]:0); break; }
@@ -427,7 +454,8 @@ static int cmd_run(int argc, char **argv) {
     if (fidx < 0) { fprintf(stderr, "Error: export '%s' not found\n", entry); free(wasm_data); free(m.memory); return 1; }
 
     call_depth = 0;
-    i64 result = vm_exec(&m, fidx, arg);
+    i64 run_args[1] = {arg};
+    i64 result = vm_exec(&m, fidx, run_args, 1);
     printf("%lld\n", (long long)result);
 
     free(wasm_data);

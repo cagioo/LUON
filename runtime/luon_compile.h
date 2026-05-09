@@ -77,7 +77,7 @@ static void emit_cmp(Buf *b, uint8_t op, int has_k, int64_t k, int has_s, int s)
     buf_byte(b,op);buf_byte(b,0xad);SET1;
 }
 
-typedef struct { char name[64]; Buf body; } LFunc;
+typedef struct { char name[64]; Buf body; int nparams; } LFunc;
 
 static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *out_len) {
     LFunc funcs[256]; int nf=0;
@@ -104,6 +104,19 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
                 if(nl>63)nl=63;
                 memcpy(cur->name,bracket+1,nl);cur->name[nl]=0;
                 buf_init(&cur->body);
+                /* Count params: scan for highest σ_N in line after ']' */
+                int max_p=0;
+                const char *scan=end?end:s;
+                while(*scan){
+                    if((uint8_t)scan[0]==0xcf&&(uint8_t)scan[1]==0x83){
+                        scan+=2; int pv=0; int pf=0;
+                        while((uint8_t)scan[0]==0xe2&&(uint8_t)scan[1]==0x82&&(uint8_t)scan[2]>=0x80&&(uint8_t)scan[2]<=0x89){
+                            pv=pv*10+((uint8_t)scan[2]-0x80); scan+=3; pf=1;
+                        }
+                        if(pf&&pv>max_p) max_p=pv;
+                    } else scan++;
+                }
+                cur->nparams=max_p>0?max_p:1; /* at least acc (1 param) */
             }
             continue;
         }
@@ -227,12 +240,23 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
     buf_bytes(&wasm,(const uint8_t*)"\0asm",4);
     uint8_t ver[]={1,0,0,0}; buf_bytes(&wasm,ver,4);
 
-    /* Type section */
-    uint8_t ts[]={1,0x60,1,0x7e,1,0x7e};
-    buf_byte(&wasm,1);buf_uleb(&wasm,sizeof(ts));buf_bytes(&wasm,ts,sizeof(ts));
-    /* Function section */
+    /* Type section — emit types for 1..max_params */
+    int max_p=1;
+    for(int i=0;i<nf;i++) if(funcs[i].nparams>max_p) max_p=funcs[i].nparams;
+    {
+        Buf tsb; buf_init(&tsb);
+        buf_uleb(&tsb,max_p); /* number of types */
+        for(int np=1;np<=max_p;np++){
+            buf_byte(&tsb,0x60); /* func type */
+            buf_uleb(&tsb,np);   /* param count */
+            for(int j=0;j<np;j++) buf_byte(&tsb,0x7e); /* i64 params */
+            buf_uleb(&tsb,1); buf_byte(&tsb,0x7e); /* 1 i64 result */
+        }
+        buf_byte(&wasm,1);buf_uleb(&wasm,tsb.len);buf_bytes(&wasm,tsb.d,tsb.len);free(tsb.d);
+    }
+    /* Function section — map each func to type index (nparams-1) */
     Buf fs; buf_init(&fs);
-    buf_uleb(&fs,nf);for(int i=0;i<nf;i++)buf_byte(&fs,0);
+    buf_uleb(&fs,nf);for(int i=0;i<nf;i++)buf_uleb(&fs,funcs[i].nparams-1);
     buf_byte(&wasm,3);buf_uleb(&wasm,fs.len);buf_bytes(&wasm,fs.d,fs.len);free(fs.d);
     /* Memory section */
     uint8_t ms_d[]={1,0,30};
@@ -250,8 +274,14 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
     buf_uleb(&cs,nf);
     for(int i=0;i<nf;i++){
         Buf body; buf_init(&body);
+        int np=funcs[i].nparams;
         buf_uleb(&body,1);buf_uleb(&body,127);buf_byte(&body,0x7e); /* 127 i64 locals */
-        uint8_t pro[]={0x20,0x00,0x21,0x01}; buf_bytes(&body,pro,4); /* prologue */
+        /* Prologue: copy WASM params to register locals */
+        /* param0 → local[1] (acc), param1 → local[2] (σ₂), etc. */
+        for(int p=0;p<np;p++){
+            buf_byte(&body,0x20);buf_uleb(&body,p);   /* local.get p */
+            buf_byte(&body,0x21);buf_uleb(&body,p+1); /* local.set p+1 */
+        }
         buf_bytes(&body,funcs[i].body.d,funcs[i].body.len);
         uint8_t epi[]={0x20,0x01,0x0b}; buf_bytes(&body,epi,3); /* epilogue */
         /* Peephole: set1+get1 → tee1 */

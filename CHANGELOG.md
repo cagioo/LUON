@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Unreleased
 
+### Changed — Compiler Infrastructure
+- **Multiple parameters** — Functions now support N params (auto-detected from σ subscripts in declaration). `luon_compile.h` emits multi-type WASM sections; `luon_vm.c` parses type/function sections for param counts.
+
 ### Added — Standard Library Expansion (20 → 25 modules)
 - **`stdlib/slice.luon`** — Zero-copy memory view (slice_new, slice_len, slice_ptr, slice_get, slice_subslice).
 - **`stdlib/iter.luon`** — Array iterator protocol (iter_new, iter_has_next, iter_next) preventing standard loop keywords.
