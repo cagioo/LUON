@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added `luon version` — prints version string.
 - Added `luon check` — type checking stub (pending typechecker integration).
 - Added `luon test` — test runner stub (pending test framework integration).
+- Added `luon pkg` — package manager skeleton (routes to `tools/pkg.luon`).
+- Created **`tools/pkg.luon`** stub for package manager architecture (`pkg_init`, `pkg_add`).
 - Added `cmd_hash` utility function for command string hashing.
 - Added `write_str` utility for WASI fd_write output.
 
