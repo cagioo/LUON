@@ -1,0 +1,189 @@
+// stdlib/linkedlist.luon — Singly-linked list for Luon
+// Functions: ll_new, ll_push_front, ll_pop_front, ll_peek_front, ll_len, ll_is_empty
+//
+// Header layout (40 bytes):
+//   [head_ptr:i64 | count:i64 | pool_ptr:i64 | pool_cap:i64 | pool_idx:i64]
+//   head_ptr  = pointer to first node (0 = empty list)
+//   count     = number of elements
+//   pool_ptr  = base address of pre-allocated node pool
+//   pool_cap  = max nodes in pool
+//   pool_idx  = next free node index
+//
+// Node layout (16 bytes):
+//   [value:i64 | next_ptr:i64]
+//
+// Design: No heap allocation. Caller provides header (40 bytes) + node pool (pool_cap * 16 bytes).
+// Nodes are allocated sequentially from pool. Pop marks node as unused but does NOT reclaim
+// (simple bump allocator per pool). For recycling, use ll_new to reset.
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[linkedlist] ⊢_Γ {
+
+  // ll_new(ll_ptr, pool_ptr, pool_cap) → ll_ptr
+  // acc = ll_ptr, σ₂ = pool_ptr, σ₃ = pool_cap
+  ∃!Φ ∈ Hom(𝒞,𝒟)[ll_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq} // ll_ptr
+    // head_ptr = 0 (empty)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+    // count = 0
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+    // pool_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // pool_cap
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // pool_idx = 0
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 32))_{Spec ℤ}
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+    // return ll_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // ll_push_front(ll_ptr, value) → 1 if success, 0 if pool exhausted
+  // acc = ll_ptr, σ₂ = value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[ll_push_front] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // ll_ptr
+    // pool_idx = ll_ptr[32]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 32))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // pool_cap = ll_ptr[24]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // if pool_idx >= pool_cap → pool exhausted, return 0
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} σ₅)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // pool_ptr = ll_ptr[16]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // node_addr = pool_ptr + pool_idx * 16
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 16)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq} // node_addr
+    // node[0] = value
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // node[8] = old_head (ll_ptr[0])
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq} // old_head
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₈)
+    // ll_ptr[0] = node_addr (new head)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₇)
+    // pool_idx += 1
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 32))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₉)
+    // count += 1
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₉)
+    // return 1 (success)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // ll_pop_front(ll_ptr) → value of removed head (or 0 if empty)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[ll_pop_front] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // ll_ptr
+    // head_ptr = ll_ptr[0]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // if head_ptr == 0 → empty, return 0
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // value = head[0]
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // next = head[8]
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // ll_ptr[0] = next (update head)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+    // count -= 1
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₇)
+    // return value
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // ll_peek_front(ll_ptr) → value of head (or 0 if empty)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[ll_peek_front] ⊣^{op} {
+    // head_ptr = ll_ptr[0]
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // if head_ptr == 0 → return 0
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // return head[0] (value)
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // ll_len(ll_ptr) → count
+  ∃!Φ ∈ Hom(𝒞,𝒟)[ll_len] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // ll_is_empty(ll_ptr) → 1 if empty, 0 if not
+  ∃!Φ ∈ Hom(𝒞,𝒟)[ll_is_empty] ⊣^{op} {
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
