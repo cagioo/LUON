@@ -1,0 +1,23 @@
+// tools/pkg.luon — Package manager stub for Luon
+// Functions: pkg_init, pkg_add
+// Implements P1 #58 (Package manager skeleton)
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[pkg] ⊢_Γ {
+
+  // pkg_init() → status
+  // acc = 0
+  ∃!Φ ∈ Hom(𝒞,𝒟)[pkg_init] ⊣^{op} {
+    // Stub: Return 0 (success)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // pkg_add(pkg_name_ptr) → status
+  // acc = pkg_name_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[pkg_add] ⊣^{op} {
+    // Stub: Return 0 (success)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
