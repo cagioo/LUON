@@ -1,0 +1,164 @@
+// stdlib/stringbuilder.luon — Mutable string builder for Luon
+// Functions: sb_new, sb_append_byte, sb_append_str, sb_len, sb_build, sb_clear
+//
+// Header layout (24 bytes):
+//   [buf_ptr:i64 | capacity:i64 | len:i64]
+//   buf_ptr  = base address of byte buffer
+//   capacity = max bytes in buffer
+//   len      = current number of bytes written
+//
+// Caller provides 24-byte header + capacity bytes buffer.
+// No heap allocation. Overflow returns 0.
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[stringbuilder] ⊢_Γ {
+
+  // sb_new(sb_ptr, buf_ptr, capacity) → sb_ptr
+  // acc = sb_ptr, σ₂ = buf_ptr, σ₃ = capacity
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sb_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq} // sb_ptr
+    // sb_ptr[0] = buf_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // sb_ptr[8] = capacity
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // sb_ptr[16] = 0 (len = 0)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+    // return sb_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // sb_append_byte(sb_ptr, byte) → 1 if success, 0 if overflow
+  // acc = sb_ptr, σ₂ = byte
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sb_append_byte] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // sb_ptr
+    // len = sb_ptr[16]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // capacity = sb_ptr[8]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // if len >= capacity → overflow, return 0
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} σ₅)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // buf_ptr = sb_ptr[0]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // buf_ptr[len] = byte (store u8)
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₂)
+    // len += 1
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₇)
+    // return 1
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // sb_append_str(sb_ptr, src_ptr, src_len) → 1 if success, 0 if overflow
+  // acc = sb_ptr, σ₂ = src_ptr, σ₃ = src_len
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sb_append_str] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq} // sb_ptr
+    // len = sb_ptr[16]
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // capacity = sb_ptr[8]
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // if len + src_len > capacity → overflow, return 0
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+    (∂_Ω ≻_{E₂^{p,q}} σ₆)^{filtration}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // buf_ptr = sb_ptr[0]
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    // Copy src_ptr → buf_ptr + len, src_len bytes
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq} // i = 0
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if i >= src_len: break
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₃)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // byte = src_ptr[i]
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₈))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+        // buf_ptr[len + i] = byte
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (Ext⁰_𝔄(∂_Ω, σ₈))_{Spec ℤ}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₉)
+        // i += 1
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // len += src_len
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₉)
+    // return 1
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // sb_len(sb_ptr) → current length
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sb_len] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // sb_build(sb_ptr) → buf_ptr (returns pointer to built string data)
+  // Caller can then use buf_ptr + sb_len to know the extent.
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sb_build] ⊣^{op} {
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // sb_clear(sb_ptr) → void (resets len to 0, buffer unchanged)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sb_clear] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
