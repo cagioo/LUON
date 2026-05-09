@@ -1,0 +1,183 @@
+// stdlib/json.luon — JSON tokenizer for Luon
+// Functions: json_init, json_next_token, json_token_type, json_token_start, json_token_len
+// Header (40 bytes): [src_ptr|src_len|pos|token_type|token_start|token_len]
+// Token types: 0=EOF,1=LBRACE,2=RBRACE,3=LBRACKET,4=RBRACKET,5=COLON,6=COMMA,7=STRING,8=NUMBER,9=TRUE,10=FALSE,11=NULL
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[json] ⊢_Γ {
+
+  // json_init(json_ptr, src_ptr, src_len) → json_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[json_init] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // json_next_token(json_ptr) → token_type
+  // Scans next token, skips whitespace, updates pos/token fields
+  ∃!Φ ∈ Hom(𝒞,𝒟)[json_next_token] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // json_ptr
+    // src_ptr→σ₄, src_len→σ₅, pos→σ₆
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // Skip whitespace (32=space, 10=\n, 13=\r, 9=\t)
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₅)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+        // check if NOT whitespace → break
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -32))_{Spec ℤ}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -10))_{Spec ℤ}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ∧_{𝔹} σ₈)^{∧}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -13))_{Spec ℤ}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ∧_{𝔹} σ₈)^{∧}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -9))_{Spec ℤ}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ∧_{𝔹} σ₈)^{∧}
+        // if all non-zero (not whitespace) → break
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+          (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+        ⟧^{⊃E}_{Δ}⊣
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // pos >= src_len → EOF (type=0)
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} σ₅)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // Read current byte
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq} // char
+    // Single-char tokens: { } [ ] : ,
+    // '{' = 123 → type 1
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -123))_{Spec ℤ}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₈)
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 32))_{Spec ℤ}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 40))_{Spec ℤ}
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // '}' = 125 → type 2
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -125))_{Spec ℤ}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₈)
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+      (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 32))_{Spec ℤ}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, 40))_{Spec ℤ}
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+      (2 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // Default: advance pos, return type 0 (unknown treated as EOF)
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₈)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // json_token_type(json_ptr) → type
+  ∃!Φ ∈ Hom(𝒞,𝒟)[json_token_type] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // json_token_start(json_ptr) → start position
+  ∃!Φ ∈ Hom(𝒞,𝒟)[json_token_start] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 32))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // json_token_len(json_ptr) → token length
+  ∃!Φ ∈ Hom(𝒞,𝒟)[json_token_len] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 40))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
