@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **`stdlib/time.luon`** — WASI clock utilities: time_now_ns, time_monotonic_ns, time_elapsed_ns, time_to_millis, time_to_seconds
 
 ### Added — CLI Expansion (Phase 3)
+- Added `skip_block_comment` to `tools/parser.luon` — enables `/* */` multi-line block comments.
 - Expanded `tools/cli.luon` from skeleton to full subcommand dispatch with FNV-1a rolling hash matching.
 - Added `luon version` — prints version string.
 - Added `luon check` — type checking stub (pending typechecker integration).
