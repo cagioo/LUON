@@ -309,7 +309,28 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
             } else if(has_str(ex,"\xce\xb7_")&&has_str(ex,"Kan")) { /* Call */
                 char *eta=strstr(ex,"\xce\xb7_");
                 int fidx=0;
-                if(eta){fidx=atoi(eta+3);}
+                if(eta){
+                    /* Try η_{Kan}[name] (call by name) first */
+                    char *nb=strstr(eta,"[");
+                    if(nb) {
+                        char *ne=strchr(nb+1,']');
+                        if(ne) {
+                            char fname[64]={0};
+                            int fnl=(int)(ne-nb-1); if(fnl>63)fnl=63;
+                            memcpy(fname,nb+1,fnl);
+                            fidx=-1;
+                            for(int fi=0;fi<nf;fi++){
+                                if(strcmp(funcs[fi].name,fname)==0){fidx=fi;break;}
+                            }
+                            if(fidx<0){fidx=0;} /* fallback to 0 if not found */
+                        }
+                    } else {
+                        /* η_{Kan}N (call by index) - backward compatible */
+                        char *num=eta+3;
+                        while(*num && !(*num>='0' && *num<='9')) num++;
+                        fidx=atoi(num);
+                    }
+                }
                 int target_np=1; int target_nr=1;
                 if(fidx>=0 && fidx<nf) { target_np=funcs[fidx].nparams; target_nr=funcs[fidx].nreturns; }
                 for(int p=0;p<target_np;p++){

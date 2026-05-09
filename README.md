@@ -429,7 +429,7 @@ Luon ships with **20 standard library modules**:
 
 ## Examples
 
-The `examples/` directory contains **33 programs**:
+The `examples/` directory contains **34 programs**:
 
 | Example | Description | Concepts |
 |---------|-------------|----------|
@@ -447,6 +447,7 @@ The `examples/` directory contains **33 programs**:
 | `codex.luon` | Complex multi-module demo | Advanced patterns |
 | `tuple_test.luon` | 3-value tuple return | Multi-return, `→^{N}` |
 | `scope_test.luon` | Lexical scoping demo | `⊣_{scope}`, register shadowing |
+| `named_call_test.luon` | Call by name demo | Linker symbol table, `η_{Kan}[name]` |
 
 ---
 
@@ -481,7 +482,7 @@ LUON/
 │   ├── typechecker.luon   # 13-type static type system
 │   └── module_resolver.luon # Import resolution + cycle detection
 │
-├── examples/              # 33 example programs
+├── examples/              # 34 example programs
 ├── editor/luon-vscode/    # VS Code extension (v0.2.0)
 ├── docs/                  # Additional documentation
 ├── .github/workflows/     # CI/CD pipelines

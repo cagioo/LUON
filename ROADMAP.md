@@ -234,7 +234,7 @@ This roadmap tracks every major component of the Luon programming language from 
 |---|---|---|---|
 | Integrate typechecker → parser/emitter | 🔲 | P0 | Type checking during compilation |
 | Integrate module_resolver → build flow | 🔲 | P0 | Auto-resolve imports |
-| Linker symbol table | 🔲 | P0 | Function resolution without manual index |
+| Linker symbol table | ✅ | P0 | Function resolution without manual index (Call by Name) |
 | Stdlib importable via syntax | 🔲 | P0 | `(⊢_{Γ}^{import} 𝔘[math])` working |
 | Multiple parameters via registers | ✅ | P0 | Multi-arg via σ registers + auto-detection from subscripts |
 | Multiple return values | ✅ | P0 | Zero-overhead tuples via `→^{N}` projection syntax |
