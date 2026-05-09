@@ -1,4 +1,5 @@
 // examples/time_demo.luon — Time measurement demonstration
+
 // Demonstrates: WASI clock_time_get, elapsed time calculation, integer division
 // Expected output: elapsed milliseconds for 10000 busy-loop iterations
 // Uses: WASI syscall 7 (clock_time_get), monotonic clock (id=1)

@@ -806,6 +806,8 @@ Functions:
 - `time_to_millis(ns)` — convert nanoseconds to milliseconds
 - `time_to_seconds(ns)` — convert nanoseconds to seconds
 
+
+
 ### 10.6 Utility Modules
 
 #### `fmt.luon`
