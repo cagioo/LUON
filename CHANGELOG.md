@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **`stdlib/iter.luon`** — Array iterator protocol (iter_new, iter_has_next, iter_next) preventing standard loop keywords.
 - **`stdlib/lstring.luon`** — Length-prefixed string type (lstr_new, lstr_len, lstr_ptr, lstr_get_byte, lstr_eq, lstr_concat).
 - **`stdlib/char.luon`** — Unicode scalar value type (char_from_code, char_is_ascii/digit/alpha/upper/lower, char_to_upper/lower).
+- **`stdlib/range.luon`** — Range type (range_new, range_start, range_end, range_step, range_len, range_contains, range_get).
 - **`stdlib/stack.luon`** — LIFO stack: stack_new, stack_push, stack_pop, stack_peek, stack_len, stack_is_empty, stack_clear, stack_check_overflow
 - **`stdlib/deque.luon`** — Ring-buffer double-ended queue: deque_new, deque_push_back, deque_pop_front, deque_len, deque_is_empty, deque_clear
 - **`stdlib/time.luon`** — WASI clock utilities: time_now_ns, time_monotonic_ns, time_elapsed_ns, time_to_millis, time_to_seconds

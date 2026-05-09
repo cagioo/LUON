@@ -1,0 +1,139 @@
+// stdlib/range.luon — Range type for Luon
+// Functions: range_new, range_start, range_end, range_step, range_len, range_contains, range_get
+// Layout: [start:i64 | end:i64 | step:i64] = 24 bytes header
+// Caller provides 24 bytes range_ptr.
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[range] ⊢_Γ {
+
+  // range_new(range_ptr, start, end, step) → range_ptr
+  // acc = range_ptr, σ₂ = start, σ₃ = end, σ₄ = step
+  ∃!Φ ∈ Hom(𝒞,𝒟)[range_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // range_ptr[0] = start
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // range_ptr[8] = end
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // range_ptr[16] = step (default 1 if 0)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // return range_ptr
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // range_start(range_ptr) → start
+  ∃!Φ ∈ Hom(𝒞,𝒟)[range_start] ⊣^{op} {
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // range_end(range_ptr) → end
+  ∃!Φ ∈ Hom(𝒞,𝒟)[range_end] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // range_step(range_ptr) → step
+  ∃!Φ ∈ Hom(𝒞,𝒟)[range_step] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // range_len(range_ptr) → number of elements
+  // len = (end - start + step - 1) / step (ceiling division for positive step)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[range_len] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // start
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // end
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // step
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // diff = end - start
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -σ₃))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // if diff <= 0 → return 0
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≼_{E₂^{p,q}} 0)^{⊆filt}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // len = (diff + step - 1) / step
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+    (RHom_ℤ(∂_Ω, σ₅))^{div}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // range_contains(range_ptr, value) → bool
+  // acc = range_ptr, σ₂ = value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[range_contains] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // start
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // end
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // value >= start AND value < end
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≺_{ω₁} σ₅)^{well-order}
+      ⊢_{Γ}^{⊃I}⟦
+        (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+      ⟧^{⊃E}_{Δ}⊣
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // range_get(range_ptr, idx) → start + idx * step (or 0 if OOB)
+  // acc = range_ptr, σ₂ = idx
+  ∃!Φ ∈ Hom(𝒞,𝒟)[range_get] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // start
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // step
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // value = start + idx * step
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ σ₅)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
