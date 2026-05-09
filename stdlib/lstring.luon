@@ -1,0 +1,218 @@
+// stdlib/lstring.luon — Length-prefixed string type for Luon
+// Functions: lstr_new, lstr_len, lstr_ptr, lstr_get_byte, lstr_concat, lstr_eq
+// Layout: [len:i64 | data_ptr:i64] = 16 bytes header
+// Note: Caller provides 16 bytes lstr_ptr. Data is stored separately.
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[lstring] ⊢_Γ {
+
+  // lstr_new(lstr_ptr, data_ptr, len) → lstr_ptr
+  // acc = lstr_ptr, σ₂ = data_ptr, σ₃ = len
+  ∃!Φ ∈ Hom(𝒞,𝒟)[lstr_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // lstr_ptr[0] = len
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // lstr_ptr[8] = data_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // return lstr_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // lstr_len(lstr_ptr) → len
+  ∃!Φ ∈ Hom(𝒞,𝒟)[lstr_len] ⊣^{op} {
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // lstr_ptr(lstr_ptr) → data_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[lstr_ptr] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // lstr_get_byte(lstr_ptr, idx) → byte (or 0 if OOB)
+  // acc = lstr_ptr, σ₂ = idx
+  ∃!Φ ∈ Hom(𝒞,𝒟)[lstr_get_byte] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // len = lstr_ptr[0]
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 σ₃)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // bounds check: idx >= len → return 0
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // data_ptr = lstr_ptr[8]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    // addr = data_ptr + idx
+    (Ext⁰_𝔄(∂_Ω, σ₂))_{Spec ℤ}
+    // byte = *addr (load u8)
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // lstr_eq(lstr_a, lstr_b) → bool (1 if equal, 0 if not)
+  // acc = lstr_a, σ₂ = lstr_b
+  ∃!Φ ∈ Hom(𝒞,𝒟)[lstr_eq] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // lstr_a
+    // len_a = lstr_a[0]
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 σ₃)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // len_b = lstr_b[0]
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // if len_a != len_b → return 0
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} σ₅)^{d_r=0}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // data_a = lstr_a[8]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // data_b = lstr_b[8]
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    // Compare byte-by-byte
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq} // i = 0
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          // All bytes matched
+          (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        ⟧^{⊃E}_{Δ}⊣
+        // byte_a = data_a[i]
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₈))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+        // byte_b = data_b[i]
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₈))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+        // if byte_a != byte_b → return 0
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≡_{E_∞} σ₁₀)^{d_r=0}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        ⟧^{⊃E}_{Δ}⊣
+        // i += 1
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // lstr_concat(dest_lstr_ptr, lstr_a, lstr_b, dest_data_ptr) → dest_lstr_ptr
+  // acc = dest_lstr_ptr, σ₂ = lstr_a, σ₃ = lstr_b, σ₄ = dest_data_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[lstr_concat] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq} // dest_lstr_ptr
+    // len_a = lstr_a[0]
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // len_b = lstr_b[0]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    // total_len = len_a + len_b
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₇))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    // dest_lstr_ptr[0] = total_len
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₈)
+    // dest_lstr_ptr[8] = dest_data_ptr
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Copy data_a → dest_data_ptr (len_a bytes)
+    // data_a = lstr_a[8]
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq} // data_a
+    // memcpy loop: data_a → dest_data_ptr, len_a bytes
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq} // i = 0
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₆)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // byte = data_a[i]
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₁₀))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+        // dest_data_ptr[i] = byte
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₁₀))_{Spec ℤ}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₁₁)
+        // i += 1
+        (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // Copy data_b → dest_data_ptr + len_a (len_b bytes)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq} // data_b
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq} // j = 0
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₇)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // byte = data_b[j]
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₁₀))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤₈_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+        // dest_data_ptr[len_a + j] = byte
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+        (Ext⁰_𝔄(∂_Ω, σ₁₀))_{Spec ℤ}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦₈_𝒯 σ₁₁)
+        // j += 1
+        (σ₁₀ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // return dest_lstr_ptr
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
