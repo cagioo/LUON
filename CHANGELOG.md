@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Multiple return values (Tuples)** — Functions support `→^{N}` projection syntax for declaring N return values. Compiler emits WASM multi-value returns; VM `vm_exec` refactored to return `i64 *rets` array. Zero heap allocation.
 - **Lexical scoping** — Added `[σ₂, σ₃] ⊣_{scope} { ... ⟧_{scope}` block syntax for register shadowing. Compiler uses unused high-numbered WASM locals (126, 125, ...) for zero-overhead save/restore.
 - **WASM Type Section refactor** — Dynamic `(params, returns)` signature grouping replaces fixed per-function type indices.
+- **Linker Symbol Table (Call by Name)** — Functions can now be called by name using `η_{Kan}[name]` syntax. Compiler resolves name→index at compile time. Backward compatible with `η_{Kan}N` (by index).
 
 ### Added — Standard Library Expansion (20 → 25 modules)
 - **`stdlib/slice.luon`** — Zero-copy memory view (slice_new, slice_len, slice_ptr, slice_get, slice_subslice).

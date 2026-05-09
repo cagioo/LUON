@@ -1,0 +1,30 @@
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[named_call_demo] ⊢_Γ {
+
+  // Helper: double the accumulator (acc * 2)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[double] ⊣^{op} {
+    (∂_Ω ⊗_ℤ 2)^{⊗L}_{D(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Helper: add 10 to accumulator
+  ∃!Φ ∈ Hom(𝒞,𝒟)[add_ten] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 10))_{Spec ℤ}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Main: call by NAME instead of index
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // acc = 5
+    (5 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₁)^{seq}
+
+    // Call "double" by NAME → acc = 10
+    η_{Kan}[double]
+
+    // Call "add_ten" by NAME → acc = 20
+    η_{Kan}[add_ten]
+
+    // Return 20
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}
