@@ -1,0 +1,181 @@
+// stdlib/fixed_array.luon — Stack-allocated fixed-size array for Luon
+// Functions: farray_new, farray_get, farray_set, farray_len, farray_fill, farray_sum
+// Layout: [capacity:i64 | elem₀:i64 | elem₁:i64 | ... | elem_{N-1}:i64]
+// Total size: 8 + capacity * 8 bytes
+// Caller provides contiguous memory block. No heap allocation.
+// All access is bounds-checked.
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[fixed_array] ⊢_Γ {
+
+  // farray_new(farray_ptr, capacity) → farray_ptr
+  // Initializes header and zeroes all elements.
+  // acc = farray_ptr, σ₂ = capacity
+  ∃!Φ ∈ Hom(𝒞,𝒟)[farray_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // farray_ptr
+    // farray_ptr[0] = capacity
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Zero all elements: i = 0
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if i >= capacity: break
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₂)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // addr = farray_ptr + 8 + i * 8
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+        (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+        // store 0 at addr
+        (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 ∂_Ω)
+        // i += 1
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // return farray_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // farray_len(farray_ptr) → capacity
+  ∃!Φ ∈ Hom(𝒞,𝒟)[farray_len] ⊣^{op} {
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // farray_get(farray_ptr, idx) → value (or 0 if OOB)
+  // acc = farray_ptr, σ₂ = idx
+  ∃!Φ ∈ Hom(𝒞,𝒟)[farray_get] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // farray_ptr
+    // capacity = farray_ptr[0]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // bounds check: if idx >= capacity → return 0
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // addr = farray_ptr + 8 + idx * 8
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    // load i64 from addr
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // farray_set(farray_ptr, idx, value) → 1 if success, 0 if OOB
+  // acc = farray_ptr, σ₂ = idx, σ₃ = value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[farray_set] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq} // farray_ptr
+    // capacity = farray_ptr[0]
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // bounds check: if idx >= capacity → return 0
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} σ₅)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // addr = farray_ptr + 8 + idx * 8
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    // store value at addr
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // return 1 (success)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // farray_fill(farray_ptr, value) → void
+  // Sets all elements to value.
+  // acc = farray_ptr, σ₂ = value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[farray_fill] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // farray_ptr
+    // capacity
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // i = 0
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if i >= capacity: break
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // addr = farray_ptr + 8 + i * 8
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+        (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+        // store value at addr
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+        // i += 1
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // farray_sum(farray_ptr) → sum of all elements
+  ∃!Φ ∈ Hom(𝒞,𝒟)[farray_sum] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // farray_ptr
+    // capacity
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // sum = 0, i = 0
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if i >= capacity: break
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // addr = farray_ptr + 8 + i * 8
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+        (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+        // val = load i64 from addr
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        // sum += val
+        (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        // i += 1
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // return sum
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}

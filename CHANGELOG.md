@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **`stdlib/range.luon`** — Range type (range_new, range_start, range_end, range_step, range_len, range_contains, range_get).
 - **`stdlib/arena.luon`** — Region-based arena allocator (arena_new, arena_alloc, arena_reset, arena_used, arena_remaining).
 - **`stdlib/hashset.luon`** — HashSet with FNV-1a probing (hset_new, hset_add, hset_has, hset_len, hset_clear).
+- **`stdlib/fixed_array.luon`** — Fixed-size stack-allocated array (farray_new, farray_get, farray_set, farray_len, farray_fill, farray_sum).
 - **`stdlib/stack.luon`** — LIFO stack: stack_new, stack_push, stack_pop, stack_peek, stack_len, stack_is_empty, stack_clear, stack_check_overflow
 - **`stdlib/deque.luon`** — Ring-buffer double-ended queue: deque_new, deque_push_back, deque_pop_front, deque_len, deque_is_empty, deque_clear
 - **`stdlib/time.luon`** — WASI clock utilities: time_now_ns, time_monotonic_ns, time_elapsed_ns, time_to_millis, time_to_seconds
