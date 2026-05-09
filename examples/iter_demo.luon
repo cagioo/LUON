@@ -1,0 +1,92 @@
+// examples/iter_demo.luon — Demonstrates Slice and Iterator usage
+// Simulates taking a slice of a stack and iterating through it
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[iter_demo] ⊢_Γ {
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // 1. Allocate a stack with capacity 10 (returns stack_ptr to σ₂)
+    (10 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (η_0^{stack_new} ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+
+    // 2. Push items 42, 43, 44
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (42 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (η_1^{stack_push} ∘_{2-Cat} ∂_Ω)^{Kan}
+
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (43 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (η_1^{stack_push} ∘_{2-Cat} ∂_Ω)^{Kan}
+
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (44 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (η_1^{stack_push} ∘_{2-Cat} ∂_Ω)^{Kan}
+
+    // 3. Create a slice over the stack's data
+    // stack_len -> σ₄
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_4^{stack_len} ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+
+    // data_ptr is at stack_ptr + 24 -> σ₅
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+
+    // Allocate slice_ptr at 0xF000 (stack local) -> σ₆
+    (61440 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+
+    // slice_new(slice_ptr: σ₆, data_ptr: σ₅, len: σ₄)
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq} // arg1
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // arg2
+    (η_10^{slice_new} ∘_{2-Cat} ∂_Ω)^{Kan}
+
+    // 4. Create an iterator over the slice
+    // iter_ptr at 0xF020 -> σ₇
+    (61472 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+
+    // iter_new(iter_ptr: σ₇, data_ptr: σ₅, len: σ₄)
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq} // arg1
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // arg2
+    (η_20^{iter_new} ∘_{2-Cat} ∂_Ω)^{Kan}
+
+    // 5. Iterate through the elements using μ loop
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // iter_has_next(σ₇)
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (η_21^{iter_has_next} ∘_{2-Cat} ∂_Ω)^{Kan}
+        
+        // if false (0), break loop
+        (∂_Ω ≡_{E_∞} 0)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+
+        // iter_next(σ₇) -> value to σ₈
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (η_22^{iter_next} ∘_{2-Cat} ∂_Ω)^{Kan}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+
+        // Simulating usage of value: store in acc
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+
+        // Continue loop
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
