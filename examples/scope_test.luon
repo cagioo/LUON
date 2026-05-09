@@ -1,0 +1,32 @@
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[scope_demo] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] →^{3} ⊣^{op} {
+    // Initialize outer variables
+    (10 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq} // local 2 = 10
+
+    (20 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // local 3 = 20
+
+    // Begin scope shadowing local 2 and local 3
+    [σ₂, σ₃] ⊣_{scope} {
+        // local 2 and local 3 should retain their outer values initially
+        // Let's modify them inside the scope
+        (100 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq} // local 2 is now 100
+
+        (200 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq} // local 3 is now 200
+
+        // We can do something here if we want, but let's just close scope
+        ⟧_{scope}
+
+    // After scope, local 2 should be restored to 10!
+    // After scope, local 3 should be restored to 20!
+    // We will return local 2 and local 3 and the accumulator (which should still be 200)
+
+    (∂_Ω ⊢_{Γ;Δ} σ₁)^{seq} // local 1 (acc) is currently 200 (from inside the scope)
+    
+    // We return local 1, local 2, local 3
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

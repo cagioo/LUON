@@ -77,7 +77,7 @@ static void emit_cmp(Buf *b, uint8_t op, int has_k, int64_t k, int has_s, int s)
     buf_byte(b,op);buf_byte(b,0xad);SET1;
 }
 
-typedef struct { char name[64]; Buf body; int nparams; } LFunc;
+typedef struct { char name[64]; Buf body; int nparams; int nreturns; } LFunc;
 
 static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *out_len) {
     LFunc funcs[256]; int nf=0;
@@ -108,6 +108,13 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
                         if(pf && pv>max_p) max_p=pv;
                     } else scan++;
                 }
+                int rets = 1;
+                char *arrow = strstr(line1, "\xe2\x86\x92^{");
+                if(arrow) {
+                    rets = atoi(arrow + 5);
+                    if(rets < 1) rets = 1;
+                }
+                cf->nreturns = rets;
                 cf->nparams = max_p>=0 ? max_p+1 : 1;
                 buf_init(&cf->body);
                 nf++;
@@ -122,6 +129,11 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
     char line[4096];
     int pos=0;
 
+    typedef struct { int shadow_count; int shadows[8]; } CBlock;
+    CBlock blocks[64];
+    int bp = 0;
+    int scope_sp = 127;
+
     while(pos<src_len) {
         int ll=0;
         while(pos<src_len && src[pos]!='\n') { if(ll<4094) line[ll++]=src[pos]; pos++; }
@@ -134,6 +146,7 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
         /* Function decl */
         if(strstr(s,"\xe2\x88\x83")&&strstr(s,"Hom")) { /* ∃...Hom */
             cur=&funcs[cur_fidx++];
+            bp = 0; scope_sp = 127;
             continue;
         }
         if(!cur) continue;
@@ -215,13 +228,68 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
                 buf_byte(b,0xad);SET1;
             } else if(has_str(ex,"\xe2\x86\xa4")&&has_str(ex,"\xce\x93-generic")) { /* Load */
                 GET1;buf_byte(b,0xa7);buf_byte(b,0x29);buf_byte(b,0);buf_byte(b,0);SET1;
+            } else if(has_str(ex,"\xe2\x8a\xa3_{\x73\x63\x6f\x70\x65}")) { /* ⊣_{scope} */
+                const char *scan = ex;
+                if(bp<64) blocks[bp].shadow_count = 0;
+                while(*scan && *scan != '{') {
+                    if((uint8_t)scan[0]==0xcf && (uint8_t)scan[1]==0x83) {
+                        scan+=2; int pv=0; int fd=0;
+                        while((uint8_t)scan[0]==0xe2 && (uint8_t)scan[1]==0x82 && (uint8_t)scan[2]>=0x80 && (uint8_t)scan[2]<=0x89) {
+                            pv=pv*10+((uint8_t)scan[2]-0x80); scan+=3; fd=1;
+                        }
+                        if(fd && bp<64 && blocks[bp].shadow_count<8) {
+                            scope_sp--;
+                            buf_byte(b, 0x20); buf_uleb(b, pv);
+                            buf_byte(b, 0x21); buf_uleb(b, scope_sp);
+                            blocks[bp].shadows[blocks[bp].shadow_count++] = pv;
+                        }
+                    } else if(strstr(scan, "\xe2\x88\x82_\xce\xa9") == scan) { /* ∂_Ω Accumulator */
+                        scan += 6;
+                        if(bp<64 && blocks[bp].shadow_count<8) {
+                            scope_sp--;
+                            buf_byte(b, 0x20); buf_uleb(b, 1);
+                            buf_byte(b, 0x21); buf_uleb(b, scope_sp);
+                            blocks[bp].shadows[blocks[bp].shadow_count++] = 1;
+                        }
+                    } else scan++;
+                }
+                buf_byte(b,0x02);buf_byte(b,0x40); /* block empty */
+                if(bp<64) bp++;
+            } else if(has_str(ex,"\xe2\x9f\xa7_{\x73\x63\x6f\x70\x65}")) { /* ⟧_{scope} */
+                if(bp>0) {
+                    bp--;
+                    for(int i=blocks[bp].shadow_count-1; i>=0; i--) {
+                        buf_byte(b, 0x20); buf_uleb(b, scope_sp);
+                        buf_byte(b, 0x21); buf_uleb(b, blocks[bp].shadows[i]);
+                        scope_sp++;
+                    }
+                }
+                buf_byte(b,0x0b);
             } else if(has_str(ex,"\xe2\x8a\x83I")&&has_str(ex,"\xe2\x9f\xa6")) { /* Block_Begin */
+                if(bp<64) { blocks[bp].shadow_count = 0; bp++; }
                 buf_byte(b,0x02);buf_byte(b,0x40);
             } else if(has_str(ex,"\xe2\x9f\xa7")&&has_str(ex,"\xe2\x8a\x83""E")) { /* Block_End */
+                if(bp>0) {
+                    bp--;
+                    for(int i=blocks[bp].shadow_count-1; i>=0; i--) {
+                        buf_byte(b, 0x20); buf_uleb(b, scope_sp);
+                        buf_byte(b, 0x21); buf_uleb(b, blocks[bp].shadows[i]);
+                        scope_sp++;
+                    }
+                }
                 buf_byte(b,0x0b);
             } else if(has_str(ex,"\xce\xbc_{\xcf\x89")&&has_str(ex,"CK")) { /* Loop_Begin */
+                if(bp<64) { blocks[bp].shadow_count = 0; bp++; }
                 buf_byte(b,0x03);buf_byte(b,0x40);
             } else if(has_str(ex,"\xe2\x9f\xa7_{\xcf\x89")&&has_str(ex,"CK")) { /* Loop_End */
+                if(bp>0) {
+                    bp--;
+                    for(int i=blocks[bp].shadow_count-1; i>=0; i--) {
+                        buf_byte(b, 0x20); buf_uleb(b, scope_sp);
+                        buf_byte(b, 0x21); buf_uleb(b, blocks[bp].shadows[i]);
+                        scope_sp++;
+                    }
+                }
                 buf_byte(b,0x0b);
             } else if(has_str(ex,"\xe2\x8a\xac")&&has_str(ex,"G\xc3\xb6""del")&&has_str(ex,"\xe2\x88\x82")) { /* Conditional br_if */
                 int depth=0;
@@ -234,17 +302,23 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
                 if(sp){int ds=extract_sigma(sp);if(ds>=0)depth=ds;}
                 buf_byte(b,0x0c);buf_uleb(b,depth);
             } else if(has_str(ex,"\xe2\x8a\xa5_{\xf0\x9d\x92\xaf}")&&has_str(ex,"ex falso")) { /* Return */
-                GET1;buf_byte(b,0x0f);
+                for(int i=1;i<=cur->nreturns;i++){
+                    buf_byte(b,0x20);buf_uleb(b,i); /* local.get i */
+                }
+                buf_byte(b,0x0f);
             } else if(has_str(ex,"\xce\xb7_")&&has_str(ex,"Kan")) { /* Call */
                 char *eta=strstr(ex,"\xce\xb7_");
                 int fidx=0;
                 if(eta){fidx=atoi(eta+3);}
-                int target_np=1;
-                if(fidx>=0 && fidx<nf) target_np=funcs[fidx].nparams;
+                int target_np=1; int target_nr=1;
+                if(fidx>=0 && fidx<nf) { target_np=funcs[fidx].nparams; target_nr=funcs[fidx].nreturns; }
                 for(int p=0;p<target_np;p++){
                     buf_byte(b,0x20);buf_uleb(b,p+1); /* local.get p+1 */
                 }
-                buf_byte(b,0x10);buf_uleb(b,fidx);SET1;
+                buf_byte(b,0x10);buf_uleb(b,fidx);
+                for(int r=target_nr;r>=1;r--){
+                    buf_byte(b,0x21);buf_uleb(b,r); /* local.set r */
+                }
             } else if(has_str(ex,"H^n_{")&&has_str(ex,"Galois")) { /* Hash */
                 GET1;buf_byte(b,0x42);buf_sleb(b,0x811c9dc5);
                 buf_byte(b,0x85);buf_byte(b,0x42);buf_sleb(b,0x01000193);
@@ -262,22 +336,43 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
     uint8_t ver[]={1,0,0,0}; buf_bytes(&wasm,ver,4);
 
     /* Type section — emit types for 1..max_params */
-    int max_p=1;
-    for(int i=0;i<nf;i++) if(funcs[i].nparams>max_p) max_p=funcs[i].nparams;
+    /* Type section */
+    int num_types = 0;
+    int type_params[256];
+    int type_returns[256];
+    for(int i=0;i<nf;i++) {
+        int found=0;
+        for(int j=0;j<num_types;j++) {
+            if(type_params[j]==funcs[i].nparams && type_returns[j]==funcs[i].nreturns) { found=1; break; }
+        }
+        if(!found) {
+            type_params[num_types] = funcs[i].nparams;
+            type_returns[num_types] = funcs[i].nreturns;
+            num_types++;
+        }
+    }
     {
         Buf tsb; buf_init(&tsb);
-        buf_uleb(&tsb,max_p); /* number of types */
-        for(int np=1;np<=max_p;np++){
+        buf_uleb(&tsb,num_types);
+        for(int i=0;i<num_types;i++){
             buf_byte(&tsb,0x60); /* func type */
-            buf_uleb(&tsb,np);   /* param count */
-            for(int j=0;j<np;j++) buf_byte(&tsb,0x7e); /* i64 params */
-            buf_uleb(&tsb,1); buf_byte(&tsb,0x7e); /* 1 i64 result */
+            buf_uleb(&tsb,type_params[i]);   /* param count */
+            for(int j=0;j<type_params[i];j++) buf_byte(&tsb,0x7e); /* i64 params */
+            buf_uleb(&tsb,type_returns[i]); /* result count */
+            for(int j=0;j<type_returns[i];j++) buf_byte(&tsb,0x7e); /* i64 results */
         }
         buf_byte(&wasm,1);buf_uleb(&wasm,tsb.len);buf_bytes(&wasm,tsb.d,tsb.len);free(tsb.d);
     }
-    /* Function section — map each func to type index (nparams-1) */
+    /* Function section — map each func to its unique type index */
     Buf fs; buf_init(&fs);
-    buf_uleb(&fs,nf);for(int i=0;i<nf;i++)buf_uleb(&fs,funcs[i].nparams-1);
+    buf_uleb(&fs,nf);
+    for(int i=0;i<nf;i++){
+        for(int j=0;j<num_types;j++) {
+            if(type_params[j]==funcs[i].nparams && type_returns[j]==funcs[i].nreturns) {
+                buf_uleb(&fs,j); break;
+            }
+        }
+    }
     buf_byte(&wasm,3);buf_uleb(&wasm,fs.len);buf_bytes(&wasm,fs.d,fs.len);free(fs.d);
     /* Memory section */
     uint8_t ms_d[]={1,0,30};

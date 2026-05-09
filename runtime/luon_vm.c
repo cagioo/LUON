@@ -56,6 +56,8 @@ typedef struct {
     i64     globals[256];
     int     func_nparams[MAX_FUNCS]; /* param count per function */
     int     type_nparams[64];        /* param count per type */
+    int     func_nreturns[MAX_FUNCS];
+    int     type_nreturns[64];
     int     func_type[MAX_FUNCS];    /* type index per function */
 } Module;
 
@@ -103,6 +105,7 @@ static int parse_module(const u8 *data, int len, Module *m) {
                 m->type_nparams[i] = np;
                 for (int j = 0; j < np; j++) pos++; /* skip param types */
                 int nr = (int)read_uleb(data, &pos);
+                m->type_nreturns[i] = nr;
                 for (int j = 0; j < nr; j++) pos++; /* skip result types */
             }
         } else if (sid == 3) { /* Function section */
@@ -111,6 +114,7 @@ static int parse_module(const u8 *data, int len, Module *m) {
                 int ti = (int)read_uleb(data, &pos);
                 m->func_type[i] = ti;
                 m->func_nparams[i] = (ti < 64) ? m->type_nparams[ti] : 1;
+                m->func_nreturns[i] = (ti < 64) ? m->type_nreturns[ti] : 1;
             }
         } else if (sid == 5) { /* Memory */
             int cnt = (int)read_uleb(data, &pos);
@@ -169,15 +173,15 @@ static int find_export(Module *m, const char *name) {
 /* ═══ VM Execution ═══ */
 static int call_depth = 0;
 
-static i64 vm_exec(Module *m, int fidx, i64 *args, int nargs) {
+static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nrets) {
     if (fidx < 0 || fidx >= m->n_funcs) {
         fprintf(stderr, "Error: invalid function index %d\n", fidx);
-        return 0;
+        return;
     }
     if (++call_depth > MAX_CALL) {
         fprintf(stderr, "Error: stack overflow\n");
         call_depth--;
-        return 0;
+        return;
     }
 
     Func *f = &m->funcs[fidx];
@@ -216,7 +220,10 @@ static i64 vm_exec(Module *m, int fidx, i64 *args, int nargs) {
         }
         case 0x05: { /* else */ int d=1;while(d>0&&pos<clen){u8 o=code[pos++];if(o==2||o==3||o==4)d++;else if(o==0x0B)d--;} break; }
         case 0x0B: { /* end */
-            if(bp>0) bp--; else { i64 r=sp>0?stack[sp-1]:0; call_depth--; return r; }
+            if(bp>0) bp--; else { 
+                for(int i=nrets-1; i>=0; i--) rets[i] = sp>0 ? stack[--sp] : 0;
+                call_depth--; return; 
+            }
             break;
         }
         case 0x0C: { /* br */
@@ -245,13 +252,21 @@ static i64 vm_exec(Module *m, int fidx, i64 *args, int nargs) {
             else{bp=ti;int d=1;while(d>0&&pos<clen){u8 o=code[pos++];if(o==2||o==3||o==4)d++;else if(o==0x0B)d--;}}
             break;
         }
-        case 0x0F: { i64 r=sp>0?stack[sp-1]:0; call_depth--; return r; }
-        case 0x10: {
+        case 0x0F: { 
+            for(int i=nrets-1; i>=0; i--) {
+                rets[i] = sp>0 ? stack[--sp] : 0;
+            }
+            call_depth--; return; 
+        }
+        case 0x10: { 
             int fi=(int)read_uleb(code,&pos);
             int np=m->func_nparams[fi]; if(np<1) np=1;
+            int nr=m->func_nreturns[fi]; if(nr<1) nr=1;
             i64 cargs[16]={0};
+            i64 crets[16]={0};
             for(int i=np-1;i>=0;i--) cargs[i]=POP();
-            PUSH(vm_exec(m,fi,cargs,np));
+            vm_exec(m,fi,cargs,np,crets,nr);
+            for(int i=0;i<nr;i++) PUSH(crets[i]);
             break;
         }
         case 0x1A: POP(); break;
@@ -307,8 +322,9 @@ static i64 vm_exec(Module *m, int fidx, i64 *args, int nargs) {
         }
     }
 done:
+    for(int i=nrets-1; i>=0; i--) rets[i] = sp>0 ? stack[--sp] : 0;
     call_depth--;
-    return sp > 0 ? stack[sp-1] : 0;
+    return;
 }
 
 /* ═══ File I/O ═══ */
@@ -455,8 +471,13 @@ static int cmd_run(int argc, char **argv) {
 
     call_depth = 0;
     i64 run_args[1] = {arg};
-    i64 result = vm_exec(&m, fidx, run_args, 1);
-    printf("%lld\n", (long long)result);
+    i64 run_rets[16] = {0};
+    int nr = m.func_nreturns[fidx]; if(nr<1) nr=1;
+    vm_exec(&m, fidx, run_args, 1, run_rets, nr);
+    for(int i=0;i<nr;i++) {
+        printf("%lld%s", (long long)run_rets[i], i==nr-1?"":" ");
+    }
+    printf("\n");
 
     free(wasm_data);
     free(m.memory);

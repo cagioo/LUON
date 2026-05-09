@@ -1,0 +1,27 @@
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[tuple_demo] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[tuple_maker] →^{3} ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    
+    (Ext⁰_𝔄(∂_Ω, 3))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 2))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] →^{3} ⊣^{op} {
+    (10 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}0
+    // Call pops local 3, local 2, local 1 from WASM stack.
+    // So local 1 = 11, local 2 = 12, local 3 = 13.
+    // main will return local 1, local 2, local 3.
+    
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}
