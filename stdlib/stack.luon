@@ -1,0 +1,199 @@
+// stdlib/stack.luon — LIFO stack data structure for Luon
+// Functions: stack_new, stack_push, stack_pop, stack_peek,
+//            stack_len, stack_is_empty, stack_clear, stack_check_overflow
+// Layout: [cap:i64 | len:i64 | data_ptr:i64] = 24 bytes header
+// Data: contiguous i64 elements at data_ptr (grows upward)
+// Comparable to: Rust Vec as stack, Go slice, Java Stack
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[stack] ⊢_Γ {
+
+  // stack_new(capacity) → stack_ptr
+  // acc = initial capacity
+  ∃!Φ ∈ Hom(𝒞,𝒟)[stack_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Enforce minimum capacity of 8
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 8)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (8 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    ⟧^{⊃E}_{Δ}⊣
+    // Load alloc_ptr from state[0] (0x50000)
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Advance alloc_ptr by 24 (header) + cap*8 (data)
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Store new alloc_ptr
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // header[0] = cap
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // header[8] = len = 0
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // header[16] = data_ptr (header + 24)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+    // Return header ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // stack_push(stack_ptr, value) → new_len
+  // acc = stack_ptr, σ₂ = value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[stack_push] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load len from header[8]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load data_ptr from header[16]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Store value at data[len * 8]
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // len++
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Store new len
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // stack_pop(stack_ptr) → popped value (or 0 if empty)
+  // acc = stack_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[stack_pop] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // if len == 0, return 0
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // len--
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Store new len
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Load data_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Load data[new_len * 8]
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // stack_peek(stack_ptr) → top value (or 0 if empty)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[stack_peek] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // stack_len(stack_ptr) → length
+  ∃!Φ ∈ Hom(𝒞,𝒟)[stack_len] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // stack_is_empty(stack_ptr) → 1 if empty, 0 otherwise
+  ∃!Φ ∈ Hom(𝒞,𝒟)[stack_is_empty] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // stack_clear(stack_ptr) → 0
+  ∃!Φ ∈ Hom(𝒞,𝒟)[stack_clear] ⊣^{op} {
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // stack_check_overflow(stack_ptr) → 0 if ok, 15 (err_full) if full
+  ∃!Φ ∈ Hom(𝒞,𝒟)[stack_check_overflow] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (15 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}
