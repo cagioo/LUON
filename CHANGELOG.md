@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed — Compiler Infrastructure
 - **Multiple parameters** — Functions now support N params (auto-detected from σ subscripts in declaration). `luon_compile.h` emits multi-type WASM sections; `luon_vm.c` parses type/function sections for param counts.
+- **Multiple return values (Tuples)** — Functions support `→^{N}` projection syntax for declaring N return values. Compiler emits WASM multi-value returns; VM `vm_exec` refactored to return `i64 *rets` array. Zero heap allocation.
+- **Lexical scoping** — Added `[σ₂, σ₃] ⊣_{scope} { ... ⟧_{scope}` block syntax for register shadowing. Compiler uses unused high-numbered WASM locals (126, 125, ...) for zero-overhead save/restore.
+- **WASM Type Section refactor** — Dynamic `(params, returns)` signature grouping replaces fixed per-function type indices.
 
 ### Added — Standard Library Expansion (20 → 25 modules)
 - **`stdlib/slice.luon`** — Zero-copy memory view (slice_new, slice_len, slice_ptr, slice_get, slice_subslice).
@@ -47,6 +50,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **`examples/stack_demo.luon`** — Stack push/pop demonstration (push 10, 20, 42 → pop returns 42)
 - **`examples/deque_demo.luon`** — Deque FIFO demonstration (push_back 100, 200 → pop_front returns 100)
 - **`examples/time_demo.luon`** — WASI clock elapsed time measurement (monotonic clock, busy loop, ns→ms conversion)
+- **`examples/multi_param_test.luon`** — Multi-parameter function call demonstration
+- **`examples/tuple_test.luon`** — 3-value tuple return with zero-overhead register mapping (11 + 12 + 13)
+- **`examples/scope_test.luon`** — Lexical scoping verification: shadowed σ₂/σ₃ restored after scope exit
 
 ### Fixed — Stdlib Bugs (via line-by-line audit)
 - **`stdlib/deque.luon`** — Removed dead `acc *= cap` multiply in `deque_push_back` (line 88)

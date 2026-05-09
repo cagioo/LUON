@@ -65,6 +65,10 @@
         {
           "name": "keyword.other.adjoint.luon",
           "match": "⊣\\^\\{op\\}"
+        },
+        {
+          "name": "keyword.other.returns.luon",
+          "match": "→\\^\\{\\d+\\}"
         }
       ]
     },
@@ -161,6 +165,18 @@
         {
           "name": "keyword.control.nop.luon",
           "match": "id_\\{𝒞\\}"
+        },
+        {
+          "name": "keyword.control.scope.begin.luon",
+          "match": "⊣_\\{scope\\}"
+        },
+        {
+          "name": "keyword.control.scope.end.luon",
+          "match": "⟧_\\{scope\\}"
+        },
+        {
+          "name": "keyword.control.call.kan.luon",
+          "match": "η_\\{Kan\\}\\d+"
         }
       ]
     },

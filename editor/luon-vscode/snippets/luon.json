@@ -99,8 +99,8 @@
   },
   "Call Function": {
     "prefix": "call",
-    "body": "(η_${1:index} ∘_{2-Cat} ∂_Ω)^{Kan}",
-    "description": "Call function by index"
+    "body": "η_{Kan}${1:0}",
+    "description": "Call function by index (multi-param, multi-return)"
   },
   "Memory Store": {
     "prefix": "mstore",
@@ -131,5 +131,24 @@
       "}"
     ],
     "description": "Full Luon program template"
+  },
+  "Function Multi-Return": {
+    "prefix": "funcN",
+    "body": [
+      "∃!Φ ∈ Hom(𝒞,𝒟)[${1:function_name}] →^{${2:3}} ⊣^{op} {",
+      "  $0",
+      "  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}",
+      "}"
+    ],
+    "description": "Declare function with N return values (tuple)"
+  },
+  "Lexical Scope": {
+    "prefix": "scope",
+    "body": [
+      "[σ${1:₂}, σ${2:₃}] ⊣_{scope} {",
+      "    $0",
+      "⟧_{scope}"
+    ],
+    "description": "Lexical scope block with register shadowing"
   }
 }

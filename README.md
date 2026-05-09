@@ -20,7 +20,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Version-2.1.1_Singularity-brightgreen.svg" alt="Version"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Version-2.2.0_dev-brightgreen.svg" alt="Version"></a>
   <a href="https://github.com/cagioo/LUON"><img src="https://img.shields.io/badge/Target-WebAssembly-blueviolet.svg" alt="Target"></a>
 </p>
 
@@ -217,8 +217,9 @@ Luon uses an **accumulator-based model** with 127 general-purpose registers:
 | Accumulator | `∂_Ω` | Primary working value — most operations read/write this |
 | Input parameter | `σ₀` | Function input |
 | Registers | `σ₁`–`σ₁₂₇` | Temporary storage |
-| Function call | `η_N` | Calls function by index `N` |
-| Return | `⊥_{𝒯}→^{ex falso}⊤_{𝒯}` | Returns the accumulator |
+| Function call | `η_{Kan}N` | Calls function by index `N` (multi-param, multi-return) |
+| Return | `⊥_{𝒯}→^{ex falso}⊤_{𝒯}` | Returns accumulator (or N values via `→^{N}`) |
+| Lexical scope | `[σ₂, σ₃] ⊣_{scope}` | Shadow registers inside a block, auto-restore on exit |
 
 ### Memory Layout
 
@@ -428,7 +429,7 @@ Luon ships with **20 standard library modules**:
 
 ## Examples
 
-The `examples/` directory contains **31 programs**:
+The `examples/` directory contains **33 programs**:
 
 | Example | Description | Concepts |
 |---------|-------------|----------|
@@ -444,6 +445,8 @@ The `examples/` directory contains **31 programs**:
 | `crypto_v2.luon` | Sign/verify crypto | Étale cohomology notation |
 | `comprehensive_v2.luon` | Full v2 syntax showcase | All operator domains |
 | `codex.luon` | Complex multi-module demo | Advanced patterns |
+| `tuple_test.luon` | 3-value tuple return | Multi-return, `→^{N}` |
+| `scope_test.luon` | Lexical scoping demo | `⊣_{scope}`, register shadowing |
 
 ---
 
@@ -478,7 +481,7 @@ LUON/
 │   ├── typechecker.luon   # 13-type static type system
 │   └── module_resolver.luon # Import resolution + cycle detection
 │
-├── examples/              # 31 example programs
+├── examples/              # 33 example programs
 ├── editor/luon-vscode/    # VS Code extension (v0.2.0)
 ├── docs/                  # Additional documentation
 ├── .github/workflows/     # CI/CD pipelines
