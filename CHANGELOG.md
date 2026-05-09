@@ -11,8 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Unreleased
 
-### Added — Standard Library Expansion (20 → 24 modules)
+### Added — Standard Library Expansion (20 → 25 modules)
 - **`stdlib/slice.luon`** — Zero-copy memory view (slice_new, slice_len, slice_ptr, slice_get, slice_subslice).
+- **`stdlib/iter.luon`** — Array iterator protocol (iter_new, iter_has_next, iter_next) preventing standard loop keywords.
 - **`stdlib/stack.luon`** — LIFO stack: stack_new, stack_push, stack_pop, stack_peek, stack_len, stack_is_empty, stack_clear, stack_check_overflow
 - **`stdlib/deque.luon`** — Ring-buffer double-ended queue: deque_new, deque_push_back, deque_pop_front, deque_len, deque_is_empty, deque_clear
 - **`stdlib/time.luon`** — WASI clock utilities: time_now_ns, time_monotonic_ns, time_elapsed_ns, time_to_millis, time_to_seconds
@@ -26,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added `write_str` utility for WASI fd_write output.
 
 ### Added — Examples
+- **`examples/iter_demo.luon`** — Slice and manual Iterator loop demonstration (`μ` block).
 - **`examples/stack_demo.luon`** — Stack push/pop demonstration (push 10, 20, 42 → pop returns 42)
 - **`examples/deque_demo.luon`** — Deque FIFO demonstration (push_back 100, 200 → pop_front returns 100)
 - **`examples/time_demo.luon`** — WASI clock elapsed time measurement (monotonic clock, busy loop, ns→ms conversion)
