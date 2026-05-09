@@ -184,18 +184,20 @@ Luon uses an **accumulator-based execution model**.
 |---|---|---|
 | Accumulator | `∂_Ω` | Primary working value. Most operators read and write this value. |
 | Input parameter | `σ₀` | Function input parameter. |
-| Return value | `∂_Ω` | The accumulator is returned by `Collapse_Return`. |
+| Return value | `∂_Ω` | The accumulator is returned by `Collapse_Return`. Multiple returns via `→^{N}`. |
 | General registers | `σ₂`–`σ₁₂₇` | Temporary values and arguments. |
-| Function call | `η_N` | Calls function index `N`. |
+| Function call | `η_N` | Calls function index `N`. Supports multi-param and multi-return. |
+| Lexical scope | `⊣_{scope}` | Isolates registers within a block, auto-restores on exit. |
 
 ### 4.2 Function Calling Convention
 
 Each function follows this model:
 
-1. The input parameter is received as `σ₀`.
-2. The accumulator `∂_Ω` is initialized from the input parameter.
+1. The input parameter(s) are received as `σ₀`, `σ₁`, ..., `σ_N` (multi-param via auto-detection).
+2. The accumulator `∂_Ω` is initialized from the first input parameter.
 3. Operators transform the accumulator and registers.
-4. `Collapse_Return` returns the accumulator.
+4. `Collapse_Return` returns the accumulator. For multi-return functions declared with `→^{N}`, registers `σ₁` through `σ_N` are all returned as a zero-overhead tuple.
+5. Lexical scoping via `⊣_{scope}` allows register isolation within blocks.
 
 Example:
 
@@ -291,11 +293,34 @@ Luon currently supports v2 EXTREME syntax as its primary syntax.
 ### 6.2 Function Declaration
 
 ```luon
+// Single return value (default)
 ∃!Φ ∈ Hom(𝒞,𝒟)[function_name] ⊣^{op} {
   ...
   ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
 }
+
+// Multiple return values (Tuple of N)
+∃!Φ ∈ Hom(𝒞,𝒟)[function_name] →^{3} ⊣^{op} {
+  // Set σ₁, σ₂, σ₃ — all three are returned
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
 ```
+
+The `→^{N}` projection syntax declares the return arity. If omitted, the function returns a single value (the accumulator).
+
+### 6.2.1 Lexical Scoping
+
+```luon
+// Shadow registers σ₂ and σ₃ inside a block
+[σ₂, σ₃] ⊣_{scope} {
+    // σ₂ and σ₃ can be freely modified here
+    (100 ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+⟧_{scope}
+// σ₂ and σ₃ are automatically restored to their pre-block values
+```
+
+The compiler uses unused high-numbered WASM locals (126, 125, ...) to stash shadowed values, providing zero-overhead memory isolation.
 
 ### 6.3 Constant Load
 
@@ -381,10 +406,12 @@ return acc
 | Block end | `⟧^{⊃E}_{Δ}⊣` | End block |
 | Loop begin | `μ_{ω₁}^{CK}⟦` | Start loop |
 | Loop end | `⟧_{ω₁}^{CK}μ` | End loop |
+| Scope begin | `[σ₂, σ₃] ⊣_{scope} {` | Start scoped block, shadow listed registers |
+| Scope end | `⟧_{scope}` | End scoped block, restore shadowed registers |
 | Branch | `(⊬_{PA}^{Gödel} σ_N)^{ω-rule}` | Unconditional branch |
 | Branch if | `(∂_Ω ⊬_{PA}^{Gödel} σ_N)^{ω-rule}` | Conditional branch |
-| Return | `⊥_{𝒯}→^{ex falso}⊤_{𝒯}` | Return accumulator |
-| Call | `(η_N ∘_{2-Cat} ∂_Ω)^{Kan}` | Call function index `N` |
+| Return | `⊥_{𝒯}→^{ex falso}⊤_{𝒯}` | Return accumulator (or N values via `→^{N}`) |
+| Call | `η_{Kan}N` | Call function index `N` (multi-param, multi-return) |
 | Nop | `(id_{∂}^{nat})^{Yoneda}` | No operation |
 
 ### 7.6 Floating-Point Operators
@@ -1320,7 +1347,7 @@ See `CONTRIBUTING.md` for full guidelines.
 
 ## 24. Current Limitations
 
-Luon 2.1.1 is a strong foundation. The following are genuine technical limitations (NOT design choices):
+Luon 2.2.0-dev is a strong foundation. The following are genuine technical limitations (NOT design choices):
 
 Known limitations:
 
@@ -1328,12 +1355,18 @@ Known limitations:
 2. Module resolver exists but is not fully integrated into the compiler pipeline.
 3. Type checker exists but requires deeper compiler integration.
 4. Function calls rely on function indices (this is BY DESIGN for security — not a limitation).
-5. Array and hashmap bounds checks need strengthening.
-6. Allocator has no `free` or `realloc` yet.
-7. Formatter, linter, and LSP are not yet implemented.
-8. Package manager is specified but not implemented.
-9. Generics, traits, iterators are planned but not complete.
-10. Ownership/borrow checker not yet implemented.
+5. Formatter, linter, and LSP are not yet implemented.
+6. Package manager is specified but not implemented.
+7. Generics, traits, iterators are planned but not complete.
+8. Ownership/borrow checker not yet implemented.
+
+Recently resolved (no longer limitations):
+
+- ~~Multiple parameters~~ — ✅ Implemented via auto-detection from σ subscripts.
+- ~~Multiple return values~~ — ✅ Implemented via `→^{N}` projection syntax with zero-overhead WASM multi-value.
+- ~~Lexical scoping~~ — ✅ Implemented via `⊣_{scope}` / `⟧_{scope}` with register shadowing.
+- ~~Allocator has no free/realloc~~ — ✅ Free-list allocator with `mem_free`, `mem_realloc`, `alloc_aligned`.
+- ~~Array/hashmap bounds checks~~ — ✅ `array_check_index`, `map_check_key`, `map_delete` with canonical error codes.
 
 > **Note:** The absence of conventional syntax (`if/else`, `for`, `while`, `let`, `print`, string literals) is NOT a limitation — it is a deliberate security feature. See Section 2.2.
 
@@ -1350,10 +1383,10 @@ Priority — capability additions without syntax normalization:
 - complete CLI commands (`luon build/run/check/test/version`),
 - integrate module resolver into build flow,
 - integrate typechecker into parser/emitter pipeline,
-- multiple parameters via register convention (mathematical notation),
-- multiple return values via register packing,
-- `free()` / `realloc()` / arena allocator,
-- array/hashmap bounds checking,
+- ~~multiple parameters via register convention~~ — ✅ Done,
+- ~~multiple return values via register packing~~ — ✅ Done (zero-overhead tuples via `→^{N}`),
+- ~~`free()` / `realloc()` / arena allocator~~ — ✅ Done,
+- ~~array/hashmap bounds checking~~ — ✅ Done,
 - integer overflow detection,
 - division by zero handling,
 - unsigned integer types (`u8`, `u16`, `u32`, `u64`),

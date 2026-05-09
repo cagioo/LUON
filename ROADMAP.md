@@ -1,7 +1,7 @@
 # Luon Development Roadmap
 
-**Last Updated:** 2026-05-08  
-**Current Version:** 2.1.1 Singularity Patch  
+**Last Updated:** 2026-05-10  
+**Current Version:** 2.2.0-dev  
 **Status:** Active Development
 
 ---
@@ -206,7 +206,7 @@ This roadmap tracks every major component of the Luon programming language from 
 | `LUON_REFERENCE.md` | ✅ Complete | v2.1.0 | Quick reference card |
 | Apache 2.0 License | ✅ Complete | v2.0.0 | Open source license |
 
-### 2.5 Examples (31 total)
+### 2.5 Examples (33 total)
 
 | Example | Status | Version |
 |---|---|---|
@@ -220,6 +220,7 @@ This roadmap tracks every major component of the Luon programming language from 
 | `codex.luon`, `test_cmp.luon`, `test_leb.luon`, `test_simple.luon`, `sqrt_test.luon` | ✅ | v2.0.0 |
 | `linked_list.luon`, `matrix_multiply.luon` | ✅ | v2.1.0 |
 | `calculator.luon`, `testing_demo.luon` | ✅ | v2.1.1 |
+| `multi_param_test.luon`, `tuple_test.luon`, `scope_test.luon` | ✅ | v2.2.0-dev |
 
 ---
 
@@ -235,8 +236,9 @@ This roadmap tracks every major component of the Luon programming language from 
 | Integrate module_resolver → build flow | 🔲 | P0 | Auto-resolve imports |
 | Linker symbol table | 🔲 | P0 | Function resolution without manual index |
 | Stdlib importable via syntax | 🔲 | P0 | `(⊢_{Γ}^{import} 𝔘[math])` working |
-| Multiple parameters via registers | 🔲 | P0 | Multi-arg via σ registers + convention |
-| Multiple return values | 🔲 | P0 | Multi-return via register packing |
+| Multiple parameters via registers | ✅ | P0 | Multi-arg via σ registers + auto-detection from subscripts |
+| Multiple return values | ✅ | P0 | Zero-overhead tuples via `→^{N}` projection syntax |
+| Lexical scoping | ✅ | P0 | `⊣_{scope}` / `⟧_{scope}` with register shadowing |
 
 ### 3.2 CLI Completion (P0)
 
@@ -276,7 +278,7 @@ This roadmap tracks every major component of the Luon programming language from 
 | Generics (parametric polymorphism) | 🔲 | P1 | Via mathematical notation |
 | Traits / Interfaces | 🔲 | P1 | Behavior contracts |
 | Type annotations in source | 🔲 | P1 | Via mathematical notation, NOT `fn(a: i64)` style |
-| Scope / block scoping | 🔲 | P1 | Lexical scoping in compiler |
+| Scope / block scoping | ✅ | P1 | Lexical scoping via `⊣_{scope}` / `⟧_{scope}` in compiler |
 | Unsigned integer types (u8/u16/u32/u64) | ✅ | P1 | Added to typechecker with size/alignment/numeric classification and widening rules |
 | Smaller integer types (i8/i16) | ✅ | P1 | Added to typechecker with signed widening rules |
 
@@ -291,7 +293,7 @@ This roadmap tracks every major component of the Luon programming language from 
 | Range type | 🔲 | P1 | Numeric ranges |
 | Char type (Unicode scalar) | 🔲 | P1 | String processing |
 | Basic string type (length-prefixed) | 🔲 | P1 | Modern string representation |
-| Tuple type | 🔲 | P1 | Multiple return values |
+| Tuple type | ✅ | P1 | Zero-overhead multiple return values via `→^{N}` |
 
 ### 4.3 Memory Safety (P1)
 

@@ -3,9 +3,9 @@
 
 
 
-**Version 2.0.0 EXTREME — Vesege**
+**Version 2.2.0-dev EXTREME — Vesege**
 
-Luon is a quantum-computational programming language designed for maximum security. All programs are compiled to obfuscated WASM bytecode.
+Luon is a security-first systems programming language designed for maximum security. All programs are compiled to obfuscated WASM bytecode.
 
 ---
 
@@ -17,9 +17,9 @@ bash install.sh
 
 After install, restart your shell or run `source ~/.bashrc`.
 
-Or run directly without installing:
+Or build from source:
 ```bash
-python3 luon_cli.py <command>
+gcc -O2 -o luon runtime/luon_vm.c
 ```
 
 ---
@@ -48,14 +48,20 @@ python3 luon_cli.py <command>
 
 ### Function Declaration
 ```
+// Single return (default)
 ∃!Φ ∈ Hom(𝒞,𝒟)[function_name] ⊣^{op} {
   // operations go here
+}
+
+// Multiple return values (Tuple of N)
+∃!Φ ∈ Hom(𝒞,𝒟)[function_name] →^{3} ⊣^{op} {
+  // returns σ₁, σ₂, σ₃
 }
 ```
 
 ---
 
-## Operators (34 Total)
+## Operators (36 Total)
 
 ### Arithmetic (Derived Functors)
 
@@ -114,8 +120,15 @@ python3 luon_cli.py <command>
 
 | Operation | Syntax | Description |
 |-----------|--------|-------------|
-| Call | `(η_target ∘_{2-Cat} ∂_Ω)^{Kan}` | Call function |
+| Call | `η_{Kan}N` | Call function N |
 | Nop | `(id_{∂}^{nat})^{Yoneda}` | No operation |
+
+### Lexical Scoping
+
+| Operation | Syntax | Description |
+|-----------|--------|-------------|
+| Scope begin | `[σ₂, σ₃] ⊣_{scope} {` | Shadow registers |
+| Scope end | `⟧_{scope}` | Restore registers |
 
 ---
 
