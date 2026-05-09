@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **`stdlib/fixed_array.luon`** — Fixed-size stack-allocated array (farray_new, farray_get, farray_set, farray_len, farray_fill, farray_sum).
 - **`stdlib/linkedlist.luon`** — Singly-linked list with pre-allocated node pool (ll_new, ll_push_front, ll_pop_front, ll_peek_front, ll_len, ll_is_empty).
 - **`stdlib/stringbuilder.luon`** — Mutable string builder (sb_new, sb_append_byte, sb_append_str, sb_len, sb_build, sb_clear).
+- **`stdlib/btreemap.luon`** — Sorted map (btm_new, btm_insert, btm_get, btm_len, btm_min, btm_max).
 - **`stdlib/stack.luon`** — LIFO stack: stack_new, stack_push, stack_pop, stack_peek, stack_len, stack_is_empty, stack_clear, stack_check_overflow
 - **`stdlib/deque.luon`** — Ring-buffer double-ended queue: deque_new, deque_push_back, deque_pop_front, deque_len, deque_is_empty, deque_clear
 - **`stdlib/time.luon`** — WASI clock utilities: time_now_ns, time_monotonic_ns, time_elapsed_ns, time_to_millis, time_to_seconds
