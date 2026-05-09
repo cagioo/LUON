@@ -81,6 +81,43 @@ typedef struct { char name[64]; Buf body; int nparams; } LFunc;
 
 static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *out_len) {
     LFunc funcs[256]; int nf=0;
+
+    /* Pass 1: Discover functions and param counts */
+    const char *p1 = src;
+    while(p1 < src+src_len) {
+        const char *eol = strchr(p1, '\n');
+        if(!eol) eol = src+src_len;
+        int ll = eol-p1; if(ll>511) ll=511;
+        char line1[512]={0}; memcpy(line1, p1, ll);
+        if(strstr(line1, "\xe2\x88\x83") && strstr(line1, "Hom")) {
+            char *bracket = strchr(line1, '[');
+            if(bracket) {
+                LFunc *cf = &funcs[nf];
+                char *end = strchr(bracket+1, ']');
+                int nl = end ? (int)(end - bracket - 1) : 0;
+                if(nl>63) nl=63;
+                memcpy(cf->name, bracket+1, nl); cf->name[nl] = 0;
+                int max_p = -1;
+                const char *scan = end ? end : line1;
+                while(*scan) {
+                    if((uint8_t)scan[0]==0xcf && (uint8_t)scan[1]==0x83) {
+                        scan+=2; int pv=0; int pf=0;
+                        while((uint8_t)scan[0]==0xe2 && (uint8_t)scan[1]==0x82 && (uint8_t)scan[2]>=0x80 && (uint8_t)scan[2]<=0x89) {
+                            pv=pv*10+((uint8_t)scan[2]-0x80); scan+=3; pf=1;
+                        }
+                        if(pf && pv>max_p) max_p=pv;
+                    } else scan++;
+                }
+                cf->nparams = max_p>=0 ? max_p+1 : 1;
+                buf_init(&cf->body);
+                nf++;
+            }
+        }
+        p1 = eol + 1;
+    }
+
+    /* Pass 2: Parse bodies */
+    int cur_fidx = 0;
     LFunc *cur=NULL;
     char line[4096];
     int pos=0;
@@ -96,28 +133,7 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
         if(strstr(s,"\xe2\x88\x80")&&strstr(s,"\xf0\x9d\x94\x98")) continue; /* ∀...𝔘 */
         /* Function decl */
         if(strstr(s,"\xe2\x88\x83")&&strstr(s,"Hom")) { /* ∃...Hom */
-            char *bracket=strchr(s,'[');
-            if(bracket){
-                cur=&funcs[nf++];
-                char *end=strchr(bracket+1,']');
-                int nl=end?(int)(end-bracket-1):0;
-                if(nl>63)nl=63;
-                memcpy(cur->name,bracket+1,nl);cur->name[nl]=0;
-                buf_init(&cur->body);
-                /* Count params: scan for highest σ_N in line after ']' */
-                int max_p=0;
-                const char *scan=end?end:s;
-                while(*scan){
-                    if((uint8_t)scan[0]==0xcf&&(uint8_t)scan[1]==0x83){
-                        scan+=2; int pv=0; int pf=0;
-                        while((uint8_t)scan[0]==0xe2&&(uint8_t)scan[1]==0x82&&(uint8_t)scan[2]>=0x80&&(uint8_t)scan[2]<=0x89){
-                            pv=pv*10+((uint8_t)scan[2]-0x80); scan+=3; pf=1;
-                        }
-                        if(pf&&pv>max_p) max_p=pv;
-                    } else scan++;
-                }
-                cur->nparams=max_p>0?max_p:1; /* at least acc (1 param) */
-            }
+            cur=&funcs[cur_fidx++];
             continue;
         }
         if(!cur) continue;
@@ -223,7 +239,12 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
                 char *eta=strstr(ex,"\xce\xb7_");
                 int fidx=0;
                 if(eta){fidx=atoi(eta+3);}
-                GET1;buf_byte(b,0x10);buf_uleb(b,fidx);SET1;
+                int target_np=1;
+                if(fidx>=0 && fidx<nf) target_np=funcs[fidx].nparams;
+                for(int p=0;p<target_np;p++){
+                    buf_byte(b,0x20);buf_uleb(b,p+1); /* local.get p+1 */
+                }
+                buf_byte(b,0x10);buf_uleb(b,fidx);SET1;
             } else if(has_str(ex,"H^n_{")&&has_str(ex,"Galois")) { /* Hash */
                 GET1;buf_byte(b,0x42);buf_sleb(b,0x811c9dc5);
                 buf_byte(b,0x85);buf_byte(b,0x42);buf_sleb(b,0x01000193);
@@ -278,7 +299,7 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
         buf_uleb(&body,1);buf_uleb(&body,127);buf_byte(&body,0x7e); /* 127 i64 locals */
         /* Prologue: copy WASM params to register locals */
         /* param0 → local[1] (acc), param1 → local[2] (σ₂), etc. */
-        for(int p=0;p<np;p++){
+        for(int p=np-1;p>=0;p--){
             buf_byte(&body,0x20);buf_uleb(&body,p);   /* local.get p */
             buf_byte(&body,0x21);buf_uleb(&body,p+1); /* local.set p+1 */
         }
