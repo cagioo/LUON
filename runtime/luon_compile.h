@@ -129,6 +129,11 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
     char line[4096];
     int pos=0;
 
+    typedef struct { int shadow_count; int shadows[8]; } CBlock;
+    CBlock blocks[64];
+    int bp = 0;
+    int scope_sp = 127;
+
     while(pos<src_len) {
         int ll=0;
         while(pos<src_len && src[pos]!='\n') { if(ll<4094) line[ll++]=src[pos]; pos++; }
@@ -141,6 +146,7 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
         /* Function decl */
         if(strstr(s,"\xe2\x88\x83")&&strstr(s,"Hom")) { /* ∃...Hom */
             cur=&funcs[cur_fidx++];
+            bp = 0; scope_sp = 127;
             continue;
         }
         if(!cur) continue;
@@ -222,13 +228,68 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
                 buf_byte(b,0xad);SET1;
             } else if(has_str(ex,"\xe2\x86\xa4")&&has_str(ex,"\xce\x93-generic")) { /* Load */
                 GET1;buf_byte(b,0xa7);buf_byte(b,0x29);buf_byte(b,0);buf_byte(b,0);SET1;
+            } else if(has_str(ex,"\xe2\x8a\xa3_{\x73\x63\x6f\x70\x65}")) { /* ⊣_{scope} */
+                const char *scan = ex;
+                if(bp<64) blocks[bp].shadow_count = 0;
+                while(*scan && *scan != '{') {
+                    if((uint8_t)scan[0]==0xcf && (uint8_t)scan[1]==0x83) {
+                        scan+=2; int pv=0; int fd=0;
+                        while((uint8_t)scan[0]==0xe2 && (uint8_t)scan[1]==0x82 && (uint8_t)scan[2]>=0x80 && (uint8_t)scan[2]<=0x89) {
+                            pv=pv*10+((uint8_t)scan[2]-0x80); scan+=3; fd=1;
+                        }
+                        if(fd && bp<64 && blocks[bp].shadow_count<8) {
+                            scope_sp--;
+                            buf_byte(b, 0x20); buf_uleb(b, pv);
+                            buf_byte(b, 0x21); buf_uleb(b, scope_sp);
+                            blocks[bp].shadows[blocks[bp].shadow_count++] = pv;
+                        }
+                    } else if(strstr(scan, "\xe2\x88\x82_\xce\xa9") == scan) { /* ∂_Ω Accumulator */
+                        scan += 6;
+                        if(bp<64 && blocks[bp].shadow_count<8) {
+                            scope_sp--;
+                            buf_byte(b, 0x20); buf_uleb(b, 1);
+                            buf_byte(b, 0x21); buf_uleb(b, scope_sp);
+                            blocks[bp].shadows[blocks[bp].shadow_count++] = 1;
+                        }
+                    } else scan++;
+                }
+                buf_byte(b,0x02);buf_byte(b,0x40); /* block empty */
+                if(bp<64) bp++;
+            } else if(has_str(ex,"\xe2\x9f\xa7_{\x73\x63\x6f\x70\x65}")) { /* ⟧_{scope} */
+                if(bp>0) {
+                    bp--;
+                    for(int i=blocks[bp].shadow_count-1; i>=0; i--) {
+                        buf_byte(b, 0x20); buf_uleb(b, scope_sp);
+                        buf_byte(b, 0x21); buf_uleb(b, blocks[bp].shadows[i]);
+                        scope_sp++;
+                    }
+                }
+                buf_byte(b,0x0b);
             } else if(has_str(ex,"\xe2\x8a\x83I")&&has_str(ex,"\xe2\x9f\xa6")) { /* Block_Begin */
+                if(bp<64) { blocks[bp].shadow_count = 0; bp++; }
                 buf_byte(b,0x02);buf_byte(b,0x40);
             } else if(has_str(ex,"\xe2\x9f\xa7")&&has_str(ex,"\xe2\x8a\x83""E")) { /* Block_End */
+                if(bp>0) {
+                    bp--;
+                    for(int i=blocks[bp].shadow_count-1; i>=0; i--) {
+                        buf_byte(b, 0x20); buf_uleb(b, scope_sp);
+                        buf_byte(b, 0x21); buf_uleb(b, blocks[bp].shadows[i]);
+                        scope_sp++;
+                    }
+                }
                 buf_byte(b,0x0b);
             } else if(has_str(ex,"\xce\xbc_{\xcf\x89")&&has_str(ex,"CK")) { /* Loop_Begin */
+                if(bp<64) { blocks[bp].shadow_count = 0; bp++; }
                 buf_byte(b,0x03);buf_byte(b,0x40);
             } else if(has_str(ex,"\xe2\x9f\xa7_{\xcf\x89")&&has_str(ex,"CK")) { /* Loop_End */
+                if(bp>0) {
+                    bp--;
+                    for(int i=blocks[bp].shadow_count-1; i>=0; i--) {
+                        buf_byte(b, 0x20); buf_uleb(b, scope_sp);
+                        buf_byte(b, 0x21); buf_uleb(b, blocks[bp].shadows[i]);
+                        scope_sp++;
+                    }
+                }
                 buf_byte(b,0x0b);
             } else if(has_str(ex,"\xe2\x8a\xac")&&has_str(ex,"G\xc3\xb6""del")&&has_str(ex,"\xe2\x88\x82")) { /* Conditional br_if */
                 int depth=0;
