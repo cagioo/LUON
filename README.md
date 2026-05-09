@@ -250,7 +250,14 @@ Address Range        Purpose
 
 ### Function Declaration
 ```
+// Single return value (default)
 ∃!Φ ∈ Hom(𝒞,𝒟)[function_name] ⊣^{op} {
+  ...
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+// Multiple return values (Tuple of 3)
+∃!Φ ∈ Hom(𝒞,𝒟)[function_name] →^{3} ⊣^{op} {
   ...
   ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
 }
@@ -325,6 +332,8 @@ Address Range        Purpose
 | Store to register | `(∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}` | `σ₂ = acc` |
 | Load from register | `(σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}` | `acc = σ₂` |
 | Constant load | `(42 ⊣_{Δ;Γ} ∂_Ω)^{axiom}` | `acc = 42` |
+| Begin Scope | `[σ₂, σ₃] ⊣_{scope} {` | Shadow variables |
+| End Scope | `} ⟧_{scope}` | Restore variables |
 
 > **Full reference:** See [LUON_DOCUMENTATION.md](LUON_DOCUMENTATION.md) for the complete 1,200+ line technical specification including type system, module resolver, struct/enum runtime, and all 34 operators.
 
