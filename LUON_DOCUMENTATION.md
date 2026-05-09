@@ -4,7 +4,7 @@
 **Status:** Official Public Documentation  
 **License:** Apache-2.0  
 **Target Runtime:** WebAssembly / WASI  
-**Last Updated:** 2026-05-07
+**Last Updated:** 2026-05-09
 
 ---
 
