@@ -84,9 +84,7 @@
     (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
     (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
-    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (∂_Ω ⊗_ℤ σ₅)^{⊗L}_{D(𝔄)}
-    // modulo via: remainder = val - (val/cap)*cap — but simpler: if tail>=cap, tail=0
+    // Wrap: if tail+1 >= cap, reset to 0
     (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (∂_Ω ⪰_{ω₁} σ₅)^{well-order}
     ⊢_{Γ}^{⊃I}⟦
