@@ -1,0 +1,154 @@
+// stdlib/char.luon — Unicode scalar value type for Luon
+// Functions: char_from_code, char_to_code, char_is_ascii, char_is_digit,
+//            char_is_alpha, char_is_upper, char_is_lower, char_to_upper, char_to_lower
+// A char is simply an i64 holding a Unicode code point (0..0x10FFFF).
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[char] ⊢_Γ {
+
+  // char_from_code(code_point) → char (clamped to valid range)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[char_from_code] ⊣^{op} {
+    // if code_point > 0x10FFFF → return 0xFFFD (replacement char)
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≻_{E₂^{p,q}} 1114111)^{filtration}
+    ⊢_{Γ}^{⊃I}⟦
+      (65533 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // char_to_code(char) → i64 code point
+  ∃!Φ ∈ Hom(𝒞,𝒟)[char_to_code] ⊣^{op} {
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // char_is_ascii(char) → bool
+  ∃!Φ ∈ Hom(𝒞,𝒟)[char_is_ascii] ⊣^{op} {
+    (∂_Ω ≺_{ω₁} 128)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // char_is_digit(char) → bool (0-9)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[char_is_digit] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 48)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≼_{E₂^{p,q}} 57)^{⊆filt}
+      ⊢_{Γ}^{⊃I}⟦
+        (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+      ⟧^{⊃E}_{Δ}⊣
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // char_is_alpha(char) → bool (A-Z or a-z)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[char_is_alpha] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // A-Z: 65..90
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 65)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≼_{E₂^{p,q}} 90)^{⊆filt}
+      ⊢_{Γ}^{⊃I}⟦
+        (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+      ⟧^{⊃E}_{Δ}⊣
+    ⟧^{⊃E}_{Δ}⊣
+    // a-z: 97..122
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 97)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≼_{E₂^{p,q}} 122)^{⊆filt}
+      ⊢_{Γ}^{⊃I}⟦
+        (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+      ⟧^{⊃E}_{Δ}⊣
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // char_is_upper(char) → bool (A-Z)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[char_is_upper] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 65)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≼_{E₂^{p,q}} 90)^{⊆filt}
+      ⊢_{Γ}^{⊃I}⟦
+        (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+      ⟧^{⊃E}_{Δ}⊣
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // char_is_lower(char) → bool (a-z)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[char_is_lower] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 97)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≼_{E₂^{p,q}} 122)^{⊆filt}
+      ⊢_{Γ}^{⊃I}⟦
+        (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+      ⟧^{⊃E}_{Δ}⊣
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // char_to_upper(char) → char (a-z → A-Z, else identity)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[char_to_upper] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 97)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≼_{E₂^{p,q}} 122)^{⊆filt}
+      ⊢_{Γ}^{⊃I}⟦
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Tor₀^𝔄(∂_Ω, -32))_{Spec ℤ}
+        ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+      ⟧^{⊃E}_{Δ}⊣
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // char_to_lower(char) → char (A-Z → a-z, else identity)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[char_to_lower] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 65)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≼_{E₂^{p,q}} 90)^{⊆filt}
+      ⊢_{Γ}^{⊃I}⟦
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 32))_{Spec ℤ}
+        ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+      ⟧^{⊃E}_{Δ}⊣
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
