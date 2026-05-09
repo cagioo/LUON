@@ -39,35 +39,38 @@
   // time_elapsed_ns(start_ns) → elapsed nanoseconds
   // acc = start_ns (from previous monotonic call)
   ∃!Φ ∈ Hom(𝒞,𝒟)[time_elapsed_ns] ⊣^{op} {
+    // Save start_ns to σ₁₀ (away from WASI params σ₂-σ₄)
+    (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+    // Get current monotonic time via WASI clock_time_get
+    // σ₂=clock_id(1=monotonic), σ₃=precision(1), σ₄=time_ptr(0xF030)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
     (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
-    // Get current monotonic time
     (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
     (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
-    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
-    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
     (61488 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
-    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
     (ε_7^{WASI} ∂_Ω)^{syscall(3)}
+    // Load result from 0xF030
     (61488 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
     (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
     // elapsed = now - start
-    (Tor₀^𝔄(∂_Ω, σ₂))_{Spec ℤ}
+    (Tor₀^𝔄(∂_Ω, σ₁₀))_{Spec ℤ}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
   // time_to_millis(ns) → milliseconds
   // acc = nanoseconds
   ∃!Φ ∈ Hom(𝒞,𝒟)[time_to_millis] ⊣^{op} {
-    // ms = ns / 1_000_000
-    (∂_Ω ⊘_{𝕂} 1000000)^{field-inv}
+    // ms = ns / 1_000_000 (integer division)
+    (RHom_ℤ(1000000, ∂_Ω))_{D^b(𝔄)}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
   // time_to_seconds(ns) → seconds
   // acc = nanoseconds
   ∃!Φ ∈ Hom(𝒞,𝒟)[time_to_seconds] ⊣^{op} {
-    // s = ns / 1_000_000_000
-    (∂_Ω ⊘_{𝕂} 1000000000)^{field-inv}
+    // s = ns / 1_000_000_000 (integer division)
+    (RHom_ℤ(1000000000, ∂_Ω))_{D^b(𝔄)}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 }
