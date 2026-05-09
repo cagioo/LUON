@@ -1,7 +1,9 @@
-// Luon Memory Module — bump allocator
-
-
+// Luon Memory Module — free-list allocator with deallocation support
 // Heap: 0x60000+ (888KB), alloc_ptr stored at 0x50000 (state seg)
+// Free-list head pointer stored at 0x50008 (state seg)
+// Free block layout: [size:i64 | next_ptr:i64 | ...payload...]
+// Minimum block size: 24 bytes (size + next + at least 8 bytes data)
+// Alignment: 8-byte aligned
 
 ∀ₛₚₑ𝒸 Ψ ∈ 𝔘[memory] ⊢_Γ {
   ∃!Φ ∈ Hom(𝒞,𝒟)[heap_init] ⊣^{op} {
@@ -9,6 +11,11 @@
     (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
     (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
     (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 393216)
+    // Initialize free-list head to 0 (empty)
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327688))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // Store heap base for alignment reference
     (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
     (Ext⁰_𝔄(∂_Ω, 393216))_{Spec ℤ}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
@@ -16,21 +23,225 @@
 
   ∃!Φ ∈ Hom(𝒞,𝒟)[alloc] ⊣^{op} {
     // acc=size → acc=allocated_ptr
+    // Round size up to 8-byte alignment: size = (size + 7) & ~7
+    (Ext⁰_𝔄(∂_Ω, 7))_{Spec ℤ}
+    (∂_Ω ∧_{Bool} -8)^{∧-intro}
     (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Ensure minimum allocation of 24 bytes (for free-list metadata)
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 24)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (24 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    ⟧^{⊃E}_{Δ}⊣
+    // Try free-list first: walk list for first-fit block
+    // Load free-list head from state[8] (0x50008)
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327688))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // σ₃ = current free block ptr, σ₄ = prev ptr (0 = head)
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if current == 0, no free block found, break to bump alloc
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // Load block size at current[0]
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        // if block_size >= requested_size, use this block
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₂)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          // Found fit: unlink from free-list
+          // Load next_ptr from current[8]
+          (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+          (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+          (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+          // if prev == 0, update head; else update prev->next
+          (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+          ⊢_{Γ}^{⊃I}⟦
+            // Update head pointer at 0x50008
+            (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+            (Ext⁰_𝔄(∂_Ω, 327688))_{Spec ℤ}
+            (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+            // Return ptr + 16 (skip size+next header)
+            (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+            ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+          ⟧^{⊃E}_{Δ}⊣
+          // Update prev->next = current->next
+          (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+          (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+          // Return ptr + 16
+          (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // Block too small, advance: prev = current, current = current->next
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // No free block found — fall through to bump allocator
+    // total_alloc = requested_size + 16 (header for size + next)
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
     // Load current alloc_ptr from state[0] (0x50000)
     (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
     (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
     (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
     (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
-    // new_ptr = current + size
-    (Ext⁰_𝔄(∂_Ω, σ₂))_{Spec ℤ}
-    // Store new_ptr back
-    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // new_ptr = current + total_alloc
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // Store new alloc_ptr
     (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
     (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
-    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
-    // Return old ptr (allocated address)
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+    // Store block size at alloc_ptr[0]
     (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Store next = 0 at alloc_ptr[8]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // Return ptr + 16 (user data starts after header)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[mem_free] ⊣^{op} {
+    // acc = user_ptr (pointer returned by alloc)
+    // Converts user_ptr back to block_ptr (user_ptr - 16)
+    // Inserts block at head of free-list
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // block_ptr = user_ptr - 16
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load current free-list head
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327688))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Set block->next = old_head
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Set free-list head = block_ptr
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 327688))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[mem_realloc] ⊣^{op} {
+    // acc = old_user_ptr, σ₂ = new_size → acc = new_user_ptr
+    // Strategy: alloc new, copy old data, free old
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load old block size from (old_ptr - 16)[0]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Tor₀^𝔄(∂_Ω, -16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Allocate new block
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Copy min(old_size, new_size) bytes from old to new
+    // Determine copy_len = min(σ₄, σ₂)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} σ₄)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    ⟧^{⊃E}_{Δ}⊣
+    // copy_len in σ₆, copy i64s (divide by 8)
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≫_{Galois} 3)^{adjunction}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    // i = 0
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₇)^{well-order}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // Load old[i*8]
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+        (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+        // Store to new[i*8]
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+        (σ₁₁ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₁₀)
+        // i++
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    // Free old block
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_2 ∘_{2-Cat} ∂_Ω)^{Kan}
+    // Return new ptr
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[alloc_aligned] ⊣^{op} {
+    // acc = size, σ₂ = alignment (must be power of 2)
+    // Returns aligned pointer
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // alloc(size + alignment)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₂))_{Spec ℤ}
+    (η_1 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // aligned = (ptr + align - 1) & ~(align - 1)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₂))_{Spec ℤ}
+    (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+    // mask = ~(align - 1) = -(align)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (Tor₀^𝔄(∂_Ω, σ₂))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ∧_{Bool} σ₆)^{∧-intro}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 }

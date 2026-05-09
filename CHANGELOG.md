@@ -9,6 +9,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Unreleased
 
+### Added — Standard Library Expansion (20 → 23 modules)
+- **`stdlib/stack.luon`** — LIFO stack: stack_new, stack_push, stack_pop, stack_peek, stack_len, stack_is_empty, stack_clear, stack_check_overflow
+- **`stdlib/deque.luon`** — Ring-buffer double-ended queue: deque_new, deque_push_back, deque_pop_front, deque_len, deque_is_empty, deque_clear
+- **`stdlib/time.luon`** — WASI clock utilities: time_now_ns, time_monotonic_ns, time_elapsed_ns, time_to_millis, time_to_seconds
+
+### Added — CLI Expansion (Phase 3)
+- Expanded `tools/cli.luon` from skeleton to full subcommand dispatch with FNV-1a rolling hash matching.
+- Added `luon version` — prints version string.
+- Added `luon check` — type checking stub (pending typechecker integration).
+- Added `luon test` — test runner stub (pending test framework integration).
+- Added `cmd_hash` utility function for command string hashing.
+- Added `write_str` utility for WASI fd_write output.
+
+### Added — Examples
+- **`examples/stack_demo.luon`** — Stack push/pop demonstration (push 10, 20, 42 → pop returns 42)
+- **`examples/deque_demo.luon`** — Deque FIFO demonstration (push_back 100, 200 → pop_front returns 100)
+
+### Added — P0 Free-List Allocator (Phase 3)
+- Upgraded `stdlib/memory.luon` from bump-only to free-list allocator with deallocation support.
+- Added `mem_free(ptr)` — returns freed block to linked free-list for reuse.
+- Added `mem_realloc(old_ptr, new_size)` — allocate-copy-free reallocation.
+- Added `alloc_aligned(size, alignment)` — power-of-2 aligned allocation.
+- `alloc()` now searches free-list (first-fit) before falling back to bump allocation.
+- All allocations include 16-byte block header `[size:i64 | next_ptr:i64]` for free-list management.
+- Minimum block size enforced at 24 bytes; 8-byte alignment guaranteed.
+
+### Added — P0 HashMap Bounds Checking (Phase 3)
+- Added `map_check_key(map_ptr, key)` to `stdlib/hashmap.luon` — validates key existence before access, returns canonical `err_not_found` (1) or `err_invalid_argument` (6) for null map.
+- Added `map_delete(map_ptr, key)` — tombstone-based key deletion with automatic `len` decrement, returns canonical error codes.
+
+### Added — P0 Array Bounds Safety
+- Added `array_check_index` to `stdlib/array.luon`, returning canonical `err_out_of_bounds` for invalid negative or out-of-range indices.
+
 ### Added — P0 Checked Arithmetic Safety
 - Added deterministic arithmetic safety helpers to `stdlib/error.luon`:
   - `check_divisor_nonzero`

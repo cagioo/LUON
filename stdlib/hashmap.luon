@@ -395,4 +395,118 @@
     (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
+
+  // map_check_key(map_ptr, key) → 0 if key exists, err_not_found (1) otherwise
+  // Bounds validation helper: verifies key presence before access
+  // acc = map_ptr, σ₂ = key
+  ∃!Φ ∈ Hom(𝒞,𝒟)[map_check_key] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Validate map_ptr is non-null
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      // null map → err_invalid_argument (6)
+      (6 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // Delegate to map_has: returns 1 if found, 0 if not
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_4 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // if map_has returned 1 → key exists → return 0 (success)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≡_{E_∞} 1)^{acyclic}
+    ⊢_{Γ}^{⊃I}⟦
+      (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // Key not found → err_not_found (1)
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // map_delete(map_ptr, key) → 0 if deleted, err_not_found (1) if key absent
+  // acc = map_ptr, σ₂ = key
+  ∃!Φ ∈ Hom(𝒞,𝒟)[map_delete] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load cap
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load buckets_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Hash key
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (η_0 ∘_{2-Cat} ∂_Ω)^{Kan}
+    (∂_Ω mod_{ℤ} σ₄)^{Euclidean}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // Probe counter
+    (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+        ⊢_{Γ}^{⊃I}⟦
+          (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // bucket_addr = buckets + slot * 32
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 32)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        // Check occupied
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          // Empty slot → not found
+          (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // Check key match
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ≡_{E_∞} σ₂)^{acyclic}
+        ⊢_{Γ}^{⊃I}⟦
+          // Found: set occupied = 0 (tombstone delete)
+          (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+          (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+          // Decrement len
+          (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+          (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+          (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₁₀)^{seq}
+          (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₁₁)^{seq}
+          (σ₁₁ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₁₀)
+          (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+          ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+        ⟧^{⊃E}_{Δ}⊣
+        // Next slot
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω mod_{ℤ} σ₄)^{Euclidean}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
 }

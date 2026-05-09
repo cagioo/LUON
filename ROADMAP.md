@@ -172,6 +172,9 @@ This roadmap tracks every major component of the Luon programming language from 
 | `fmt.luon` | ✅ Added | v2.1.1 | Formatted output (char, bool, hex) |
 | `buffer.luon` | ✅ Added | v2.1.1 | Byte buffer serialization |
 | `error.luon` | ✅ Added | v2.1.1 | 16 standard error codes |
+| `stack.luon` | ✅ Added | v2.2.0-dev | LIFO stack (push, pop, peek, overflow check) |
+| `deque.luon` | ✅ Added | v2.2.0-dev | Ring-buffer deque (push_back, pop_front) |
+| `time.luon` | ✅ Added | v2.2.0-dev | WASI clock (monotonic, realtime, elapsed) |
 
 ### 2.2 Compiler Infrastructure
 
@@ -241,9 +244,9 @@ This roadmap tracks every major component of the Luon programming language from 
 |---|---|---|
 | `luon build` | 🟡 | Basic — needs module/type integration |
 | `luon run` | 🟡 | Basic — needs improved arg handling |
-| `luon check` | 🔲 | Type check without building |
-| `luon test` | 🔲 | Run test modules |
-| `luon version` | 🔲 | Print version info |
+| `luon check` | 🟡 | Stub implemented — pending typechecker integration |
+| `luon test` | 🟡 | Stub implemented — pending test framework integration |
+| `luon version` | ✅ | Prints version string via FNV-1a dispatch |
 | `luon new` | 🔲 | Scaffold new project |
 | `luon init` | 🔲 | Initialize in existing directory |
 | `luon doc` | 🔲 | Generate documentation |
@@ -252,11 +255,11 @@ This roadmap tracks every major component of the Luon programming language from 
 
 | Component | Status | Priority | Description |
 |---|---|---|---|
-| Array bounds checking | 🔲 | P0 | Trap on out-of-bounds access |
-| HashMap bounds checking | 🔲 | P0 | Trap on invalid key |
-| `free()` / dealloc | 🔲 | P0 | Free-list or arena allocator |
-| `realloc()` / grow | 🔲 | P0 | Resize allocations |
-| Allocator alignment | 🔲 | P0 | Proper alignment for types |
+| Array bounds checking | ✅ | P0 | Added `array_check_index` helper returning canonical `err_out_of_bounds` |
+| HashMap bounds checking | ✅ | P0 | Added `map_check_key` returning canonical error codes, `map_delete` with tombstone |
+| `free()` / dealloc | ✅ | P0 | Free-list allocator with `mem_free`, first-fit reuse |
+| `realloc()` / grow | ✅ | P0 | `mem_realloc` with alloc-copy-free strategy |
+| Allocator alignment | ✅ | P0 | `alloc_aligned` with power-of-2 alignment support |
 | Integer overflow detection | ✅ | P0 | Added deterministic checked add/sub helper foundations in `stdlib/error.luon` |
 | Division by zero handling | ✅ | P0 | Added `check_divisor_nonzero` helper returning canonical error code |
 
@@ -452,13 +455,13 @@ This roadmap tracks every major component of the Luon programming language from 
 |---|---|---|---|
 | **Phase 0: Genesis** | ✅ Complete | 5/5 | 100% |
 | **Phase 1: Event Horizon** | ✅ Complete | 41/41 | 100% |
-| **Phase 2: Singularity** | ✅ Complete | 31/31 | 100% |
-| **Phase 3: Integration** | 🔲 Next | 0/20 | 0% |
+| **Phase 2: Singularity** | ✅ Complete | 34/34 | 100% |
+| **Phase 3: Integration** | 🔶 Active | 7/20 | 35% |
 | **Phase 4: Competitiveness** | 🔲 Planned | 0/26 | 0% |
 | **Phase 5: Production** | 🔲 Future | 0/32 | 0% |
-| **TOTAL** | — | **77/155** | **~50%** |
+| **TOTAL** | — | **87/158** | **~55%** |
 
-> **77 components delivered.** The foundation (compiler, runtime, security, stdlib, tooling, CI/CD) is complete. Next focus: deep compiler integration and memory safety.
+> **87 components delivered.** Stdlib expanded to 23 modules, CLI dispatch operational. Next focus: deep compiler pipeline integration (typechecker + module resolver).
 
 ---
 

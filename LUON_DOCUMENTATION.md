@@ -605,6 +605,7 @@ Functions include:
 - `array_contains`
 - `array_index_of`
 - `array_fill`
+- `array_check_index`
 
 #### `hashmap.luon`
 

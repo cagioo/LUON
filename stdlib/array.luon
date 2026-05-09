@@ -141,6 +141,33 @@
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
+  // array_check_index(arr_ptr, index) → 0 if valid, err_out_of_bounds otherwise
+  // acc = array header pointer, σ₂ = index
+  ∃!Φ ∈ Hom(𝒞,𝒟)[array_check_index] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Negative indices are out of bounds
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ≺_{ω₁} 0)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (5 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // Load len from header[8]
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // index >= len is out of bounds
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} σ₄)^{well-order}
+    ⊢_{Γ}^{⊃I}⟦
+      (5 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
   // array_get(arr_ptr, index) → value at index
   // acc = arr_ptr, σ₂ = index
   ∃!Φ ∈ Hom(𝒞,𝒟)[array_get] ⊣^{op} {
