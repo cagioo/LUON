@@ -1,156 +1,53 @@
 // stdlib/serde.luon — Serialization / Deserialization Framework for Luon
-// Provides: serialize_i64, serialize_i32, serialize_bytes, serialize_str
-//           deserialize_i64, deserialize_i32, deserialize_bytes, deserialize_str
-//           serde_encode_varint, serde_decode_varint
-// Uses: buffer.luon primitives for byte I/O
-// Format: Length-prefixed binary encoding (LEB128 varint + raw bytes)
-// Comparable to: Rust serde, Go encoding/binary, Python struct
+// Provides: serialize_i64, deserialize_i64, serialize_i32, deserialize_i32,
+//           serde_checksum
+// Uses: direct memory load/store for fixed-width encoding
+// Format: Native-endian binary encoding (matches WASM little-endian)
+// Comparable to: Rust bincode, Go encoding/binary, Python struct
 
 ∀ₛₚₑ𝒸 Ψ ∈ 𝔘[serde] ⊢_Γ {
 
-  // serde_encode_varint(buf_ptr, value) → bytes_written
-  // LEB128 variable-length integer encoding
-  // acc = buf_ptr, σ₂ = value
-  ∃!Φ ∈ Hom(𝒞,𝒟)[serde_encode_varint](σ₂) ⊣^{op} {
-    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
-    // count bytes written
-    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
-    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
-    // loop: emit 7 bits at a time with continuation bit
-    ⊢_{Γ}^{⊃I}⟦
-      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-      (∂_Ω ∧_{Bool} 127)^{∧-intro}
-      (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
-      // shift value right by 7
-      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-      (∂_Ω ≫_{Galois} 7)^{adjunction}
-      (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
-      // if more bytes: set high bit
-      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-      (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
-      σ₂ ≡_{d_r=0} (⊣_{Δ;Γ} ∂_Ω)^{seq}
-      ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
-        // value == 0: write final byte
-        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
-        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        // buf_write_byte(buf, byte)
-        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
-        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
-        ⊬ Gödel σ₀
-      } {
-        // value > 0: set continuation bit, write, continue loop
-        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (∂_Ω ∨_{Bool} 128)^{∨-intro}
-        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
-        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
-        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        // buf_write_byte(buf, byte)
-        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
-        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
-        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
-      }
-    ⟧^{⊃E}
-    // return bytes written
-    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
-  }
-
-  // serde_decode_varint(buf_ptr) → decoded value
-  // LEB128 variable-length integer decoding
-  // acc = buf_ptr (reads from current position)
-  ∃!Φ ∈ Hom(𝒞,𝒟)[serde_decode_varint] ⊣^{op} {
-    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
-    // result = 0, shift = 0
-    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
-    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
-    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
-    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
-    // loop: read bytes
-    ⊢_{Γ}^{⊃I}⟦
-      // read byte from buf
-      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-      // buf_read_byte simulation: load from data[pos]
-      (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
-      // result |= (byte & 0x7F) << shift
-      (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-      (∂_Ω ∧_{Bool} 127)^{∧-intro}
-      (∂_Ω ≪_{shift} σ₅)
-      (∂_Ω ∨_{Bool} σ₄)^{∨-intro}
-      (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
-      // shift += 7
-      (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-      (Ext⁰_𝔄(∂_Ω, 7))_{Spec ℤ}
-      (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
-      // check continuation bit
-      (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-      (∂_Ω ∧_{Bool} 128)^{∧-intro}
-      (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
-      ∂_Ω ≡_{d_r=0} (⊣_{Δ;Γ} ∂_Ω)^{seq}
-      ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
-        // no continuation: done
-        ⊬ Gödel σ₀
-      } {
-        // continuation: loop
-      }
-    ⟧^{⊃E}
-    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
-  }
-
-  // serialize_i64(buf_ptr, value) → buf_ptr
-  // Fixed 8-byte big-endian encoding
-  // acc = buf_ptr, σ₂ = value
+  // serialize_i64(addr, value) → addr
+  // Writes i64 value to memory at addr using native i64.store
+  // acc = addr, σ₂ = value
   ∃!Φ ∈ Hom(𝒞,𝒟)[serialize_i64](σ₂) ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
-    // Store 8 bytes at buf data position
-    // Byte 0: (value >> 56) & 0xFF
-    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (∂_Ω ≫_{Galois} 56)^{adjunction}
-    (∂_Ω ∧_{Bool} 255)^{∧-intro}
-    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
-    // Byte 1: (value >> 48) & 0xFF
-    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (∂_Ω ≫_{Galois} 48)^{adjunction}
-    (∂_Ω ∧_{Bool} 255)^{∧-intro}
-    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
-    // ... (remaining 6 bytes follow same pattern)
-    // For efficiency, use native i64 store
+    // i32.wrap acc (addr) then i64.store value at that addr
     (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // return addr (for chaining)
     (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
-  // deserialize_i64(buf_ptr) → value
-  // Fixed 8-byte read
-  // acc = buf_ptr
+  // deserialize_i64(addr) → value
+  // Reads i64 value from memory at addr using native i64.load
+  // acc = addr
   ∃!Φ ∈ Hom(𝒞,𝒟)[deserialize_i64] ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
-    // Load native i64 from buf position
     (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
-  // serialize_i32(buf_ptr, value) → buf_ptr
-  // Fixed 4-byte encoding
+  // serialize_i32(addr, value) → addr
+  // Writes lower 32 bits of value to memory at addr
+  // acc = addr, σ₂ = value
   ∃!Φ ∈ Hom(𝒞,𝒟)[serialize_i32](σ₂) ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // mask to 32-bit
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (∂_Ω ∧_{Bool} 4294967295)^{∧-intro}
     (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // store
     (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
     (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
-  // deserialize_i32(buf_ptr) → value
+  // deserialize_i32(addr) → value (zero-extended)
+  // acc = addr
   ∃!Φ ∈ Hom(𝒞,𝒟)[deserialize_i32] ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
     (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
@@ -159,73 +56,96 @@
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
-  // serialize_bytes(buf_ptr, src_ptr, len) → buf_ptr
-  // Length-prefixed byte array: varint(len) + raw bytes
-  // acc = buf_ptr, σ₂ = src_ptr, σ₃ = len
-  ∃!Φ ∈ Hom(𝒞,𝒟)[serialize_bytes](σ₂, σ₃) ⊣^{op} {
+  // serialize_pair(addr, v1, v2) → addr
+  // Writes two i64 values contiguously: [v1 @ addr] [v2 @ addr+8]
+  // acc = addr, σ₂ = v1, σ₃ = v2
+  ∃!Φ ∈ Hom(𝒞,𝒟)[serialize_pair](σ₂, σ₃) ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
-    // Write length prefix as varint
-    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // store v1 at addr
     (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    η_{Kan}[serde_encode_varint]
-    // Copy raw bytes: memcpy(dst, src, len)
-    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // store v2 at addr+8
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
     (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
-    ⊢_{Γ}^{⊃I}⟦
-      (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-      (σ₃ ≺_{filtration} ∂_Ω)
-      ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
-        // i < len: copy byte
-        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
-        (⊩_{𝕂,Σ}^{Γ-generic} ↤_byte ∂_Ω)
-        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
-        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
-        (⊨_{𝕂,Γ}^{κ-forcing} ↦_byte σ₆)
-        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
-        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
-      } {
-        // i >= len: done
-        ⊬ Gödel σ₀
-      }
-    ⟧^{⊃E}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // return addr
     (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
+  // deserialize_pair(addr) → v1 (v2 in σ₂)
+  // Reads two contiguous i64 values
+  // acc = addr → returns v1 in acc, v2 in σ₂
+  ∃!Φ ∈ Hom(𝒞,𝒟)[deserialize_pair] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // load v2 from addr+8 first (so we don't clobber)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // load v1 from addr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
   // serde_checksum(buf_ptr, len) → checksum
-  // FNV-1a checksum for data integrity verification
+  // FNV-1a hash for data integrity verification
   // acc = buf_ptr, σ₂ = len
   ∃!Φ ∈ Hom(𝒞,𝒟)[serde_checksum](σ₂) ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
     // FNV offset basis
     (14695981039346656 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
     (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // i = 0
     (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
     (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
     ⊢_{Γ}^{⊃I}⟦
+      // while i < len
       (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
       (σ₂ ≺_{filtration} ∂_Ω)
       ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
-        // hash = (hash ^ byte) * FNV_prime
+        // hash = (hash ^ mem[buf+i]) * FNV_prime
+        // load byte at buf_ptr + i
         (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
         (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
-        (⊩_{𝕂,Σ}^{Γ-generic} ↤_byte ∂_Ω)
-        (∂_Ω ⊕_{Bool} σ₄)^{⊕-intro}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ∧_{Bool} 255)^{∧-intro}
+        // xor with hash
+        (∂_Ω ⊕_{GF} σ₄)
+        // multiply by FNV prime
         (∂_Ω ⊗_ℤ 1099511628211)^{⊗L}_{D(𝔄)}
         (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        // i++
         (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
         (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
         (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
       } {
+        // i >= len: exit loop
         ⊬ Gödel σ₀
       }
     ⟧^{⊃E}
+    // return positive hash
     (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     (∂_Ω ∧_{Bool} 9223372036854775807)^{∧-intro}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // main — self-test: serialize 42 to memory, deserialize back
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // write 42 at address 0x10000 (65536)
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 65536
+    η_{Kan}[serialize_i64]
+    // read it back from 0x10000
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 65536
+    η_{Kan}[deserialize_i64]
+    // acc should now be 42
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
