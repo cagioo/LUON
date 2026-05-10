@@ -1,0 +1,26 @@
+// Memory Operations Test — memory.size, memory.grow
+// Expected: memory starts at 30 pages, grow by 2 → 32 pages
+// Output: 32
+
+∀𝔘[mem_ops_test]^{Obj(𝒞)}
+
+// get_pages: return current memory size in pages
+∃!Φ ∈ Hom(𝒞,𝒟)[get_pages] ⊣^{op} {
+  μ_{pages}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+// grow_mem: grow memory by N pages, return new total
+∃!Φ ∈ Hom(𝒞,𝒟)[grow_mem] ⊣^{op} {
+  μ_{grow}
+  // grow returns old size; get new total
+  μ_{pages}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+// main
+∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+  (⊣_{Δ;Γ} ∂_Ω)^{seq} := 2
+  η_{Kan}[grow_mem]
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}

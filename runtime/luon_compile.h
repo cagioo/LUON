@@ -905,7 +905,69 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
           SET1;
         }
       }
-      /* Floats, WASI, crypto stubs omitted for brevity - add as needed */
+      /* === Additional WASM Opcodes === */
+      /* Select (ternary): ⊤⊥_{select}(σ_true, σ_false) */
+      else if (has_str(ex, "select")) {
+        int st = 0, sf = 0;
+        char *sp1 = strstr(ex, "\xcf\x83");
+        if (sp1) { st = extract_sigma(sp1); sp1 += 2; while(*sp1 && (uint8_t)*sp1 >= 0x80) sp1++; }
+        char *sp2 = sp1 ? strstr(sp1, "\xcf\x83") : NULL;
+        if (sp2) sf = extract_sigma(sp2);
+        buf_byte(b, 0x20); buf_uleb(b, st > 0 ? st : 1); /* true val */
+        buf_byte(b, 0x20); buf_uleb(b, sf > 0 ? sf : 2); /* false val */
+        GET1; buf_byte(b, 0xa7); /* condition i32.wrap */
+        buf_byte(b, 0x1b); /* select */
+        SET1;
+      }
+      /* Unreachable trap: ⊥_{trap} */
+      else if (has_str(ex, "trap")) {
+        buf_byte(b, 0x00); /* unreachable */
+      }
+      /* Drop: ⊥_{drop} */
+      else if (has_str(ex, "drop") && !has_str(ex, "Kan")) {
+        GET1;
+        buf_byte(b, 0x1a); /* drop */
+      }
+      /* Memory size: μ_{pages} */
+      else if (has_str(ex, "\xce\xbc") && has_str(ex, "pages")) {
+        buf_byte(b, 0x3f); buf_byte(b, 0x00); /* memory.size */
+        buf_byte(b, 0xac); /* i64.extend_i32_s */
+        SET1;
+      }
+      /* Memory grow: μ_{grow} */
+      else if (has_str(ex, "\xce\xbc") && has_str(ex, "grow")) {
+        GET1; buf_byte(b, 0xa7); /* i32.wrap */
+        buf_byte(b, 0x40); buf_byte(b, 0x00); /* memory.grow */
+        buf_byte(b, 0xac); /* i64.extend_i32_s */
+        SET1;
+      }
+      /* Type conversions */
+      /* ℤ₆₄←ℤ₃₂: i64.extend_i32_s */
+      else if (has_str(ex, "extend") && has_str(ex, "i32")) {
+        GET1; buf_byte(b, 0xa7); /* i32.wrap first */
+        buf_byte(b, 0xac); /* i64.extend_i32_s */
+        SET1;
+      }
+      /* ℤ₃₂←ℤ₆₄: i32.wrap_i64 (result in i64 via extend) */
+      else if (has_str(ex, "wrap") && has_str(ex, "i64")) {
+        GET1; buf_byte(b, 0xa7); /* i32.wrap_i64 */
+        buf_byte(b, 0xac); /* i64.extend back */
+        SET1;
+      }
+      /* 𝔽₆₄←ℤ₆₄: f64.convert_i64_s */
+      else if (has_str(ex, "f64_from_i64")) {
+        GET1;
+        buf_byte(b, 0xb9); /* f64.convert_i64_s */
+        buf_byte(b, 0xbd); /* i64.reinterpret_f64 */
+        SET1;
+      }
+      /* ℤ₆₄←𝔽₆₄: i64.trunc_f64_s */
+      else if (has_str(ex, "i64_from_f64")) {
+        GET1;
+        buf_byte(b, 0xbf); /* f64.reinterpret_i64 */
+        buf_byte(b, 0xb0); /* i64.trunc_f64_s */
+        SET1;
+      }
     }
   }
 
