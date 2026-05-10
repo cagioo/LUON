@@ -1,0 +1,17 @@
+// Type Annotation Test — verifies :(ℤ₆₄) → ℤ₆₄ syntax is parsed
+// Expected output: 42
+
+∀𝔘[type_test]^{Obj(𝒞)}
+
+// Annotated function: :(ℤ₆₄) → ℤ₆₄
+∃!Φ ∈ Hom(𝒞,𝒟)[typed_add] : (ℤ₆₄) → ℤ₆₄ ⊣^{op} {
+  (Ext⁰_𝔄(∂_Ω, 2))_{Spec ℤ}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+// main
+∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+  (⊣_{Δ;Γ} ∂_Ω)^{seq} := 40
+  η_{Kan}[typed_add]
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
