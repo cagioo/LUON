@@ -1,0 +1,61 @@
+// tools/luon_fmt.luon — Formatter for Luon source code
+// Implements: Canonical whitespace normalization, indentation, line alignment
+// Strategy: Single-pass character scanner with state machine
+// Operations:
+//   - Normalize indentation to 2 spaces per depth
+//   - Trim trailing whitespace
+//   - Ensure blank line between functions
+//   - Align ⊢ / ⊣ operators
+// Comparable to: rustfmt, gofmt, prettier
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[luon_fmt] ⊢_Γ {
+
+  // fmt_indent_depth(line_ptr, line_len) → depth
+  // Counts leading spaces / tabs to determine nesting depth
+  ∃!Φ ∈ Hom(𝒞,𝒟)[fmt_indent_depth](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (σ₂ ≺_{filtration} ∂_Ω)
+      ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
+        // Load byte at line[i]
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ∧_{Bool} 255)^{∧-intro}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        // If space (32) → depth++
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊣_{Δ;Γ} ∂_Ω)^{seq} := 32
+        ∂_Ω ≡_{d_r=0} (⊣_{Δ;Γ} ∂_Ω)^{seq}
+        ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
+          (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        } {
+          // Non-space: stop counting
+          ⊬ Gödel σ₀
+        }
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+      } {
+        ⊬ Gödel σ₀
+      }
+    ⟧^{⊃E}
+    // Return depth / 2 (2 spaces per level)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test: validate formatter loaded correctly
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}

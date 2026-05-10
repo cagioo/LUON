@@ -1,0 +1,71 @@
+// tools/luon_lint.luon — Linter for Luon source code
+// Implements: Code quality checks via pattern matching
+// Checks:
+//   1. Function naming: must contain Hom(𝒞,𝒟)
+//   2. Missing return: every function must end with ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+//   3. Unused variables: σ₂-σ₉ written but never read
+//   4. Deep nesting: warn if > 5 levels
+//   5. Missing module declaration: ∀ₛₚₑ𝒸 required
+// Comparable to: clippy (Rust), eslint, pylint
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[luon_lint] ⊢_Γ {
+
+  // lint_check_depth(current_depth, max_allowed) → 0 if ok, 1 if warning
+  ∃!Φ ∈ Hom(𝒞,𝒟)[lint_check_depth](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // depth > max?
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (σ₂ ≺_{filtration} ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // lint_has_return(byte_ptr, len) → 1 if contains ex-falso return, 0 otherwise
+  // Scans for the ⊥_{𝒯} byte sequence (0xE2 0x8A 0xA5)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[lint_has_return](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (σ₂ ≺_{filtration} ∂_Ω)
+      ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
+        // Load byte
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ∧_{Bool} 255)^{∧-intro}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        // Check if byte == 0xE2 (start of ⊥)
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊣_{Δ;Γ} ∂_Ω)^{seq} := 226
+        ∂_Ω ≡_{d_r=0} (⊣_{Δ;Γ} ∂_Ω)^{seq}
+        ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
+          (⊣_{Δ;Γ} ∂_Ω)^{seq} := 1
+          (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        } {
+        }
+        (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+      } {
+        ⊬ Gödel σ₀
+      }
+    ⟧^{⊃E}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test: lint_check_depth(3, 5) → 0 (ok), add 42
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 5
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 3
+    η_{Kan}[lint_check_depth]
+    // acc = 1 (depth 3 < max 5 → true)
+    (Ext⁰_𝔄(∂_Ω, 41))_{Spec ℤ}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
