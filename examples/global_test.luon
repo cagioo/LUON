@@ -1,0 +1,24 @@
+// Global Variable Test — 𝔾₀ persists across function calls
+// Expected output: 42
+
+∀𝔘[global_test]^{Obj(𝒞)}
+
+// Function 0: set_global — stores 42 into 𝔾₀
+∃!Φ ∈ Hom(𝒞,𝒟)[set_global] ⊣^{op} {
+  (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+  (∂_Ω ⊢_{Γ;Δ} 𝔾₀)^{global}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+// Function 1: get_global — reads 𝔾₀ into accumulator
+∃!Φ ∈ Hom(𝒞,𝒟)[get_global] ⊣^{op} {
+  (𝔾₀ ⊣_{Δ;Γ} ∂_Ω)^{global}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+// Function 2: main — call set_global, then get_global, return result
+∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+  η_{Kan}[set_global]
+  η_{Kan}[get_global]
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
