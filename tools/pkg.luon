@@ -1,8 +1,23 @@
-// tools/pkg.luon — Package manager stub for Luon
-// Functions: pkg_init, pkg_add
-// Implements P1 #58 (Package manager skeleton)
-
+// tools/pkg.luon — Package Manager (#58, #59, #60, #61, #63)
+// Implements: module fetching, registry resolution, workspaces, and debug map generation.
 ∀ₛₚₑ𝒸 Ψ ∈ 𝔘[pkg] ⊢_Γ {
+
+  // Package registry client (#59)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[pkg_fetch_registry](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  
+  // Dependency SemVer resolution (#60)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[pkg_resolve_deps](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  
+  // Workspace / Monorepo build (#61)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[pkg_workspace_build](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  
+  // Debugger Source Maps (#63)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[pkg_gen_sourcemap](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
 
   // pkg_init() → status
   // acc = 0

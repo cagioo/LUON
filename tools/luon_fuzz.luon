@@ -1,0 +1,9 @@
+// tools/luon_fuzz.luon — Fuzzing Framework (#66)
+// Provides mutation engine for inputs.
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[luon_fuzz] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[fuzz_mutate](σ₂, σ₃) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

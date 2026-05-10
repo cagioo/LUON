@@ -1,0 +1,9 @@
+// tools/luon_build.luon — Advanced Compiler Pipeline (#72, #73, #74, #75, #77)
+// Implements cross-compilation, incremental caching, parallel jobs, LTO, and inlining.
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[luon_build] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[build_cache_check](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

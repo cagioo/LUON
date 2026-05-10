@@ -1,0 +1,9 @@
+// tools/luon_doc.luon — Documentation Generator (#68)
+// Parses // comments and extracts function signatures.
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[luon_doc] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[doc_extract](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

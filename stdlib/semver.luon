@@ -1,0 +1,105 @@
+// stdlib/semver.luon — Semantic Versioning for Luon (#60)
+// Implements: SemVer parsing, comparison, compatibility checking
+// Layout: Version = [major:i64 | minor:i64 | patch:i64]
+// Comparable to: Rust semver crate, npm semver
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[semver] ⊢_Γ {
+
+  // semver_new(major, minor, patch) → version_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[semver_new](σ₂, σ₃) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+    // Store major
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Store minor
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Store patch
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // semver_major(ver_ptr) → major
+  ∃!Φ ∈ Hom(𝒞,𝒟)[semver_major] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // semver_minor(ver_ptr) → minor
+  ∃!Φ ∈ Hom(𝒞,𝒟)[semver_minor] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // semver_patch(ver_ptr) → patch
+  ∃!Φ ∈ Hom(𝒞,𝒟)[semver_patch] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // semver_compat(a_ptr, b_ptr) → 1 if compatible (same major), 0 otherwise
+  ∃!Φ ∈ Hom(𝒞,𝒟)[semver_compat](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load a.major
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load b.major
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Compare
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    σ₅ ≡_{d_r=0} ∂_Ω
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test: new(2,2,0) → major=2, minor=2, patch=0
+  // 2 * 21 = 42
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 2
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 2
+    η_{Kan}[semver_new]
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}[semver_major]
+    // acc = 2
+    (∂_Ω ⊗_ℤ 21)^{⊗L}_{D(𝔄)}
+    // acc = 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
