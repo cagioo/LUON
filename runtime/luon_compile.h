@@ -142,12 +142,7 @@ static void emit_cmp(Buf *b, uint8_t op, int has_k, int64_t k, int has_s,
   SET1;
 }
 
-typedef struct {
-  char name[64];
-  Buf body;
-  int nparams;
-  int nreturns;
-} LFunc;
+typedef struct { char name[64]; Buf body; int nparams; int nreturns; uint8_t param_types[16]; uint8_t return_types[16]; } LFunc;
 static int max_global_idx = -1; /* Track highest global used */
 
 static int extract_global(const char *line) {
@@ -176,6 +171,58 @@ static int extract_global(const char *line) {
     p++;
   }
   return -1;
+}
+
+/* Parse WASM value type from mathematical notation */
+/* Z64=i64(0x7e), Z32=i32(0x7f), F64=f64(0x7c), F32=f32(0x7d) */
+static uint8_t parse_wasm_type(const char *p) {
+  if ((uint8_t)p[0]==0xe2 && (uint8_t)p[1]==0x84 && (uint8_t)p[2]==0xa4) {
+    const char *s = p+3;
+    if ((uint8_t)s[0]==0xe2 && (uint8_t)s[1]==0x82) {
+      if ((uint8_t)s[2]==0x83) return 0x7f;
+      if ((uint8_t)s[2]==0x86) return 0x7e;
+    }
+    return 0x7e;
+  }
+  if ((uint8_t)p[0]==0xf0 && (uint8_t)p[1]==0x9d && (uint8_t)p[2]==0x94 && (uint8_t)p[3]==0xbd) {
+    const char *s = p+4;
+    if ((uint8_t)s[0]==0xe2 && (uint8_t)s[1]==0x82) {
+      if ((uint8_t)s[2]==0x83) return 0x7d;
+      if ((uint8_t)s[2]==0x86) return 0x7c;
+    }
+    return 0x7c;
+  }
+  return 0x7e;
+}
+
+/* Parse type annotation: :(Z64, Z32) -> Z64 */
+static void parse_type_annotation(const char *line, LFunc *f) {
+  for (int i=0; i<16; i++) { f->param_types[i]=0x7e; f->return_types[i]=0x7e; }
+  const char *colon = strstr(line, ": (");
+  if (!colon) return;
+  const char *pp = strchr(colon, '(');
+  if (!pp) return;
+  pp++;
+  int pi = 0;
+  while (*pp && *pp != ')' && pi < 16) {
+    if ((uint8_t)pp[0]==0xe2 || (uint8_t)pp[0]==0xf0) {
+      f->param_types[pi++] = parse_wasm_type(pp);
+    }
+    pp++;
+  }
+  const char *arrow = strstr(pp, "\xe2\x86\x92");
+  if (arrow) {
+    const char *r = arrow+3;
+    while (*r == ' ') r++;
+    int ri = 0;
+    while (*r && ri < 16) {
+      if ((uint8_t)r[0]==0xe2 || (uint8_t)r[0]==0xf0) {
+        f->return_types[ri++] = parse_wasm_type(r);
+        break;
+      }
+      r++;
+    }
+  }
 }
 
 static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
@@ -298,6 +345,9 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
         }
         cf->nreturns = rets;
         cf->nparams = max_p >= 0 ? max_p + 1 : 1;
+        /* Parse type annotation if present */
+        for (int ti=0; ti<16; ti++) { cf->param_types[ti]=0x7e; cf->return_types[ti]=0x7e; }
+        parse_type_annotation(line1, cf);
         buf_init(&cf->body);
         nf++;
       }
@@ -900,11 +950,18 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
     for (int i = 0; i < num_types; i++) {
       buf_byte(&tsb, 0x60);           /* func type */
       buf_uleb(&tsb, type_params[i]); /* param count */
+      /* Find first func with this signature for types */
+      int ref = -1;
+      for (int f = 0; f < nf; f++) {
+        if (funcs[f].nparams == type_params[i] && funcs[f].nreturns == type_returns[i]) {
+          ref = f; break;
+        }
+      }
       for (int j = 0; j < type_params[i]; j++)
-        buf_byte(&tsb, 0x7e);          /* i64 params */
+        buf_byte(&tsb, (ref >= 0 && j < 16) ? funcs[ref].param_types[j] : 0x7e);
       buf_uleb(&tsb, type_returns[i]); /* result count */
       for (int j = 0; j < type_returns[i]; j++)
-        buf_byte(&tsb, 0x7e); /* i64 results */
+        buf_byte(&tsb, (ref >= 0 && j < 16) ? funcs[ref].return_types[j] : 0x7e);
     }
     buf_byte(&wasm, 1);
     buf_uleb(&wasm, tsb.len);
