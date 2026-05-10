@@ -1185,6 +1185,51 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
         buf_byte(b, 0x03); /* atomic.fence */
         buf_byte(b, 0x00); /* reserved */
       }
+      /* === WASM SIMD (#54) === */
+      /* All SIMD instructions use 0xFD prefix */
+      /* ⊞_{simd}^{load} — v128.load from memory address in acc */
+      else if (has_str(ex, "simd") && has_str(ex, "load")) {
+        GET1;
+        buf_byte(b, 0xa7); /* i32.wrap_i64 */
+        buf_byte(b, 0xFD); buf_uleb(b, 0x00); /* v128.load */
+        buf_byte(b, 0x04); buf_byte(b, 0x00); /* align=16, offset=0 */
+      }
+      /* ⊞_{simd}^{store} — v128.store */
+      else if (has_str(ex, "simd") && has_str(ex, "store")) {
+        GET1;
+        buf_byte(b, 0xa7); /* i32.wrap_i64 */
+        buf_byte(b, 0xFD); buf_uleb(b, 0x0B); /* v128.store */
+        buf_byte(b, 0x04); buf_byte(b, 0x00);
+      }
+      /* ⊞_{simd}^{i64x2_splat} — i64x2.splat (acc → all lanes) */
+      else if (has_str(ex, "simd") && has_str(ex, "splat")) {
+        GET1;
+        buf_byte(b, 0xFD); buf_uleb(b, 0x12); /* i64x2.splat */
+      }
+      /* ⊞_{simd}^{i64x2_add} — i64x2.add */
+      else if (has_str(ex, "simd") && has_str(ex, "i64x2_add")) {
+        buf_byte(b, 0xFD); buf_uleb(b, 0xD6); /* i64x2.add */
+      }
+      /* ⊞_{simd}^{i64x2_sub} — i64x2.sub */
+      else if (has_str(ex, "simd") && has_str(ex, "i64x2_sub")) {
+        buf_byte(b, 0xFD); buf_uleb(b, 0xD7); /* i64x2.sub */
+      }
+      /* ⊞_{simd}^{i64x2_mul} — i64x2.mul */
+      else if (has_str(ex, "simd") && has_str(ex, "i64x2_mul")) {
+        buf_byte(b, 0xFD); buf_uleb(b, 0xD5); /* i64x2.mul */
+      }
+      /* ⊞_{simd}^{i32x4_add} — i32x4.add */
+      else if (has_str(ex, "simd") && has_str(ex, "i32x4_add")) {
+        buf_byte(b, 0xFD); buf_uleb(b, 0xAE); /* i32x4.add */
+      }
+      /* ⊞_{simd}^{f64x2_add} — f64x2.add */
+      else if (has_str(ex, "simd") && has_str(ex, "f64x2_add")) {
+        buf_byte(b, 0xFD); buf_uleb(b, 0xF0); /* f64x2.add */
+      }
+      /* ⊞_{simd}^{f64x2_mul} — f64x2.mul */
+      else if (has_str(ex, "simd") && has_str(ex, "f64x2_mul")) {
+        buf_byte(b, 0xFD); buf_uleb(b, 0xF2); /* f64x2.mul */
+      }
     }
   }
 
