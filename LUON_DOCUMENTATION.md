@@ -45,7 +45,7 @@
 Luon is built around five principles:
 
 1. **Security-Oriented Design** — every design decision serves security. The language is designed to be quantum-aware, hardened, AI-analysis resistant, and reverse-engineering resistant.
-2. **Intentional Complexity** — Luon is designed to be impossible to learn without official documentation. The steep learning curve is a deliberate security feature, not a deficiency.
+2. **Intentional Complexity** — The mathematical syntax raises the cognitive cost of code comprehension. The steep learning curve is a deliberate design tradeoff favoring security over accessibility.
 3. **Syntax-Level Obfuscation** — unlike other languages that add obfuscation at the compiler output level, Luon source code itself is already a form of obfuscation through pure mathematical logic notation.
 4. **Portability** — programs compile to WASM and can run on WASI-compatible runtimes.
 5. **Mathematical Identity** — Luon uses symbolic notation inspired by type theory, category theory, logic, algebra, and formal systems. Conventional keywords (`if`, `else`, `for`, `while`, `let`, `var`, `print`) are strictly forbidden.
@@ -69,7 +69,7 @@ Luon is not intended to be a generic scripting language or a developer-friendly 
 | Goal | Description |
 |---|---|
 | Security-oriented design | Every design decision is evaluated against its security implications. Quantum-aware, hardened, AI-resistant, RE-resistant. |
-| Intentional complexity | The steep learning curve is a deliberate security feature. Impossible to learn without official documentation. |
+| Intentional complexity | The steep learning curve is a deliberate design tradeoff. Mathematical syntax raises comprehension cost. |
 | Syntax-level obfuscation | Source code itself is already obfuscated through mathematical notation. No conventional keywords. |
 | WASM-first | Luon targets WebAssembly as its primary backend. |
 | Deterministic execution | Programs must be predictable and suitable for consensus-sensitive environments. |
@@ -87,7 +87,7 @@ The following are **permanently rejected** because they violate Luon's security 
 - Readable syntax patterns from other languages (Rust, Go, Python, TypeScript)
 - Developer-friendly shortcuts, syntactic sugar, or ergonomic improvements
 - REPL (interactive learning tool — destroys learning curve defense)
-- Web playground (allows trying without documentation)
+- Web playground (lowers the comprehension barrier)
 - String literals (`"hello"`) — manual byte writing is a security feature
 - Method syntax (`.push()`) — index-based calls are a security feature
 - Named function calls — `η_N` index dispatch is a security feature
