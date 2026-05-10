@@ -1004,6 +1004,30 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
         buf_byte(b, 0xac); /* i64.extend_i32_s */
         SET1;
       }
+      /* === Inline WASM Assembly (#51) === */
+      /* ⊞_{asm}^{wasm}(hex_bytes) — inject raw WASM bytecodes */
+      else if (has_str(ex, "asm") && has_str(ex, "wasm")) {
+        char *hp = strchr(ex, '(');
+        if (hp) {
+          hp++;
+          while (*hp && *hp != ')') {
+            while (*hp == ' ' || *hp == ',') hp++;
+            if (*hp == ')') break;
+            int hi = 0, lo = 0;
+            if (*hp >= '0' && *hp <= '9') hi = *hp - '0';
+            else if (*hp >= 'a' && *hp <= 'f') hi = *hp - 'a' + 10;
+            else if (*hp >= 'A' && *hp <= 'F') hi = *hp - 'A' + 10;
+            else { hp++; continue; }
+            hp++;
+            if (*hp >= '0' && *hp <= '9') lo = *hp - '0';
+            else if (*hp >= 'a' && *hp <= 'f') lo = *hp - 'a' + 10;
+            else if (*hp >= 'A' && *hp <= 'F') lo = *hp - 'A' + 10;
+            else { continue; }
+            hp++;
+            buf_byte(b, (uint8_t)(hi * 16 + lo));
+          }
+        }
+      }
     }
   }
 
