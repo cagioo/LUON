@@ -1126,6 +1126,65 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
         buf_byte(b, 0x09); /* rethrow */
         buf_uleb(b, (int)k);
       }
+      /* === WASM Atomics (#42) === */
+      /* All atomics use 0xFE prefix byte */
+      /* ⊞_{atomic}^{load} — i64.atomic.load (align=3, offset=acc) */
+      else if (has_str(ex, "atomic") && has_str(ex, "load")) {
+        GET1;
+        buf_byte(b, 0xa7); /* i32.wrap_i64 */
+        buf_byte(b, 0xFE); /* atomics prefix */
+        buf_byte(b, 0x12); /* i64.atomic.load */
+        buf_byte(b, 0x03); /* alignment: 2^3 = 8 bytes */
+        buf_byte(b, 0x00); /* offset: 0 */
+        SET1;
+      }
+      /* ⊞_{atomic}^{store} — i64.atomic.store (acc=addr, σ₂=value) */
+      else if (has_str(ex, "atomic") && has_str(ex, "store")) {
+        GET1;
+        buf_byte(b, 0xa7); /* i32.wrap_i64 */
+        buf_byte(b, 0x20); buf_uleb(b, 2); /* local.get σ₂ */
+        buf_byte(b, 0xFE); /* atomics prefix */
+        buf_byte(b, 0x18); /* i64.atomic.store */
+        buf_byte(b, 0x03); /* align 8 */
+        buf_byte(b, 0x00); /* offset 0 */
+      }
+      /* ⊞_{atomic}^{add} — i64.atomic.rmw.add */
+      else if (has_str(ex, "atomic") && has_str(ex, "add")) {
+        GET1;
+        buf_byte(b, 0xa7); /* i32.wrap_i64 */
+        buf_byte(b, 0x20); buf_uleb(b, 2); /* local.get σ₂ */
+        buf_byte(b, 0xFE); /* atomics prefix */
+        buf_byte(b, 0x1E); /* i64.atomic.rmw.add */
+        buf_byte(b, 0x03); buf_byte(b, 0x00);
+        SET1;
+      }
+      /* ⊞_{atomic}^{sub} — i64.atomic.rmw.sub */
+      else if (has_str(ex, "atomic") && has_str(ex, "sub")) {
+        GET1;
+        buf_byte(b, 0xa7); /* i32.wrap_i64 */
+        buf_byte(b, 0x20); buf_uleb(b, 2); /* local.get σ₂ */
+        buf_byte(b, 0xFE); /* atomics prefix */
+        buf_byte(b, 0x1F); /* i64.atomic.rmw.sub */
+        buf_byte(b, 0x03); buf_byte(b, 0x00);
+        SET1;
+      }
+      /* ⊞_{atomic}^{cmpxchg} — i64.atomic.rmw.cmpxchg (acc=addr, σ₂=expected, σ₃=replacement) */
+      else if (has_str(ex, "atomic") && has_str(ex, "cmpxchg")) {
+        GET1;
+        buf_byte(b, 0xa7); /* i32.wrap_i64 */
+        buf_byte(b, 0x20); buf_uleb(b, 2); /* expected */
+        buf_byte(b, 0x20); buf_uleb(b, 3); /* replacement */
+        buf_byte(b, 0xFE);
+        buf_byte(b, 0x24); /* i64.atomic.rmw.cmpxchg */
+        buf_byte(b, 0x03); buf_byte(b, 0x00);
+        SET1;
+      }
+      /* ⊞_{atomic}^{fence} — atomic.fence (memory barrier) */
+      else if (has_str(ex, "atomic") && has_str(ex, "fence")) {
+        buf_byte(b, 0xFE);
+        buf_byte(b, 0x03); /* atomic.fence */
+        buf_byte(b, 0x00); /* reserved */
+      }
     }
   }
 
