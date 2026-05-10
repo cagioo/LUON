@@ -1,0 +1,23 @@
+// tools/bench_re.luon — Reverse Engineering Complexity Benchmark (S5)
+// Simulates evaluating deobfuscation cost.
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[bench_re] ⊢_Γ {
+  
+  // bench_re_complexity(ptr, len) → returns cyclomatic complexity multiplier
+  ∃!Φ ∈ Hom(𝒞,𝒟)[bench_re_complexity](σ₂, σ₃) ⊣^{op} {
+    // Basic logic: Complexity multiplier scales linearly with length due to flattening
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 3)^{⊗L}_{D(𝔄)} // 3x complexity due to obfuscation
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test: Measure obfuscated block of size 14 -> 14 * 3 = 42
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 14
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    η_{Kan}[bench_re_complexity]
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

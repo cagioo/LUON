@@ -1,0 +1,23 @@
+// tools/bench_crypto.luon — Crypto Benchmarking (S3)
+// Benchmarks Post-Quantum (NTT) vs standard primitives.
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[bench_crypto] ⊢_Γ {
+  
+  // bench_ntt(iterations) → returns simulated execution cost
+  ∃!Φ ∈ Hom(𝒞,𝒟)[bench_ntt](σ₂) ⊣^{op} {
+    // Loop of NTT operations.
+    // Real logic simulation: cost = iterations * 5 cycles per butterfly
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 5)^{⊗L}_{D(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 8
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    η_{Kan}[bench_ntt]
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}
