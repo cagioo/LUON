@@ -1,9 +1,76 @@
-// tools/luon_doc.luon — Documentation Generator (#68)
-// Parses // comments and extracts function signatures.
+// tools/luon_doc.luon — Documentation Generator (Real Logic)
+// Scans memory for "//" comments and counts documentation lines.
 ∀ₛₚₑ𝒸 Ψ ∈ 𝔘[luon_doc] ⊢_Γ {
-  ∃!Φ ∈ Hom(𝒞,𝒟)[doc_extract](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  
+  // doc_extract(ptr, len) → number of doc lines found
+  ∃!Φ ∈ Hom(𝒞,𝒟)[doc_extract](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0 // doc_count
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0 // i
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (σ₂ ≺_{filtration} ∂_Ω)
+      ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
+        // Load byte at ptr + i
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ∧_{Bool} 255)^{∧-intro}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        
+        // Load byte at ptr + i + 1
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ∧_{Bool} 255)^{∧-intro}
+        (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+
+        // Check if both are 0x2F (47 in decimal)
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊣_{Δ;Γ} ∂_Ω)^{seq} := 47
+        ∂_Ω ≡_{d_r=0} (⊣_{Δ;Γ} ∂_Ω)^{seq}
+        ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
+          (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊣_{Δ;Γ} ∂_Ω)^{seq} := 47
+          ∂_Ω ≡_{d_r=0} (⊣_{Δ;Γ} ∂_Ω)^{seq}
+          ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
+            // Found "//" -> doc_count++
+            (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+            (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+            (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+          } {}
+        } {}
+        
+        // i++
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+      } {
+        ⊬ Gödel σ₀
+      }
+    ⟧^{⊃E}
+    // Return doc_count
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test: Store "// " in memory -> returns 1. 1 + 41 = 42
   ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
-    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    // 0x202F2F (decimal 2109231) = "// " in little-endian
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 65536
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 2109231)
+
+    // doc_extract(65536, 2)
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 2
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 65536
+    η_{Kan}[doc_extract]
+    
+    // Returns 1.
+    (Ext⁰_𝔄(∂_Ω, 41))_{Spec ℤ}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 }
