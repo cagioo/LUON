@@ -229,6 +229,7 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
                         int *out_len) {
   max_global_idx = -1;
   char *src = calloc(1, 1024 * 1024); /* 1MB buffer for combined source */
+  
   int src_len = in_src_len;
   if (src_len > 1024 * 1024 - 1)
     src_len = 1024 * 1024 - 1;
@@ -280,6 +281,44 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
       }
     }
     p0 = eol + 1;
+  }
+
+  /* Pass 0.5: Conditional Compilation (#49) — strip ⊞_{cfg}^{debug/release} blocks */
+  /* Lines with ⊞_{cfg}^{debug} are kept only in debug mode (default) */
+  /* Lines with ⊞_{cfg}^{release} are kept only in release mode (-O flag) */
+  {
+    static int build_mode = 0; /* 0=debug, 1=release — set externally */
+    char *wp = src;
+    const char *rp = src;
+    int skip_depth = 0;
+    while (rp < src + src_len) {
+      const char *eol = strchr(rp, '\n');
+      if (!eol) eol = src + src_len;
+      int ll = (int)(eol - rp);
+      /* Check for cfg directives */
+      if (ll < 512) {
+        char cfgline[512] = {0};
+        memcpy(cfgline, rp, ll);
+        if (strstr(cfgline, "cfg") && strstr(cfgline, "debug") && build_mode == 1) {
+          /* release mode: skip debug-only line */
+          rp = eol + 1;
+          continue;
+        }
+        if (strstr(cfgline, "cfg") && strstr(cfgline, "release") && build_mode == 0) {
+          /* debug mode: skip release-only line */
+          rp = eol + 1;
+          continue;
+        }
+      }
+      /* Copy line to output */
+      int copylen = (int)(eol - rp);
+      memmove(wp, rp, copylen);
+      wp += copylen;
+      if (*eol == '\n') { *wp++ = '\n'; }
+      rp = eol + 1;
+    }
+    src_len = (int)(wp - src);
+    src[src_len] = 0;
   }
 
   LFunc funcs[256];
@@ -1028,6 +1067,64 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
             buf_byte(b, (uint8_t)(hi * 16 + lo));
           }
         }
+      }
+      /* === WASM Tail Calls (#56) === */
+      /* η_{tail}[func_name] — return_call (TCO) */
+      else if (has_str(ex, "\xce\xb7") && has_str(ex, "tail")) {
+        char *bracket = strchr(ex, '[');
+        int fidx = 0;
+        if (bracket) {
+          bracket++;
+          char fname[64] = {0};
+          char *be = strchr(bracket, ']');
+          if (be) {
+            int nl = (int)(be - bracket);
+            if (nl > 63) nl = 63;
+            memcpy(fname, bracket, nl);
+            for (int fi = 0; fi < nf; fi++) {
+              if (strcmp(funcs[fi].name, fname) == 0) {
+                fidx = fi;
+                break;
+              }
+            }
+          }
+        }
+        int target_np = 1;
+        if (fidx >= 0 && fidx < nf) target_np = funcs[fidx].nparams;
+        for (int p = 0; p < target_np; p++) {
+          buf_byte(b, 0x20);
+          buf_uleb(b, p + 1);
+        }
+        buf_byte(b, 0x12); /* return_call */
+        buf_uleb(b, fidx);
+      }
+      /* === WASM Exception Handling (#55) === */
+      /* ⊞_{try}^{catch} { ... } — try block */
+      else if (has_str(ex, "try")) {
+        buf_byte(b, 0x06); /* try */
+        buf_byte(b, 0x40); /* void block type */
+      }
+      /* ⊞_{catch}^{tag}(N) — catch with tag index N */
+      else if (has_str(ex, "catch") && has_str(ex, "tag")) {
+        k = extract_number(ex);
+        buf_byte(b, 0x07); /* catch */
+        buf_uleb(b, (int)k);
+      }
+      /* ⊞_{catch_all} — catch all exceptions */
+      else if (has_str(ex, "catch_all")) {
+        buf_byte(b, 0x19); /* catch_all */
+      }
+      /* ⊞_{throw}^{tag}(N) — throw exception with tag N */
+      else if (has_str(ex, "throw") && has_str(ex, "tag")) {
+        k = extract_number(ex);
+        buf_byte(b, 0x08); /* throw */
+        buf_uleb(b, (int)k);
+      }
+      /* ⊞_{rethrow}(N) — rethrow from catch depth N */
+      else if (has_str(ex, "rethrow")) {
+        k = extract_number(ex);
+        buf_byte(b, 0x09); /* rethrow */
+        buf_uleb(b, (int)k);
       }
     }
   }
