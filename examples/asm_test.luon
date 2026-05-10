@@ -1,0 +1,12 @@
+// Inline WASM Assembly Test
+// Tests: ⊞_{asm}^{wasm}(hex_bytes)
+// Injects raw WASM: i64.const 42 = 42 00 2A
+// Expected output: 42
+
+∀𝔘[asm_test]^{Obj(𝒞)}
+
+∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+  // Raw WASM: i64.const 42 (0x42 0x2A) then local.set 1 (0x21 0x01)
+  ⊞_{asm}^{wasm}(42 2A 21 01)
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
