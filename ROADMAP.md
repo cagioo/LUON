@@ -8,7 +8,7 @@
 
 ## Vision & Mission (NON-NEGOTIABLE)
 
-> **Luon is an enterprise-grade security-oriented language. Every design decision is evaluated against its security implications.**
+> **Luon is a security-oriented language. Every design decision is evaluated against its security implications.**
 
 ### Core Principles
 
@@ -58,13 +58,13 @@ This roadmap tracks every major component of the Luon programming language from 
 
 ## Phase 1: Event Horizon (v2.0.0)
 
-*Full language architecture — self-hosting compiler, v2 mathematical syntax, security layers, and runtime.*
+*Full language architecture — self-hosting compiler, mathematical syntax, security layers, and runtime.*
 
 ### 1.1 Core Language
 
 | Component | Status | Description |
 |---|---|---|
-| v2 mathematical syntax | ✅ v2.0.0 | 50+ regex patterns, 8 mathematical domains, Unicode symbols |
+| mathematical syntax | ✅ v2.0.0 | 50+ regex patterns, 8 mathematical domains, Unicode symbols |
 | Dual-mode parser (v1+v2) | ✅ v2.0.0 | Auto-detects LaTeX v1 vs Unicode v2 syntax |
 | 34 operators total | ✅ v2.0.0 | Arithmetic, comparison, float, memory, control flow, crypto, bitwise, WASI |
 | 127 general-purpose registers | ✅ v2.0.0 | `σ₀`–`σ₁₂₇` with Unicode subscript parsing |

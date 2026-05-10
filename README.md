@@ -194,7 +194,7 @@ After installation, restart your shell or run `source ~/.bashrc`.
                       └──────────────┘
 ```
 
-1. **Parser** — Reads v2 mathematical syntax, hashes operator patterns via rolling hash, generates IR
+1. **Parser** — Reads mathematical syntax, hashes operator patterns via rolling hash, generates IR
 2. **Emitter** — Translates IR to valid WASM binary (i64 accumulator model)
 3. **Runtime** — Executes via native C runtime or any WASI-compatible runtime (Wasmtime, etc.)
 
