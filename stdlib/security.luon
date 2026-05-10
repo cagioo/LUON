@@ -1,9 +1,42 @@
-// stdlib/security.luon — Security Enclave (#53, #90, #91)
-// Implements capability-based security, WASM Component Model WIT bindings, and sandboxing.
+// stdlib/security.luon — Security Enclave (Real Logic)
+// Bitmask permission checking for Sandboxing
 ∀ₛₚₑ𝒸 Ψ ∈ 𝔘[security] ⊢_Γ {
-  ∃!Φ ∈ Hom(𝒞,𝒟)[sandbox_init](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  
+  // sandbox_check_permission(requested_mask) → traps if not allowed
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sandbox_check_permission](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load current sandbox permission mask from 0x50000
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 327680
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    
+    // Check if (requested & current) == requested
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ∧_{Bool} σ₃)^{∧-intro}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    σ₃ ≡_{d_r=0} ∂_Ω
+    ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
+      // Allowed
+      (⊣_{Δ;Γ} ∂_Ω)^{seq} := 1
+      (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    } {
+      // Denied -> Trap
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    }
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test: Mask=7, requested=2 -> allowed (returns 1). 1 + 41 = 42.
   ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
-    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 327680
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 7)
+
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 2
+    η_{Kan}[sandbox_check_permission]
+    (Ext⁰_𝔄(∂_Ω, 41))_{Spec ℤ}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 }
