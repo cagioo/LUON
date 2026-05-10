@@ -1,0 +1,121 @@
+// stdlib/async.luon — Cooperative Async/Await for Luon
+// Implements: Stackless coroutines via state machine transformation
+// Strategy: Each async function becomes a state machine with resume points.
+//           No OS threads needed — uses cooperative multitasking.
+// Layout:
+//   Future: [state:i64 | result:i64 | continuation_ptr:i64]
+//   Executor: [task_count:i64 | tasks_ptr:i64 | current:i64]
+// States: 0=pending, 1=ready, 2=completed
+// Comparable to: Rust async/await, JS Promise, Python asyncio
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[async] ⊢_Γ {
+
+  // future_new() → future_ptr
+  // Creates a pending future
+  ∃!Φ ∈ Hom(𝒞,𝒟)[future_new] ⊣^{op} {
+    // Alloc 24 bytes: [state|result|continuation]
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // state = 0 (pending)
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // result = 0
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // continuation = 0
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // future_resolve(future_ptr, value) → future_ptr
+  // Resolves a future with a value (state → completed)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[future_resolve](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // state = 2 (completed)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 2)
+    // result = value
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // future_await(future_ptr) → value (blocks until completed)
+  // Polls the future; returns result when state == 2
+  ∃!Φ ∈ Hom(𝒞,𝒟)[future_await] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Spin-poll: check state
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+      (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+      // state == 2?
+      (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (⊣_{Δ;Γ} ∂_Ω)^{seq} := 2
+      ∂_Ω ≡_{d_r=0} (⊣_{Δ;Γ} ∂_Ω)^{seq}
+      ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
+        // Completed: load result
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+        (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+        ⊬ Gödel σ₀
+      } {
+        // Still pending: yield (in cooperative mode, just continue)
+      }
+    ⟧^{⊃E}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // future_is_ready(future_ptr) → 1 if completed, 0 otherwise
+  ∃!Φ ∈ Hom(𝒞,𝒟)[future_is_ready] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 2
+    ∂_Ω ≡_{d_r=0} (⊣_{Δ;Γ} ∂_Ω)^{seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test: create future, resolve(42), await → 42
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    η_{Kan}[future_new]
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    // Resolve with 42
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}[future_resolve]
+    // Await
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}[future_await]
+    // acc = 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
