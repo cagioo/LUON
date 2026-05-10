@@ -1,10 +1,10 @@
 # Luon Programming Language — Official Documentation
 
-**Version:** 2.1.1 Singularity Patch  
+**Version:** 2.2.0-dev  
 **Status:** Official Public Documentation  
 **License:** Apache-2.0  
 **Target Runtime:** WebAssembly / WASI  
-**Last Updated:** 2026-05-09
+**Last Updated:** 2026-05-11
 
 ---
 
@@ -1394,10 +1394,15 @@ Priority — capability additions without syntax normalization:
 - ~~multiple return values via register packing~~ — ✅ Done (zero-overhead tuples via `→^{N}`),
 - ~~`free()` / `realloc()` / arena allocator~~ — ✅ Done,
 - ~~array/hashmap bounds checking~~ — ✅ Done,
-- integer overflow detection,
-- division by zero handling,
-- unsigned integer types (`u8`, `u16`, `u32`, `u64`),
-- smaller integer types (`i8`, `i16`).
+- ~~integer overflow detection~~ — ✅ Done (`checked_add/sub_i64`),
+- ~~division by zero handling~~ — ✅ Done (`check_divisor_nonzero`),
+- ~~unsigned integer types~~ — ✅ Done (`u8`/`u16`/`u32`/`u64`),
+- ~~smaller integer types~~ — ✅ Done (`i8`/`i16`),
+- ~~null safety~~ — ✅ Done (Option type `⊘_{none/some/unwrap!/is_none/is_some}`),
+- ~~type annotations~~ — ✅ Done (`:(ℤ₆₄, ℤ₃₂) → ℤ₆₄`),
+- ~~global variables~~ — ✅ Done (`𝔾₀-𝔾₂₅₅`).
+
+> **Level 1: 15/15 COMPLETE ✅**
 
 ### 25.2 Medium Phase (P1)
 
@@ -1406,11 +1411,14 @@ Priority — competitive capability with mathematical syntax:
 - generics (via mathematical notation, NOT `<T>` syntax),
 - traits/interfaces (via mathematical notation),
 - ~~full pattern matching~~ — ✅ Done (`br_table` N-way dispatch via `⊞_{Π}^{br_table}(N, d)`),
-- iterators (capability, not syntax sugar),
-- slice type (ptr + len),
-- range type,
-- ownership / borrow checker (SECURITY — memory safety),
-- lifetimes (SECURITY),
+- ~~higher-order functions~~ — ✅ Done (`call_indirect` via `η_{indirect}[type_idx]`),
+- ~~iterators~~ — ✅ Done (`stdlib/iter.luon`),
+- ~~slice type~~ — ✅ Done (`stdlib/slice.luon`),
+- ~~range type~~ — ✅ Done (`stdlib/range.luon`),
+- ~~enum with associated data~~ — ✅ Done (`stdlib/enum.luon`),
+- ownership / borrow checker (SECURITY — blocked: needs Phase 4 type system),
+- lifetimes (SECURITY — blocked: needs Phase 4 type system),
+- ~~memory ops~~ — ✅ Done (`memory.size/grow` VM support),
 - formatter (`luon fmt` — canonical style for math syntax),
 - linter (`luon lint` — unreachable code, memory hazards),
 - LSP server (for authorized developers only),
@@ -1422,6 +1430,7 @@ Priority — world-class without compromising vision:
 
 - macro system (via mathematical notation),
 - compile-time evaluation (comptime),
+- ~~inline WASM assembly~~ — ✅ Done (`⊞_{asm}^{wasm}(hex_bytes)`),
 - WASM Component Model (WIT interfaces),
 - WASM SIMD (128-bit performance),
 - WASM Tail Calls (TCO),
