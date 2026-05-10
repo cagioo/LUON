@@ -277,7 +277,7 @@ This roadmap tracks every major component of the Luon programming language from 
 |---|---|---|---|
 | Generics (parametric polymorphism) | 🔲 | P1 | Via mathematical notation |
 | Traits / Interfaces | 🔲 | P1 | Behavior contracts |
-| Type annotations in source | 🔲 | P1 | Via mathematical notation, NOT `fn(a: i64)` style |
+| Type annotations in source | ✅ | P1 | `:(ℤ₆₄, ℤ₃₂) → ℤ₆₄` syntax. PR #63 |
 | Scope / block scoping | ✅ | P1 | Lexical scoping via `⊣_{scope}` / `⟧_{scope}` in compiler |
 | Unsigned integer types (u8/u16/u32/u64) | ✅ | P1 | Added to typechecker with size/alignment/numeric classification and widening rules |
 | Smaller integer types (i8/i16) | ✅ | P1 | Added to typechecker with signed widening rules |
@@ -288,7 +288,7 @@ This roadmap tracks every major component of the Luon programming language from 
 |---|---|---|---|
 | Full pattern matching | 🔲 | P1 | Extend `enum_match` to N-way dispatch |
 | Iterators / Iterator protocol | 🔲 | P1 | Lazy collection traversal |
-| Higher-order functions | 🔲 | P1 | Pass function indices as values |
+| Higher-order functions | ✅ | P1 | `η_{indirect}[type_idx]` call_indirect. PR #62 |
 | Slice type (ptr + len) | 🔲 | P1 | Safe array views |
 | Range type | 🔲 | P1 | Numeric ranges |
 | Char type (Unicode scalar) | 🔲 | P1 | String processing |

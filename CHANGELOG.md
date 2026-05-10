@@ -9,6 +9,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [v2.2.0-dev] — 2026-05-10
+
+### Added — Compiler Features
+- **Global Variables** — `𝔾₀-𝔾₂₅₅` syntax for WASM globals. `global.get`/`global.set` emission. WASM Global section (ID=6). PR #61.
+- **Pattern Matching** — `⊞_{Π}^{br_table}(N, d)` N-way dispatch via WASM `br_table` opcode. PR #62.
+- **Higher-Order Functions** — `η_{indirect}[type_idx]` via WASM `call_indirect`. PR #62.
+- **Type Annotations** — `:(ℤ₆₄, ℤ₃₂) → ℤ₆₄` syntax. `parse_wasm_type`: ℤ₆₄→i64, ℤ₃₂→i32, 𝔽₆₄→f64, 𝔽₃₂→f32. PR #63.
+
+### Added — Examples
+- `examples/global_test.luon` — Global variable persistence across function calls (42 ✓)
+- `examples/match_test.luon` — N-way pattern matching: 0→100, 1→200, 2→300, default→passthrough (✓)
+- `examples/type_test.luon` — Type annotation verification (42 ✓)
+
+### Changed — CLI
+- Version string: `v2.2.0-dev` (was `v2.0.0-extreme`)
+- Tagline: `Security-Oriented WASM Language` (was `Quantum-Computational Language`)
+
+### Changed — Documentation
+- Professionalized security terminology across 16+ files (PRs #58-#60)
+- Removed all grade-based claims (enterprise, military, etc.)
+- Standardized "mathematical syntax" terminology
+
+### Fixed
+- Math library stabilization — 22/22 tests pass. PR #57.
+
+---
+
 ## Unreleased
 
 ### Changed — Compiler Infrastructure
