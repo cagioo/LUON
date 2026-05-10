@@ -513,8 +513,8 @@ static int cmd_run(int argc, char **argv) {
 /* ═══ Main CLI ═══ */
 int main(int argc, char **argv) {
     if (argc < 2) {
-        printf("  Luon Compiler v2.0.0-extreme (Event Horizon)\n");
-        printf("  Vesege — Quantum-Computational Language\n\n");
+        printf("  Luon Compiler v2.2.0-dev\n");
+        printf("  Vesege — Security-Oriented WASM Language\n\n");
         printf("  Usage:\n");
         printf("    luon build <file.luon> [-o out.wasm]  Compile .luon to .wasm\n");
         printf("    luon run   <file> [-a N] [-e entry]   Execute (auto-compiles .luon)\n");
@@ -524,8 +524,8 @@ int main(int argc, char **argv) {
     }
 
     if (strcmp(argv[1], "version") == 0) {
-        printf("  Luon Compiler v2.0.0-extreme (Event Horizon)\n");
-        printf("  Vesege — Quantum-Computational Language\n");
+        printf("  Luon Compiler v2.2.0-dev\n");
+        printf("  Vesege — Security-Oriented WASM Language\n");
         printf("  Runtime: Native C (zero dependencies)\n");
         printf("  Self-hosting: compiler.wasm (%s)\n",
                find_compiler_wasm(argv[0]) ? "found" : "not found");
