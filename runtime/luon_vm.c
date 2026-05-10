@@ -173,6 +173,30 @@ static int find_export(Module *m, const char *name) {
 /* ═══ VM Execution ═══ */
 static int call_depth = 0;
 
+static void skip_block(const u8 *code, int *pos_ptr, int clen, int target_d) {
+    int pos = *pos_ptr;
+    int d = target_d;
+    while(d > 0 && pos < clen) {
+        u8 o = code[pos++];
+        if(o==0x02 || o==0x03 || o==0x04) { pos++; d++; } /* block, loop, if */
+        else if(o==0x0B) { d--; } /* end */
+        else if(o==0x0C || o==0x0D || o==0x20 || o==0x21 || o==0x22 || o==0x23 || o==0x24 || o==0xD0 || o==0xD2) { read_uleb(code, &pos); }
+        else if(o==0x10) { read_uleb(code, &pos); } /* call */
+        else if(o==0x11) { read_uleb(code, &pos); read_uleb(code, &pos); } /* call_indirect */
+        else if(o==0x41) { read_sleb(code, &pos); } /* i32.const */
+        else if(o==0x42) { read_sleb(code, &pos); } /* i64.const */
+        else if(o==0x43) { pos += 4; } /* f32.const */
+        else if(o==0x44) { pos += 8; } /* f64.const */
+        else if(o>=0x28 && o<=0x3E) { read_uleb(code, &pos); read_uleb(code, &pos); } /* mem load/store */
+        else if(o==0x3F || o==0x40) { pos++; } /* mem size/grow */
+        else if(o==0x0E) { /* br_table */
+            int cnt = read_uleb(code, &pos);
+            for(int i=0; i<=cnt; i++) read_uleb(code, &pos);
+        }
+    }
+    *pos_ptr = pos;
+}
+
 static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nrets) {
     if (fidx < 0 || fidx >= m->n_funcs) {
         fprintf(stderr, "Error: invalid function index %d\n", fidx);
@@ -207,6 +231,7 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
         if (++iter > MAX_ITER) { fprintf(stderr, "Error: execution limit\n"); break; }
         u8 op = code[pos++];
 
+
         switch (op) {
         case 0x00: fprintf(stderr, "unreachable\n"); goto done;
         case 0x01: break; /* nop */
@@ -215,10 +240,10 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
         case 0x04: { /* if */
             int bt=code[pos++]; i64 c=POP();
             if(bp<MAX_BLOCKS){blocks[bp].kind=2;blocks[bp].pos=pos;blocks[bp].stack_height=sp;bp++;}
-            if(c==0){int d=1;while(d>0&&pos<clen){u8 o=code[pos++];if(o==2||o==3||o==4)d++;else if(o==0x0B)d--;else if(o==5&&d==1)break;}}
+            if(c==0){ skip_block(code, &pos, clen, 1); } /* if skip to else or end */
             break;
         }
-        case 0x05: { /* else */ int d=1;while(d>0&&pos<clen){u8 o=code[pos++];if(o==2||o==3||o==4)d++;else if(o==0x0B)d--;} break; }
+        case 0x05: { /* else */ skip_block(code, &pos, clen, 1); break; }
         case 0x0B: { /* end */
             if(bp>0) bp--; else { 
                 for(int i=nrets-1; i>=0; i--) rets[i] = sp>0 ? stack[--sp] : 0;
@@ -230,15 +255,15 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
             int label=(int)read_uleb(code,&pos);
             int ti=bp-1-label;
             if(ti<0){pos=clen;break;}
-            if(blocks[ti].kind==1){bp=ti+1;pos=blocks[ti].pos;}
-            else{bp=ti;int d=1;while(d>0&&pos<clen){u8 o=code[pos++];if(o==2||o==3||o==4)d++;else if(o==0x0B)d--;}}
+            if(blocks[ti].kind==1){bp=ti+1;pos=blocks[ti].pos;sp=blocks[ti].stack_height;}
+            else{bp=ti;sp=blocks[ti].stack_height; skip_block(code, &pos, clen, label+1);}
             break;
         }
         case 0x0D: { /* br_if */
             int label=(int)read_uleb(code,&pos); i64 c=POP();
             if(c!=0){int ti=bp-1-label;if(ti<0){pos=clen;break;}
-            if(blocks[ti].kind==1){bp=ti+1;pos=blocks[ti].pos;}
-            else{bp=ti;int d=1;while(d>0&&pos<clen){u8 o=code[pos++];if(o==2||o==3||o==4)d++;else if(o==0x0B)d--;}}}
+            if(blocks[ti].kind==1){bp=ti+1;pos=blocks[ti].pos;sp=blocks[ti].stack_height;}
+            else{bp=ti;sp=blocks[ti].stack_height; skip_block(code, &pos, clen, label+1);}}
             break;
         }
         case 0x0E: { /* br_table */
@@ -248,8 +273,8 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
             targets[cnt]=(int)read_uleb(code,&pos);
             i64 idx=POP(); int label=(idx>=0&&idx<cnt)?targets[(int)idx]:targets[cnt];
             int ti=bp-1-label;if(ti<0){pos=clen;break;}
-            if(blocks[ti].kind==1){bp=ti+1;pos=blocks[ti].pos;}
-            else{bp=ti;int d=1;while(d>0&&pos<clen){u8 o=code[pos++];if(o==2||o==3||o==4)d++;else if(o==0x0B)d--;}}
+            if(blocks[ti].kind==1){bp=ti+1;pos=blocks[ti].pos;sp=blocks[ti].stack_height;}
+            else{bp=ti;sp=blocks[ti].stack_height; skip_block(code, &pos, clen, label+1);}
             break;
         }
         case 0x0F: { 
