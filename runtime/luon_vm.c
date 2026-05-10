@@ -309,6 +309,8 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
         case 0x37: { read_uleb(code,&pos); int off=(int)read_uleb(code,&pos); i64 v=POP(); int addr=((int)POP()+off)&(MEM_SIZE-1); memcpy(m->memory+addr,&v,8); break; }
         case 0x3A: { read_uleb(code,&pos); int off=(int)read_uleb(code,&pos); i64 v=POP(); int addr=((int)POP()+off)&(MEM_SIZE-1); m->memory[addr]=(u8)(v&0xFF); break; }
         case 0x3C: { read_uleb(code,&pos); int off=(int)read_uleb(code,&pos); i64 v=POP(); int addr=((int)POP()+off)&(MEM_SIZE-1); m->memory[addr]=(u8)(v&0xFF); break; }
+        case 0x3F: { pos++; PUSH((i64)m->mem_pages); break; } /* memory.size */
+        case 0x40: { pos++; int delta=(int)POP(); int old=m->mem_pages; if(delta>0 && old+delta<=256) { m->memory=realloc(m->memory,(old+delta)*65536); memset(m->memory+old*65536,0,delta*65536); m->mem_pages=old+delta; PUSH((i64)old); } else { PUSH((i64)-1); } break; } /* memory.grow */
         case 0x41: { PUSH((i64)(int32_t)read_sleb(code,&pos)); break; }
         case 0x42: { PUSH(read_sleb(code,&pos)); break; }
         case 0x45: { PUSH(POP()==0?1:0); break; }
