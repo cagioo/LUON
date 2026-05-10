@@ -12,9 +12,9 @@
 
 ### Core Principles
 
-1. **Quantum-Aware, Hardened, AI-Resistant, Reverse-Engineering Resistant** — Luon is designed to resist reverse engineering, resist automated AI analysis without official documentation, and incorporate quantum-aware cryptographic foundations.
+1. **Quantum-Aware, Hardened, AI-Resistant, Reverse-Engineering Resistant** — Luon is designed to resist reverse engineering, resist automated AI analysis and incorporate quantum-aware cryptographic foundations.
 
-2. **Steep Learning Curve = Security Design Choice** — Luon is intentionally designed to require official documentation to learn. This is a deliberate barrier that raises the cost of unauthorized code comprehension.
+2. **Steep Learning Curve = Security Design Choice** — The mathematical syntax raises the cognitive cost of code comprehension, requiring dedicated study to become proficient — a deliberate design tradeoff favoring security over accessibility.
 
 3. **Conventional Syntax = VIOLATION** — Keywords like `if`, `else`, `for`, `while`, `let`, `var`, `print`, `true`, `false`, and "readable" syntax patterns from other languages (Rust, Go, Python, TypeScript) are **STRICTLY FORBIDDEN**. Luon uses pure mathematical logic notation (`branch_if` → `⊥_{𝒯}→^{...}`, loop → `μ`, register → `σ`, etc.).
 
@@ -425,7 +425,7 @@ This roadmap tracks every major component of the Luon programming language from 
 | Try/catch / panic/recover | `try/catch` keywords are too conventional. |
 | Defer / cleanup | `defer` keyword lowers the comprehension barrier. Resource cleanup must be manual. |
 | REPL | Lowers the learning barrier, reducing the comprehension cost for unauthorized analysis. |
-| Playground (web-based) | Allows trying Luon without reading documentation, reducing the comprehension barrier. |
+| Playground (web-based) | Lowers the learning barrier, reducing the cognitive cost of code comprehension. |
 | Unsafe blocks (`unsafe {}`) | Gives illusion of safety without ownership model. Safety via WASM sandbox. |
 
 ### Rejected: Anti-Security (Breaks Sandbox/Determinism)
