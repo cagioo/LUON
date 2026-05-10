@@ -1,0 +1,183 @@
+// stdlib/macro.luon — Macro System for Luon
+// Implements: Text-level macro expansion via define/expand pattern
+// Strategy: Macros are functions that return code strings as i64 tokens.
+//           The preprocessor expands macro invocations before compilation.
+// Macro types:
+//   1. Constant macros — define a name → value substitution
+//   2. Function macros — parametric code templates
+//   3. Conditional macros — expand based on cfg flags
+// Layout:
+//   MacroDef: [name_hash:i64 | expansion_ptr:i64 | param_count:i64]
+//   MacroTable: [count:i64 | defs_ptr:i64]
+// Comparable to: C #define, Rust macro_rules!, Zig comptime
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[macro] ⊢_Γ {
+
+  // macro_table_new(capacity) → table_ptr
+  // Creates a macro definition table
+  ∃!Φ ∈ Hom(𝒞,𝒟)[macro_table_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Alloc: 16 header + cap * 24 (each def = 24 bytes)
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 24)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₅)
+    // count = 0
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // defs_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₇)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // macro_define(table_ptr, name_hash, expansion_value, param_count) → table_ptr
+  // Registers a macro definition
+  ∃!Φ ∈ Hom(𝒞,𝒟)[macro_define](σ₂, σ₃, σ₄) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Load count
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // Load defs_ptr
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    // addr = defs + count * 24
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 24)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₇))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+    // Store name_hash
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Store expansion
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+    (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // Store param_count
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+    (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Increment count
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // macro_expand(table_ptr, name_hash) → expansion_value
+  // Looks up and returns the expansion for a macro
+  ∃!Φ ∈ Hom(𝒞,𝒟)[macro_expand](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load count
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load defs_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Linear scan for name_hash match
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // result = 0 (not found)
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (σ₄ ≺_{filtration} ∂_Ω)
+      ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
+        // addr = defs + i * 24
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ 24)^{⊗L}_{D(𝔄)}
+        (Ext⁰_𝔄(∂_Ω, σ₅))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+        // Load name_hash at addr
+        (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+        (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+        // Check match
+        (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        σ₂ ≡_{d_r=0} ∂_Ω
+        ⊞_{Galois}^{Adj}(⊣_{Δ;Γ} ∂_Ω) {
+          // Found! Load expansion
+          (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+          (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+          (σ₉ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+          (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+          ⊬ Gödel σ₀
+        } {
+          // No match, continue
+        }
+        (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+        (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+      } {
+        ⊬ Gödel σ₀
+      }
+    ⟧^{⊃E}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test: define macro "ANSWER" = 42, expand it
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // Create table
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 16
+    η_{Kan}[macro_table_new]
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+
+    // Define: name_hash=999, expansion=42, params=0
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 999
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}[macro_define]
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+
+    // Expand: lookup name_hash=999 → should return 42
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 999
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}[macro_expand]
+    // acc = 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
