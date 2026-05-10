@@ -1,4 +1,5 @@
 // stdlib/math.luon — Mathematical operations for Luon
+
 // Functions: abs, min, max, clamp, pow, sqrt, log2, gcd, lcm,
 //            floor_div, ceil_div, is_power_of_two, next_power_of_two,
 //            factorial, fib_fast, sign,
@@ -20,15 +21,17 @@
     // Check if negative: x < 0
     (∂_Ω ⊗_ℤ 0)^{⊗L}_{D(𝔄)}
     (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
-    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (∂_Ω ≺_{ω₁} σ₃)^{well-order}
-    // If x >= 0, skip negation
-    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
-    (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
-    // x is negative: negate it (0 - x)
-    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (Tor₀^𝔄(∂_Ω, -σ₂))_{Spec ℤ}
-    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≺_{ω₁} σ₃)^{well-order}
+      // If x >= 0, skip negation
+      (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+      (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      // x is negative: negate it (0 - x)
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Tor₀^𝔄(∂_Ω, -σ₂))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    ⟧^{⊃E}_{Δ}⊣
     // Return result
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
@@ -39,11 +42,16 @@
   ∃!Φ ∈ Hom(𝒞,𝒟)[min] ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
     // if a <= b, return a; else return b
-    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (∂_Ω ⪯_{ω₁} σ₂)^{well-order}
-    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
-    (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
-    // a > b, return b
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ⪯_{ω₁} σ₂)^{well-order}
+      (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+      (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      // a <= b (fell through), return a
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // a > b (branched), return b
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
@@ -53,11 +61,16 @@
   ∃!Φ ∈ Hom(𝒞,𝒟)[max] ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
     // if a >= b, return a; else return b
-    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (∂_Ω ⪰_{ω₁} σ₂)^{well-order}
-    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
-    (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
-    // a < b, return b
+    ⊢_{Γ}^{⊃I}⟦
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ⪰_{ω₁} σ₂)^{well-order}
+      (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+      (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      // a >= b (fell through), return a
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+    // a < b (branched), return b
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
@@ -96,15 +109,17 @@
     (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
     ⊢_{Γ}^{⊃I}⟦
       μ_{ω₁}^{CK}⟦
-        // if exp == 0, exit
+        // if exp == 0, exit (break 2, exits ⊃I block)
         (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
         (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
         (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
         // if exp & 1 != 0: result *= base
-        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (∂_Ω ∧_{Bool} 1)^{∧-intro}
-        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
         ⊢_{Γ}^{⊃I}⟦
+          (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (∂_Ω ∧_{𝔹} 1)^{∧-intro}
+          (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+          (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // if (exp&1)==0, skip ⊃I block
           (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
           (∂_Ω ⊗_ℤ σ₃)^{⊗L}_{D(𝔄)}
           (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
@@ -115,7 +130,7 @@
         (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
         // exp >>= 1
         (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (∂_Ω ≫_{Galois} 1)^{adjunction}
+        (∂_Ω ≫_{shift} 1)^{shift}
         (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
         (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
       ⟧_{ω₁}^{CK}μ
@@ -129,10 +144,11 @@
   ∃!Φ ∈ Hom(𝒞,𝒟)[sqrt] ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
     // Handle x <= 1
-    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (∂_Ω ⪯_{ω₁} 1)^{well-order}
-    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
     ⊢_{Γ}^{⊃I}⟦
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ⪯_{ω₁} 1)^{well-order}
+      (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+      (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // if x > 1, skip this block
       (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
       ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
     ⟧^{⊃E}_{Δ}⊣
@@ -151,7 +167,7 @@
         // if new_guess >= old_guess, converged
         (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
         (∂_Ω ⪰_{ω₁} σ₃)^{well-order}
-        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // br_if 1 (exit ⊃I block)
         // update guess
         (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
         (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
@@ -172,10 +188,10 @@
       μ_{ω₁}^{CK}⟦
         (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
         (∂_Ω ⪯_{ω₁} 1)^{well-order}
-        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // br_if 1 (exit ⊃I block)
         // x >>= 1
         (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (∂_Ω ≫_{Galois} 1)^{adjunction}
+        (∂_Ω ≫_{shift} 1)^{shift}
         (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
         // count++
         (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
@@ -197,7 +213,7 @@
         // if b == 0, exit
         (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
         (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
-        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // br 1
         // temp = a % b
         (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
         (∂_Ω mod_{ℤ} σ₂)^{Euclidean}
@@ -255,20 +271,27 @@
   // acc = x
   ∃!Φ ∈ Hom(𝒞,𝒟)[sign] ⊣^{op} {
     (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
-    // if x == 0, return 0
-    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
-    (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
-    // if x > 0, return 1
-    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (∂_Ω ≻_{ω₁} 0)^{well-order}
-    (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
     ⊢_{Γ}^{⊃I}⟦
-      (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      // check x == 0
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+      (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      // x ≠ 0, check x > 0
+      ⊢_{Γ}^{⊃I}⟦
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≻_{ω₁} 0)^{well-order}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+        // x > 0 (fell through), return 1
+        (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+      ⟧^{⊃E}_{Δ}⊣
+      // x < 0 (branched), return -1
+      (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
       ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
     ⟧^{⊃E}_{Δ}⊣
-    // x < 0, return -1
-    (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    // x == 0 (branched), return 0
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
@@ -282,14 +305,14 @@
       μ_{ω₁}^{CK}⟦
         (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
         (∂_Ω ⪯_{ω₁} 1)^{well-order}
-        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule} // br_if 1
         // result *= n
         (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
         (∂_Ω ⊗_ℤ σ₂)^{⊗L}_{D(𝔄)}
         (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
         // n--
         (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-        (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+        (Tor₀^𝔄(∂_Ω, 1))_{Spec ℤ}
         (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
         (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
       ⟧_{ω₁}^{CK}μ

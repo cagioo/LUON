@@ -60,6 +60,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **`stdlib/time.luon`** — Fixed register collision in `time_elapsed_ns`: start_ns moved from σ₂ to σ₁₀ to avoid WASI param conflict
 - **`stdlib/time.luon`** — Fixed division operator in `time_to_millis`/`time_to_seconds`: changed from f64 divide (`⊘_{𝕂}`) to i64 integer divide (`RHom_ℤ`)
 
+### Fixed — Math Library Stabilization (22/22 tests pass)
+- **`stdlib/math.luon`** — Fixed branch depth bugs in `pow` (σ₂→σ₁), `sqrt` (σ₁→σ₀), `factorial` (σ₂→σ₁) — incorrect depths caused function escape via ti<0
+- **`stdlib/math.luon`** — Fixed `abs`, `min`, `max`, `sign` — wrapped bare `br_if` in `⊃I⟦⟧` blocks to prevent function escape at bp=0
+- **`stdlib/math.luon`** — Fixed `min`/`max` return value swap — `eqz→br_if` fall-through=TRUE semantics required inside-block/after-block value swap
+- **`stdlib/math.luon`** — Fixed `sign` control flow — restructured with nested blocks for correct 3-way dispatch (-1/0/1)
+- **`stdlib/math.luon`** — Fixed `factorial` infinite loop — `Tor₀(∂_Ω, -1)` subtracted -1 (adding 1); corrected to `Tor₀(∂_Ω, 1)`
+- **`runtime/luon_compile.h`** — Added missing `⪯`/`⪰` (well-order Le/Ge) comparison operators used by `sqrt`, `factorial`, `is_power_of_two`
+- **`runtime/luon_compile.h`** — Added missing `≺`/`≻` (well-order Lt/Gt) comparison operators used by `abs`, `clamp`
+- **`runtime/luon_compile.h`** — Added `mod_{ℤ}` (i64.rem_s) operator for `gcd` Euclidean algorithm
+- **`runtime/luon_vm.c`** — Removed leftover debug trace
+
+### Added — Examples
+- **`examples/test_math.luon`** — Comprehensive math library test: `pow(3,4)=81 + sqrt(100)=10 + gcd(48,18)=6 = 97`
+
 ### Changed — Documentation
 - Updated `LUON_DOCUMENTATION.md` — Added stack, deque, time module docs; updated allocator to free-list; updated repo tree; stdlib count 20→23
 - Updated `ROADMAP.md` — Phase 3 progress 20%→35%, 87 components delivered

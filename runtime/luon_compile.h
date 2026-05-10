@@ -79,7 +79,53 @@ static void emit_cmp(Buf *b, uint8_t op, int has_k, int64_t k, int has_s, int s)
 
 typedef struct { char name[64]; Buf body; int nparams; int nreturns; } LFunc;
 
-static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *out_len) {
+static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm, int *out_len) {
+    char *src = calloc(1, 1024 * 1024); /* 1MB buffer for combined source */
+    int src_len = in_src_len;
+    if(src_len > 1024 * 1024 - 1) src_len = 1024 * 1024 - 1;
+    memcpy(src, in_src, src_len);
+    
+    /* Pass 0: Import Resolution */
+    const char *p0 = src;
+    while(p0 < src+src_len) {
+        const char *eol = strchr(p0, '\n');
+        if(!eol) eol = src+src_len;
+        int ll = (int)(eol-p0); if(ll>511) ll=511;
+        char line0[512]={0}; memcpy(line0, p0, ll);
+        
+        if(strstr(line0, "import") && strstr(line0, "\xf0\x9d\x94\x98[")) {
+            char *nb = strstr(line0, "\xf0\x9d\x94\x98[");
+            if(nb) {
+                char *ne = strchr(nb+5, ']');
+                if(ne) {
+                    char modname[64]={0};
+                    int nl = (int)(ne - nb - 5); if(nl>63) nl=63;
+                    memcpy(modname, nb+5, nl);
+                    
+                    char filepath[256];
+                    snprintf(filepath, sizeof(filepath), "stdlib/%s.luon", modname);
+                    
+                    FILE *f = fopen(filepath, "rb");
+                    if(f) {
+                        fseek(f, 0, SEEK_END);
+                        long flen = ftell(f);
+                        fseek(f, 0, SEEK_SET);
+                        if(src_len + flen < 1024 * 1024) {
+                            fread(src + src_len, 1, flen, f);
+                            src_len += flen;
+                            src[src_len++] = '\n';
+                            src[src_len] = 0;
+                        }
+                        fclose(f);
+                    } else {
+                        printf("Warning: could not import module %s (file %s not found)\n", modname, filepath);
+                    }
+                }
+            }
+        }
+        p0 = eol + 1;
+    }
+
     LFunc funcs[256]; int nf=0;
 
     /* Pass 1: Discover functions and param counts */
@@ -98,11 +144,20 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
                 if(nl>63) nl=63;
                 memcpy(cf->name, bracket+1, nl); cf->name[nl] = 0;
                 int max_p = -1;
-                const char *scan = end ? end : line1;
-                while(*scan) {
+                const char *scan = p1; /* start from current line */
+                while(scan < src+src_len) {
+                    /* If we hit another function signature or EOF, stop scanning for this function's max_p */
+                    if(scan != p1 && scan[0]=='\n') {
+                        const char *nxt = scan+1;
+                        if(nxt < src+src_len-10) {
+                            if(memcmp(nxt, "\xe2\x88\x83", 3)==0) { /* next function starts */
+                                break;
+                            }
+                        }
+                    }
                     if((uint8_t)scan[0]==0xcf && (uint8_t)scan[1]==0x83) {
                         scan+=2; int pv=0; int pf=0;
-                        while((uint8_t)scan[0]==0xe2 && (uint8_t)scan[1]==0x82 && (uint8_t)scan[2]>=0x80 && (uint8_t)scan[2]<=0x89) {
+                        while(scan < src+src_len && (uint8_t)scan[0]==0xe2 && (uint8_t)scan[1]==0x82 && (uint8_t)scan[2]>=0x80 && (uint8_t)scan[2]<=0x89) {
                             pv=pv*10+((uint8_t)scan[2]-0x80); scan+=3; pf=1;
                         }
                         if(pf && pv>max_p) max_p=pv;
@@ -172,26 +227,36 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
             if(sig>=0) has_s=1;
 
             if(has_str(ex,"Ext\xe2\x81\xb0")&&has_str(ex,"Spec")) { /* Add */
-                k=extract_number(ex);has_k=1;emit_arith(b,0x7c,has_k,k,0,0);
+                if(has_s)emit_arith(b,0x7c,0,0,1,sig);else{k=extract_number(ex);emit_arith(b,0x7c,1,k,0,0);}
             } else if(has_str(ex,"Tor\xe2\x82\x80")&&has_str(ex,"Spec")) { /* Sub */
                 k=extract_number(ex);has_k=1;
                 if(has_s&&sig>=0){emit_arith(b,0x7d,0,0,1,sig);}
                 else{emit_arith(b,0x7d,1,k,0,0);}
             } else if(has_str(ex,"\xe2\x8a\x97_\xe2\x84\xa4")&&has_str(ex,"\xe2\x8a\x97L")) { /* Mul */
-                k=extract_number(ex);has_k=1;emit_arith(b,0x7e,has_k,k,0,0);
+                if(has_s)emit_arith(b,0x7e,0,0,1,sig);else{k=extract_number(ex);emit_arith(b,0x7e,1,k,0,0);}
             } else if(has_str(ex,"RHom")) { /* Div */
                 if(has_s)emit_arith(b,0x7f,0,0,1,sig);else{k=extract_number(ex);emit_arith(b,0x7f,1,k,0,0);}
+            } else if(has_str(ex,"mod_{\xe2\x84\xa4}")) { /* Mod */
+                if(has_s)emit_arith(b,0x81,0,0,1,sig);else{k=extract_number(ex);emit_arith(b,0x81,1,k,0,0);}
             } else if(has_str(ex,"\xe2\x89\xa1")&&has_str(ex,"acyclic")) { /* Eqz */
                 GET1;buf_byte(b,0x50);buf_byte(b,0xad);SET1;
             } else if(has_str(ex,"\xe2\x89\xa1")&&has_str(ex,"d_r=0")) { /* Eq */
                 if(has_s)emit_cmp(b,0x51,0,0,1,sig);else{k=extract_number(ex);emit_cmp(b,0x51,1,k,0,0);}
             } else if(has_str(ex,"\xe2\x89\xba")&&has_str(ex,"filtration")) { /* Lt */
                 if(has_s)emit_cmp(b,0x53,0,0,1,sig);else{k=extract_number(ex);emit_cmp(b,0x53,1,k,0,0);}
+            } else if(has_str(ex,"\xe2\x89\xba")&&has_str(ex,"well-order")) { /* Lt (well-order) */
+                if(has_s)emit_cmp(b,0x53,0,0,1,sig);else{k=extract_number(ex);emit_cmp(b,0x53,1,k,0,0);}
             } else if(has_str(ex,"\xe2\x89\xbb")&&has_str(ex,"cofiltration")) { /* Gt */
+                if(has_s)emit_cmp(b,0x55,0,0,1,sig);else{k=extract_number(ex);emit_cmp(b,0x55,1,k,0,0);}
+            } else if(has_str(ex,"\xe2\x89\xbb")&&has_str(ex,"well-order")) { /* Gt (well-order) */
                 if(has_s)emit_cmp(b,0x55,0,0,1,sig);else{k=extract_number(ex);emit_cmp(b,0x55,1,k,0,0);}
             } else if(has_str(ex,"\xe2\x89\xbc")&&has_str(ex,"\xe2\x8a\x86""filt")) { /* Le */
                 if(has_s)emit_cmp(b,0x57,0,0,1,sig);else{k=extract_number(ex);emit_cmp(b,0x57,1,k,0,0);}
             } else if(has_str(ex,"\xe2\x89\xbd")&&has_str(ex,"\xe2\x8a\x87""filt")) { /* Ge */
+                if(has_s)emit_cmp(b,0x59,0,0,1,sig);else{k=extract_number(ex);emit_cmp(b,0x59,1,k,0,0);}
+            } else if(has_str(ex,"\xe2\xaa\xaf")&&has_str(ex,"well-order")) { /* Le (well-order) */
+                if(has_s)emit_cmp(b,0x57,0,0,1,sig);else{k=extract_number(ex);emit_cmp(b,0x57,1,k,0,0);}
+            } else if(has_str(ex,"\xe2\xaa\xb0")&&has_str(ex,"well-order")) { /* Ge (well-order) */
                 if(has_s)emit_cmp(b,0x59,0,0,1,sig);else{k=extract_number(ex);emit_cmp(b,0x59,1,k,0,0);}
             } else if(has_str(ex,"\xe2\x88\xa7_{\xf0\x9d\x94\xb9}")) { /* And */
                 if(has_s)emit_arith(b,0x83,0,0,1,sig);else{k=extract_number(ex);emit_arith(b,0x83,1,k,0,0);}
@@ -349,7 +414,7 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
         }
     }
 
-    if(nf==0){*out_wasm=NULL;*out_len=0;return -1;}
+    if(nf==0){*out_wasm=NULL;*out_len=0;free(src);return -1;}
 
     /* Build WASM binary */
     Buf wasm; buf_init(&wasm);
@@ -434,6 +499,7 @@ static int compile_luon(const char *src, int src_len, uint8_t **out_wasm, int *o
     buf_byte(&wasm,10);buf_uleb(&wasm,cs.len);buf_bytes(&wasm,cs.d,cs.len);free(cs.d);
 
     *out_wasm=wasm.d; *out_len=wasm.len;
+    free(src);
     return 0;
 }
 #endif
