@@ -5,7 +5,7 @@
 <h1 align="center">Luon Programming Language</h1>
 
 <p align="center">
-  <strong>A security-first, systems-level WASM language with mathematical identity — built for the post-quantum era.</strong>
+  <strong>A security-oriented, systems-level WASM language with mathematical identity — designed for the modern threat landscape.</strong>
 </p>
 
 <p align="center">
@@ -32,17 +32,17 @@ Most programming languages optimize for **developer ergonomics** — readability
 
 **Luon optimizes for security.**
 
-Every design decision — from the mathematical syntax to the register-based execution model — exists to make Luon programs **resistant to reverse engineering, AI analysis, and quantum-era attacks**. The steep learning curve is not a limitation; it is the **first layer of defense**.
+Every design decision — from the mathematical syntax to the register-based execution model — is designed to make Luon programs **resistant to reverse engineering, automated analysis, and emerging cryptographic threats**. The steep learning curve is a deliberate **security design choice**.
 
 ### Design Philosophy
 
 | Principle | Description |
 |---|---|
-| **Security First** | Every language feature is evaluated against its security implications. Convenience never overrides safety. |
-| **Anti-Reverse Engineering** | Source code uses mathematical logic notation that is inherently resistant to automated analysis, pattern matching, and AI comprehension without official documentation. |
-| **Post-Quantum Ready** | Cryptographic foundations designed with quantum computing threats in mind. BLAKE2b, constant-time operations, and sealed executable format. |
+| **Security-Oriented** | Every language feature is evaluated against its security implications. Convenience never overrides safety. |
+| **Reverse-Engineering Resistant** | Source code uses mathematical logic notation designed to resist automated analysis, pattern matching, and AI-based code comprehension. |
+| **Quantum-Aware Design** | Cryptographic foundations built with emerging quantum computing threats in mind. BLAKE2b, constant-time operations, and sealed executable format. |
 | **Deterministic Execution** | Single-threaded, no GC, no non-determinism. Every execution path is fully predictable — essential for blockchain consensus and auditable computation. |
-| **WASM Sandboxing** | Programs run inside WebAssembly's linear memory sandbox with strict isolation, making escape impossible by design. |
+| **WASM Sandboxing** | Programs run inside WebAssembly's linear memory sandbox with strict isolation, significantly reducing the attack surface. |
 | **Self-Hosting** | The compiler compiles itself (`gen1 == gen2` verified). Zero dependency on external toolchains for compilation. |
 | **Minimal Attack Surface** | Small, auditable C runtime (~1000 LOC). No external dependencies. No standard library bloat. |
 
@@ -52,15 +52,15 @@ Every design decision — from the mathematical syntax to the register-based exe
 ┌─────────────────────────────────────────────────────────────────┐
 │                    TYPICAL LANGUAGE                              │
 │  if (x > 0) { print("positive"); }    ← Readable by anyone     │
-│  AI can analyze, decompile, reverse    ← Security liability     │
+│  AI can analyze, decompile, reverse    ← Higher exposure risk   │
 ├─────────────────────────────────────────────────────────────────┤
 │                    LUON                                          │
 │  (∂_Ω ≻_{ω₁} 0)^{well-order}         ← Mathematical notation  │
-│  Anti-AI, anti-reverse engineering     ← Security feature       │
+│  AI-resistant, RE-resistant syntax     ← Security design choice │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-Luon's syntax is derived from **category theory**, **formal logic**, **algebraic geometry**, and **set theory**. This is not aesthetic — it is a security mechanism. Source code that looks like a mathematics paper cannot be casually read, copied, or reverse-engineered.
+Luon's syntax is derived from **category theory**, **formal logic**, **algebraic geometry**, and **set theory**. This is a deliberate security design choice — source code that resembles a mathematics paper raises the barrier against casual reading, unauthorized copying, and automated reverse engineering.
 
 ---
 
@@ -68,20 +68,20 @@ Luon's syntax is derived from **category theory**, **formal logic**, **algebraic
 
 Luon implements security at **every layer** of the stack:
 
-### Layer 1: Syntax-Level Obfuscation
-Source code uses Unicode mathematical symbols (∀, ∃, ⊢, ⊣, ∂, Ω, σ, η, μ, ⊥, ⊤) instead of conventional keywords. The source itself is a form of obfuscation.
+### Layer 1: Syntax-Level Protection
+Source code uses Unicode mathematical symbols (∀, ∃, ⊢, ⊣, ∂, Ω, σ, η, μ, ⊥, ⊤) instead of conventional keywords, raising the barrier for unauthorized code comprehension.
 
-### Layer 2: WASM Obfuscation Engine (6 Passes)
-The compiler includes an opt-in metamorphic obfuscation pipeline:
+### Layer 2: WASM Code Transformation Engine (6 Passes)
+The compiler includes an opt-in binary protection pipeline with polymorphic output:
 
 | Pass | Technique | Effect |
 |---|---|---|
 | 1 | Instruction Substitution | NOP padding around arithmetic ops |
 | 2 | Dead Code Injection | Random `i64.const; drop` sequences |
-| 3 | Opaque Predicates | Fake computations that always evaluate the same way |
+| 3 | Opaque Predicates | Computations that always evaluate the same way |
 | 4 | Control Flow Flattening | Splits linear code into shuffled `br_table` state machine |
 | 5 | Register Shuffling | Fisher-Yates permutation of local indices 1-127 |
-| 6 | Metamorphic Output | Every compilation produces a **different** binary (seeded from time + urandom) |
+| 6 | Polymorphic Output | Every compilation produces a **unique** binary (seeded from time + urandom) |
 
 ### Layer 3: Sealed Executable Format (.lse)
 Luon defines a proprietary encrypted container format:
@@ -98,7 +98,7 @@ Luon defines a proprietary encrypted container format:
 │ Encrypted Bytecode                  │
 │ (BLAKE2b-CTR Stream Cipher)         │
 ├─────────────────────────────────────┤
-│ Anti-Tamper Footer                  │
+│ Integrity Verification Footer       │
 │ (BLAKE2b-256 over header+cipher)    │
 └─────────────────────────────────────┘
 ```
@@ -194,7 +194,7 @@ After installation, restart your shell or run `source ~/.bashrc`.
                       └──────────────┘
 ```
 
-1. **Parser** — Reads v2 EXTREME syntax, hashes operator patterns via rolling hash, generates IR
+1. **Parser** — Reads v2 mathematical syntax, hashes operator patterns via rolling hash, generates IR
 2. **Emitter** — Translates IR to valid WASM binary (i64 accumulator model)
 3. **Runtime** — Executes via native C runtime or any WASI-compatible runtime (Wasmtime, etc.)
 
@@ -512,7 +512,7 @@ code --install-extension .
 ```
 
 Features:
-- Syntax highlighting for v2 EXTREME mathematical notation
+- Syntax highlighting for v2 mathematical notation
 - 20 code snippets (module, func, loop, block, operators, etc.)
 - Bracket matching and auto-closing
 - 12 TextMate grammar scope categories

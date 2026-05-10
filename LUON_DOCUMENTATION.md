@@ -40,11 +40,11 @@
 
 ## 1. Introduction
 
-**Luon** is a military-grade security programming language designed for WebAssembly (WASM), sandboxed execution, and the Vesege ecosystem. It combines a low-level accumulator-based execution model with a distinctive mathematical syntax known as **v2 EXTREME syntax**.
+**Luon** is a enterprise-grade security-oriented programming language designed for WebAssembly (WASM), sandboxed execution, and the Vesege ecosystem. It combines a low-level accumulator-based execution model with a distinctive mathematical syntax known as **v2 mathematical syntax**.
 
 Luon is built around five principles:
 
-1. **Security Absolutism** — every design decision serves security first. The language is intentionally anti-quantum, anti-hacker, anti-AI, and anti-reverse engineering.
+1. **Security-Oriented Design** — every design decision serves security. The language is designed to be quantum-aware, hardened, AI-analysis resistant, and reverse-engineering resistant.
 2. **Intentional Complexity** — Luon is designed to be impossible to learn without official documentation. The steep learning curve is a deliberate security feature, not a deficiency.
 3. **Syntax-Level Obfuscation** — unlike other languages that add obfuscation at the compiler output level, Luon source code itself is already a form of obfuscation through pure mathematical logic notation.
 4. **Portability** — programs compile to WASM and can run on WASI-compatible runtimes.
@@ -52,9 +52,9 @@ Luon is built around five principles:
 
 Luon is not intended to be a generic scripting language or a developer-friendly language. Its primary direction is:
 
-- military-grade sandboxed computation,
+- enterprise-grade sandboxed computation,
 - smart-contract-style execution with deterministic guarantees,
-- anti-reverse-engineering binary output (metamorphic + sealed executables),
+- reverse-engineering resistant binary output (polymorphic + sealed executables),
 - WASM-native systems programming,
 - Vesege VM and blockchain infrastructure.
 
@@ -68,7 +68,7 @@ Luon is not intended to be a generic scripting language or a developer-friendly 
 
 | Goal | Description |
 |---|---|
-| Security absolutism | Every design decision serves security first. Anti-quantum, anti-hacker, anti-AI, anti-reverse engineering. |
+| Security-oriented design | Every design decision is evaluated against its security implications. Quantum-aware, hardened, AI-resistant, RE-resistant. |
 | Intentional complexity | The steep learning curve is a deliberate security feature. Impossible to learn without official documentation. |
 | Syntax-level obfuscation | Source code itself is already obfuscated through mathematical notation. No conventional keywords. |
 | WASM-first | Luon targets WebAssembly as its primary backend. |
@@ -123,7 +123,7 @@ LUON/
 │
 ├── runtime/
 │   ├── luon_vm.c              # Native C WASM runtime / CLI bootstrap
-│   └── luon_compile.h         # Minimal v2 EXTREME → WASM compiler helper
+│   └── luon_compile.h         # Minimal v2 → WASM compiler helper
 │
 ├── stdlib/                    # Standard library modules
 │   ├── array.luon
@@ -280,7 +280,7 @@ Properties:
 
 ## 6. Language Syntax
 
-Luon currently supports v2 EXTREME syntax as its primary syntax.
+Luon currently supports v2 mathematical syntax as its primary syntax.
 
 ### 6.1 Module Declaration
 
@@ -1281,7 +1281,7 @@ editor/luon-vscode/
 
 Features:
 
-- TextMate grammar for v2 EXTREME syntax,
+- TextMate grammar for v2 mathematical syntax,
 - bracket configuration,
 - comment configuration,
 - 20 code snippets,
@@ -1374,7 +1374,7 @@ Recently resolved (no longer limitations):
 
 ## 25. Roadmap
 
-> **Guiding Principle:** All new features MUST use Luon v2 EXTREME mathematical notation. Conventional syntax will NEVER be added.
+> **Guiding Principle:** All new features MUST use Luon v2 mathematical notation. Conventional syntax will NEVER be added.
 
 ### 25.1 Basic Completion Phase (P0)
 

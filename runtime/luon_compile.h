@@ -1,4 +1,4 @@
-/* Native Luon Compiler - Minimal v2 EXTREME → WASM */
+/* Native Luon Compiler - Minimal v2 → WASM */
 #ifndef LUON_COMPILE_H
 #define LUON_COMPILE_H
 #include <stdio.h>
