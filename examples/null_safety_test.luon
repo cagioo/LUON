@@ -1,0 +1,19 @@
+// Null Safety Test — Option type via ⊘
+
+// Tests: ⊘_{none}, ⊘_{some}, ⊘_{is_some}, ⊘_{unwrap!}
+// Expected output: 42
+
+∀𝔘[null_safety_test]^{Obj(𝒞)}
+
+// wrap_some: wraps acc in Some (identity — just returns the value)
+∃!Φ ∈ Hom(𝒞,𝒟)[wrap_some] ⊣^{op} {
+  ⊘_{some}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+// main: create Some(42), unwrap → 42
+∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+  (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+  ⊘_{unwrap!}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}

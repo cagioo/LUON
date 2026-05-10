@@ -968,6 +968,42 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
         buf_byte(b, 0xb0); /* i64.trunc_f64_s */
         SET1;
       }
+      /* === Null Safety: Option Type (⊘) === */
+      /* ⊘_{none} — create None value (sentinel = INT64_MIN) */
+      else if (has_str(ex, "\xe2\x8a\x98") && has_str(ex, "none")) {
+        buf_byte(b, 0x42); /* i64.const */
+        buf_sleb(b, (int64_t)0x8000000000000000LL); /* INT64_MIN sentinel */
+        SET1;
+      }
+      /* ⊘_{some} — create Some(acc): value stays as-is */
+      else if (has_str(ex, "\xe2\x8a\x98") && has_str(ex, "some")) {
+        /* acc already holds the value — Some is identity at runtime */
+      }
+      /* ⊘_{unwrap!} — forced unwrap: trap if None */
+      else if (has_str(ex, "\xe2\x8a\x98") && has_str(ex, "unwrap")) {
+        GET1;
+        buf_byte(b, 0x42); buf_sleb(b, (int64_t)0x8000000000000000LL);
+        buf_byte(b, 0x51); /* i64.eq — check if None sentinel */
+        buf_byte(b, 0x04); buf_byte(b, 0x40); /* if (is None) */
+        buf_byte(b, 0x00); /* unreachable — trap! */
+        buf_byte(b, 0x0b); /* end if */
+      }
+      /* ⊘_{is_none} — push 1 if None, 0 if Some */
+      else if (has_str(ex, "\xe2\x8a\x98") && has_str(ex, "is_none")) {
+        GET1;
+        buf_byte(b, 0x42); buf_sleb(b, (int64_t)0x8000000000000000LL);
+        buf_byte(b, 0x51); /* i64.eq */
+        buf_byte(b, 0xac); /* i64.extend_i32_s */
+        SET1;
+      }
+      /* ⊘_{is_some} — push 1 if Some, 0 if None */
+      else if (has_str(ex, "\xe2\x8a\x98") && has_str(ex, "is_some")) {
+        GET1;
+        buf_byte(b, 0x42); buf_sleb(b, (int64_t)0x8000000000000000LL);
+        buf_byte(b, 0x52); /* i64.ne */
+        buf_byte(b, 0xac); /* i64.extend_i32_s */
+        SET1;
+      }
     }
   }
 

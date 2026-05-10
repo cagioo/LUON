@@ -40,6 +40,7 @@ run_test "$DIR/test_math.luon" "97" ""
 echo ""
 echo "── Feature Tests ──"
 [ -f "$DIR/multi_param_test.luon" ] && run_test "$DIR/multi_param_test.luon" "10" ""
+[ -f "$DIR/null_safety_test.luon" ] && run_test "$DIR/null_safety_test.luon" "42" ""
 
 echo ""
 echo "══════════════════════════════════════"
