@@ -1,4 +1,6 @@
 // tools/luon_fmt.luon — Formatter for Luon source code
+
+
 // Implements: Canonical whitespace normalization, indentation, line alignment
 // Strategy: Single-pass character scanner with state machine
 // Operations:
