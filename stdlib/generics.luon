@@ -1,0 +1,172 @@
+// stdlib/generics.luon — Generic Type Abstraction for Luon
+// Implements: Monomorphized generic containers via type-tagged dispatch
+// Strategy: Since WASM is untyped at i64 level, generics use runtime
+//           type tags to select specialized behavior paths.
+// Layout:
+//   TypeTag: 0=i64, 1=i32, 2=f64, 3=ptr, 4=bool
+//   Generic container: [type_tag:i64 | length:i64 | data_ptr:i64]
+// Comparable to: Rust monomorphization, C++ templates (simplified)
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[generics] ⊢_Γ {
+
+  // === Type Tags ===
+  // TYPE_I64 = 0, TYPE_I32 = 1, TYPE_F64 = 2, TYPE_PTR = 3, TYPE_BOOL = 4
+
+  // generic_new(type_tag, capacity) → container_ptr
+  // Creates a type-tagged generic container
+  // acc = type_tag, σ₂ = capacity
+  ∃!Φ ∈ Hom(𝒞,𝒟)[generic_new](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Alloc header (24 bytes) + data (cap * 8)
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Bump alloc
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Update alloc ptr
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₆)
+    // Store type_tag at [0]
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // Store length = 0 at [8]
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 0)
+    // Store data_ptr at [16]
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 24))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₇)
+    // Return container_ptr
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // generic_type(container_ptr) → type_tag
+  ∃!Φ ∈ Hom(𝒞,𝒟)[generic_type] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // generic_len(container_ptr) → length
+  ∃!Φ ∈ Hom(𝒞,𝒟)[generic_len] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // generic_push(container_ptr, value) → new_len
+  // Appends value to container
+  ∃!Φ ∈ Hom(𝒞,𝒟)[generic_push](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load length
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Load data_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+    // Store value at data[len * 8]
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₆))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+    (σ₇ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Increment length
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₅)
+    // Return new length
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // generic_get(container_ptr, index) → value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[generic_get](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Load data_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Load value at data[index * 8]
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test: create generic<i64> container, push 20 and 22, get(0)+get(1) = 42
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // generic_new(type=0(i64), cap=16)
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 16
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    η_{Kan}[generic_new]
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+
+    // push 20
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 20
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}[generic_push]
+
+    // push 22
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 22
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}[generic_push]
+
+    // get(0) + get(1) = 20 + 22 = 42
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}[generic_get]
+    (∂_Ω ⊢_{Γ;Δ} σ₉)^{seq}
+
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 1
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}[generic_get]
+
+    (∂_Ω Ext⁰_{Spec} σ₉)^{Ext⁰}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}

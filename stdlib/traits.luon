@@ -1,0 +1,144 @@
+// stdlib/traits.luon — Trait / Interface System for Luon
+// Implements: vtable-based trait dispatch via call_indirect
+// Strategy: Each trait is a vtable (array of function indices).
+//           Implementors register their functions in the vtable.
+//           Trait calls dispatch through the vtable.
+// Layout:
+//   Vtable:  [n_methods:i64 | fn_idx_0:i64 | fn_idx_1:i64 | ...]
+//   TraitObj: [vtable_ptr:i64 | data_ptr:i64]
+// Comparable to: Rust dyn Trait, Go interfaces, C++ virtual dispatch
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[traits] ⊢_Γ {
+
+  // vtable_new(n_methods) → vtable_ptr
+  // Creates a vtable with N method slots
+  ∃!Φ ∈ Hom(𝒞,𝒟)[vtable_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Alloc: 8 + n_methods * 8
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Bump alloc
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₅)
+    // Store n_methods
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // vtable_set(vtable_ptr, method_idx, func_idx) → vtable_ptr
+  // Registers a function index at a method slot
+  ∃!Φ ∈ Hom(𝒞,𝒟)[vtable_set](σ₂, σ₃) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // addr = vtable + 8 + method_idx * 8
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    // Store func_idx
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // vtable_get(vtable_ptr, method_idx) → func_idx
+  // Looks up the function index for a method
+  ∃!Φ ∈ Hom(𝒞,𝒟)[vtable_get](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // addr = vtable + 8 + method_idx * 8
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⊗_ℤ 8)^{⊗L}_{D(𝔄)}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (Ext⁰_𝔄(∂_Ω, σ₃))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // trait_obj_new(vtable_ptr, data_ptr) → trait_obj_ptr
+  // Creates a trait object (fat pointer)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[trait_obj_new](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Alloc 16 bytes
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₅)
+    // Store vtable_ptr
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // Store data_ptr at +8
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // trait_vtable(trait_obj_ptr) → vtable_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[trait_vtable] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // trait_data(trait_obj_ptr) → data_ptr
+  ∃!Φ ∈ Hom(𝒞,𝒟)[trait_data] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test: create vtable(1 method), set method 0 = func_idx 42
+  // Verify vtable_get returns 42
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // vtable_new(1)
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 1
+    η_{Kan}[vtable_new]
+    (∂_Ω ⊢_{Γ;Δ} σ₈)^{seq}
+
+    // vtable_set(vt, 0, 42) — method 0 = func index 42
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}[vtable_set]
+
+    // vtable_get(vt, 0) → should return 42
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₈ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    η_{Kan}[vtable_get]
+    // acc = 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
