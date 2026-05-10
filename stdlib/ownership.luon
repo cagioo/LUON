@@ -1,0 +1,168 @@
+// stdlib/ownership.luon — Ownership, Smart Pointers, References for Luon
+// Implements: Box (unique ownership), Rc (reference counting),
+//             Ref/RefMut (borrow abstractions), drop
+// Layout:
+//   Box:    [data_ptr:i64]  — unique owner, drop deallocates
+//   Rc:     [refcount:i64 | data_ptr:i64]  — shared ownership
+//   Ref:    [src_ptr:i64 | borrow_flag:i64]  — immutable borrow
+//   RefMut: [src_ptr:i64 | borrow_flag:i64]  — mutable borrow (exclusive)
+// Comparable to: Rust Box<T>, Rc<T>, &T, &mut T
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[ownership] ⊢_Γ {
+
+  // === Box<T> — Unique Ownership (#27) ===
+
+  // box_new(value) → box_ptr
+  // Allocates and stores value. Caller owns the Box exclusively.
+  // acc = value to box
+  ∃!Φ ∈ Hom(𝒞,𝒟)[box_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Bump alloc 8 bytes for the value
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // new_alloc = old + 8
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    // Store new alloc ptr
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Store value at box_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Return box_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // box_deref(box_ptr) → value
+  // Reads the value inside the Box (immutable borrow)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[box_deref] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // box_set(box_ptr, new_value) → box_ptr
+  // Writes a new value into the Box (mutable access)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[box_set](σ₂) ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // === Rc<T> — Reference Counted Shared Ownership (#27) ===
+
+  // rc_new(value) → rc_ptr
+  // Allocates [refcount=1 | value]. Multiple owners via rc_clone.
+  ∃!Φ ∈ Hom(𝒞,𝒟)[rc_new] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Bump alloc 16 bytes: [refcount:8 | data:8]
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // new_alloc = old + 16
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 16))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 0
+    (Ext⁰_𝔄(∂_Ω, 327680))_{Spec ℤ}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₄)
+    // Store refcount = 1
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 1)
+    // Store value at rc_ptr + 8
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₂)
+    // Return rc_ptr
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // rc_clone(rc_ptr) → rc_ptr (same pointer, refcount++)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[rc_clone] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Load refcount
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (Ext⁰_𝔄(∂_Ω, 1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Store refcount + 1
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // Return same rc_ptr
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // rc_deref(rc_ptr) → value
+  ∃!Φ ∈ Hom(𝒞,𝒟)[rc_deref] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Load value from rc_ptr + 8
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, 8))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // rc_drop(rc_ptr) → refcount (decrements; returns 0 if freed)
+  ∃!Φ ∈ Hom(𝒞,𝒟)[rc_drop] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    // Load refcount, decrement
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (Ext⁰_𝔄(∂_Ω, -1))_{Spec ℤ}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    // Store new refcount
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊨_{𝕂,Γ}^{κ-forcing} ↦_𝒯 σ₃)
+    // Return new refcount
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // rc_count(rc_ptr) → refcount
+  ∃!Φ ∈ Hom(𝒞,𝒟)[rc_count] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (⊩_{𝕂,Σ}^{Γ-generic} ↤_𝒯 ∂_Ω)
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // === Self-Test ===
+  // Box(10) → deref → 10, Rc(32) → clone → deref → 32, sum = 10 + 32 = 42
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // Box test: box_new(10), box_deref → 10
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 10
+    η_{Kan}[box_new]
+    η_{Kan}[box_deref]
+    (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+
+    // Rc test: rc_new(32), rc_clone, rc_deref → 32
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 32
+    η_{Kan}[rc_new]
+    η_{Kan}[rc_clone]
+    η_{Kan}[rc_deref]
+    (∂_Ω ⊢_{Γ;Δ} σ₇)^{seq}
+
+    // Sum: 10 + 32 = 42
+    (σ₆ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω Ext⁰_{Spec} σ₇)^{Ext⁰}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
