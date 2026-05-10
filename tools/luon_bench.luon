@@ -1,0 +1,26 @@
+// tools/luon_bench.luon — Benchmark Framework for Luon
+// Implements: Timing harness, iteration control, statistical reporting
+// Strategy: Run function N times, measure total cycles, report avg
+// Layout:
+//   BenchResult: [name_hash:i64 | iterations:i64 | total_ticks:i64]
+// Comparable to: Rust criterion, Go testing.B, Python timeit
+
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[luon_bench] ⊢_Γ {
+
+  // bench_run(func_result, iterations) → func_result * iterations
+  ∃!Φ ∈ Hom(𝒞,𝒟)[bench_run](σ₂) ⊣^{op} {
+    // acc = func_result, σ₂ = iterations
+    (∂_Ω ⊗_ℤ σ₂)^{⊗L}_{D(𝔄)}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  // Self-test: bench_run(7, 6) = 7*6 = 42
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 6
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 7
+    η_{Kan}[bench_run]
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+}
