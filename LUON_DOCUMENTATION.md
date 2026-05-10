@@ -1268,6 +1268,9 @@ Recommended starting examples:
 | `matrix_multiply.luon` | Nested loops and array addressing. |
 | `testing_demo.luon` | Test framework usage. |
 | `hello_wasi.luon` | WASI output. |
+| `global_test.luon` | Global variable persistence across functions. |
+| `match_test.luon` | Pattern matching N-way dispatch. |
+| `type_test.luon` | Type annotation verification. |
 
 ---
 
@@ -1367,6 +1370,10 @@ Recently resolved (no longer limitations):
 - ~~Lexical scoping~~ — ✅ Implemented via `⊣_{scope}` / `⟧_{scope}` with register shadowing.
 - ~~Allocator has no free/realloc~~ — ✅ Free-list allocator with `mem_free`, `mem_realloc`, `alloc_aligned`.
 - ~~Array/hashmap bounds checks~~ — ✅ `array_check_index`, `map_check_key`, `map_delete` with canonical error codes.
+- ~~Global variables~~ — ✅ `𝔾₀-𝔾₂₅₅` mapped to WASM globals. PR #61.
+- ~~Pattern matching~~ — ✅ `⊞_{Π}^{br_table}(N, d)` N-way dispatch. PR #62.
+- ~~Higher-order functions~~ — ✅ `η_{indirect}[type_idx]` via `call_indirect`. PR #62.
+- ~~Type annotations~~ — ✅ `:(ℤ₆₄, ℤ₃₂) → ℤ₆₄` syntax. PR #63.
 
 > **Note:** The absence of conventional syntax (`if/else`, `for`, `while`, `let`, `print`, string literals) is NOT a limitation — it is a deliberate security feature. See Section 2.2.
 
@@ -1398,7 +1405,7 @@ Priority — competitive capability with mathematical syntax:
 
 - generics (via mathematical notation, NOT `<T>` syntax),
 - traits/interfaces (via mathematical notation),
-- full pattern matching (extend `enum_match` to N-way dispatch),
+- ~~full pattern matching~~ — ✅ Done (`br_table` N-way dispatch via `⊞_{Π}^{br_table}(N, d)`),
 - iterators (capability, not syntax sugar),
 - slice type (ptr + len),
 - range type,
