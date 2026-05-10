@@ -345,6 +345,28 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
         case 0xA7: { PUSH(POP()&0xFFFFFFFF); break; }
         case 0xAC: { i64 v=POP()&0xFFFFFFFF; if(v>=0x80000000)v-=0x100000000LL; PUSH(v); break; }
         case 0xAD: { PUSH(POP()&0xFFFFFFFF); break; }
+        /* i64 unary: clz, ctz, popcnt */
+        case 0x79: { i64 v=POP(); PUSH(v==0?64:__builtin_clzll(v)); break; } /* i64.clz */
+        case 0x7A: { i64 v=POP(); PUSH(v==0?64:__builtin_ctzll(v)); break; } /* i64.ctz */
+        case 0x7B: { PUSH(__builtin_popcountll(POP())); break; } /* i64.popcnt */
+        /* i64 rotate */
+        case 0x89: { i64 b=POP(),a=POP(); int s=(int)(b&63); PUSH((i64)(U64(a)<<s | U64(a)>>(64-s))); break; } /* i64.rotl */
+        case 0x8A: { i64 b=POP(),a=POP(); int s=(int)(b&63); PUSH((i64)(U64(a)>>s | U64(a)<<(64-s))); break; } /* i64.rotr */
+        /* i32 arithmetic (wasm i32 opcodes) */
+        case 0x6A: { i64 b=POP(),a=POP(); PUSH((i64)(int32_t)((int32_t)a+(int32_t)b)); break; } /* i32.add */
+        case 0x6B: { i64 b=POP(),a=POP(); PUSH((i64)(int32_t)((int32_t)a-(int32_t)b)); break; } /* i32.sub */
+        case 0x6C: { i64 b=POP(),a=POP(); PUSH((i64)(int32_t)((int32_t)a*(int32_t)b)); break; } /* i32.mul */
+        case 0x6D: { i64 b=POP(),a=POP(); if(!(int32_t)b){fprintf(stderr,"div/0\n");PUSH(0);}else PUSH((i64)((int32_t)a/(int32_t)b)); break; } /* i32.div_s */
+        case 0x6F: { i64 b=POP(),a=POP(); if(!(int32_t)b){fprintf(stderr,"rem/0\n");PUSH(0);}else PUSH((i64)((int32_t)a%(int32_t)b)); break; } /* i32.rem_s */
+        case 0x71: { i64 b=POP(),a=POP(); PUSH((a&b)&0xFFFFFFFF); break; } /* i32.and */
+        case 0x72: { i64 b=POP(),a=POP(); PUSH((a|b)&0xFFFFFFFF); break; } /* i32.or */
+        case 0x73: { i64 b=POP(),a=POP(); PUSH((a^b)&0xFFFFFFFF); break; } /* i32.xor */
+        /* Float reinterpret (bit-cast) */
+        case 0xB9: { i64 v=POP(); double d=(double)v; i64 r; memcpy(&r,&d,8); PUSH(r); break; } /* f64.convert_i64_s */
+        case 0xBF: { i64 v=POP(); double d; memcpy(&d,&v,8); PUSH((i64)d); break; } /* f64.reinterpret_i64→i64.trunc */
+        case 0xBD: { PUSH(POP()); break; } /* i64.reinterpret_f64 (nop for i64 stack) */
+        case 0xBC: { PUSH(POP()&0xFFFFFFFF); break; } /* i32.reinterpret_f32 */
+        case 0xB0: { i64 v=POP(); double d; memcpy(&d,&v,8); PUSH((i64)d); break; } /* i64.trunc_f64_s */
         default: break;
         }
     }
