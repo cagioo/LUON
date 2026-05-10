@@ -1,19 +1,34 @@
 // Null Safety Test — Option type via ⊘
-
-// Tests: ⊘_{none}, ⊘_{some}, ⊘_{is_some}, ⊘_{unwrap!}
+// Tests ALL opcodes: ⊘_{none}, ⊘_{some}, ⊘_{unwrap!}, ⊘_{is_none}, ⊘_{is_some}
+// Logic: create Some(10), check is_some → 1, create None, check is_none → 1
+//        then unwrap Some(40) → 40, sum = 1 + 1 + 40 = 42
 // Expected output: 42
 
 ∀𝔘[null_safety_test]^{Obj(𝒞)}
 
-// wrap_some: wraps acc in Some (identity — just returns the value)
-∃!Φ ∈ Hom(𝒞,𝒟)[wrap_some] ⊣^{op} {
-  ⊘_{some}
-  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
-}
-
-// main: create Some(42), unwrap → 42
 ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
-  (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+  // --- Test 1: is_some(Some(10)) should be 1 ---
+  (⊣_{Δ;Γ} ∂_Ω)^{seq} := 10
+  ⊘_{some}
+  ⊘_{is_some}
+  // acc = 1 (10 is not INT64_MIN)
+  (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+
+  // --- Test 2: is_none(None) should be 1 ---
+  ⊘_{none}
+  ⊘_{is_none}
+  // acc = 1 (INT64_MIN == INT64_MIN)
+  (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+
+  // --- Test 3: unwrap(Some(40)) should be 40 ---
+  (⊣_{Δ;Γ} ∂_Ω)^{seq} := 40
   ⊘_{unwrap!}
+  // acc = 40 (no trap because 40 != INT64_MIN)
+  (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+
+  // --- Sum: 1 + 1 + 40 = 42 ---
+  (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+  (∂_Ω Ext⁰_{Spec} σ₃)^{Ext⁰}
+  (∂_Ω Ext⁰_{Spec} σ₄)^{Ext⁰}
   ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
 }
