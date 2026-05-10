@@ -61,7 +61,7 @@ If `gen1 == gen2`, the compiler has reached a **fixed point** — it produces it
 The `compiler.luon` file implements:
 
 1. **Tokenizer** — Reads source bytes from memory at `0x10000`
-2. **Parser** — Recognizes v2 EXTREME syntax via rolling hash dispatch
+2. **Parser** — Recognizes v2 syntax via rolling hash dispatch
 3. **Emitter** — Generates WASM binary sections byte-by-byte
 
 ### Rolling Hash Dispatch

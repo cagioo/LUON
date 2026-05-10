@@ -1,6 +1,6 @@
 // stdlib/string.luon — String operations for Luon WASI runtime
 // Functions: strlen, strcmp, memcpy, itoa, atoi
-// Correct v2 EXTREME syntax — verified against parser patterns
+// Correct v2 syntax — verified against parser patterns
 
 
 ∀ₛₚₑ𝒸 Ψ ∈ 𝔘[string] ⊢_Γ {

@@ -1,4 +1,4 @@
-Add 42 to input — EXTREME Mathematical Logic Syntax
+Add 42 to input — Mathematical Logic Syntax
 ∀ₛₚₑ𝒸 Ψ ∈ 𝔘[add42] ⊢_Γ {
   ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
     (Ext⁰_𝔄(∂_Ω, 42))_{Spec ℤ}

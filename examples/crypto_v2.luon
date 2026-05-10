@@ -1,4 +1,4 @@
-// Étale Cohomology Cryptographic Test — v2 EXTREME Syntax
+// Étale Cohomology Cryptographic Test — v2 Syntax
 // Sign: π₁^{ét} Frobenius action, Verify: inverse Frobenius
 ∀ₛₚₑ𝒸 Ψ ∈ 𝔘[crypto_v2] ⊢_Γ {
   ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {

@@ -10,7 +10,7 @@ Luon is a systems-level programming language that compiles to WebAssembly (WASM)
 .luon source → Parser → IR → Emitter → .wasm binary → Runtime
 ```
 
-1. **Parser** (`tools/parser.luon`) — Reads v2 EXTREME syntax line-by-line, computes FNV-1a hashes of operator patterns, dispatches to opcode numbers, and emits an IR stream to memory.
+1. **Parser** (`tools/parser.luon`) — Reads v2 syntax line-by-line, computes FNV-1a hashes of operator patterns, dispatches to opcode numbers, and emits an IR stream to memory.
 
 2. **Emitter** (`tools/emitter.luon`) — Reads the IR stream and generates a valid WASM binary with proper section headers, function bodies, memory declarations, and export entries.
 
@@ -74,5 +74,5 @@ SHA-256(gen1.wasm) == SHA-256(gen2.wasm)  ✓ Fixed point
 ## Security
 
 - **WASM Sandboxing** — Memory isolation, instruction limits, call depth limits
-- **Sealed Executable (.lse)** — Encrypted container with anti-tamper verification
+- **Sealed Executable (.lse)** — Encrypted container with integrity verification verification
 - **Iteration Guard** — `MAX_ITER = 50,000,000` prevents infinite loops

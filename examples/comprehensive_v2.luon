@@ -1,4 +1,4 @@
-// Comprehensive v2 EXTREME syntax test
+// Comprehensive v2 syntax test
 // Tests: arithmetic, comparison, loop, save/load state, bitwise
 // Expected: sum of 1..10 XOR 0xFF = (55 XOR 255) = 200
 ∀ₛₚₑ𝒸 Ψ ∈ 𝔘[comprehensive] ⊢_Γ {

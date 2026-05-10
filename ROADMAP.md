@@ -8,19 +8,19 @@
 
 ## Vision & Mission (NON-NEGOTIABLE)
 
-> **Luon is a military-grade security language. Every design decision serves security FIRST.**
+> **Luon is an enterprise-grade security-oriented language. Every design decision is evaluated against its security implications.**
 
 ### Core Principles
 
-1. **Anti-Quantum, Anti-Hacker, Anti-AI, Anti-Reverse Engineering** — Luon must be impossible to reverse engineer, impossible for AI to understand without context, and resistant to quantum computing attacks.
+1. **Quantum-Aware, Hardened, AI-Resistant, Reverse-Engineering Resistant** — Luon is designed to resist reverse engineering, resist automated AI analysis without official documentation, and incorporate quantum-aware cryptographic foundations.
 
-2. **Steep Learning Curve = Security Feature** — Luon is INTENTIONALLY designed to be impossible to learn without official documentation. This is not a bug — it is the first layer of defense.
+2. **Steep Learning Curve = Security Design Choice** — Luon is intentionally designed to require official documentation to learn. This is a deliberate barrier that raises the cost of unauthorized code comprehension.
 
 3. **Conventional Syntax = VIOLATION** — Keywords like `if`, `else`, `for`, `while`, `let`, `var`, `print`, `true`, `false`, and "readable" syntax patterns from other languages (Rust, Go, Python, TypeScript) are **STRICTLY FORBIDDEN**. Luon uses pure mathematical logic notation (`branch_if` → `⊥_{𝒯}→^{...}`, loop → `μ`, register → `σ`, etc.).
 
-4. **Obfuscation from Syntax Level** — Other languages add obfuscation at compiler output level. Luon adds obfuscation from **the syntax level itself**. Luon source code IS already a form of obfuscation.
+4. **Protection from Syntax Level** — Other languages add code protection at compiler output level. Luon raises the comprehension barrier from **the syntax level itself**. Luon source code inherently resists casual reading and automated analysis.
 
-5. **Capability May Be Added, Normal Syntax NEVER** — New features may add capability (more data types, operations, stdlib), but MUST use Luon v2 EXTREME mathematical notation, never conventional syntax.
+5. **Capability May Be Added, Normal Syntax NEVER** — New features may add capability (more data types, operations, stdlib), but MUST use Luon v2 mathematical notation, never conventional syntax.
 
 ### What This Means for Development
 
@@ -38,7 +38,7 @@ This roadmap tracks every major component of the Luon programming language from 
 - ✅ **Complete** — Implemented, tested, and shipped
 - 🟡 **Foundation** — Basic implementation exists, needs deeper integration
 - 🔲 **Planned** — Designed but not yet implemented
-- ⛔ **Will Not Implement** — Conflicts with Luon's security-first vision
+- ⛔ **Will Not Implement** — Conflicts with Luon's security-oriented vision
 
 ---
 
@@ -58,13 +58,13 @@ This roadmap tracks every major component of the Luon programming language from 
 
 ## Phase 1: Event Horizon (v2.0.0)
 
-*Full language architecture — self-hosting compiler, v2 EXTREME syntax, security pillars, and runtime.*
+*Full language architecture — self-hosting compiler, v2 mathematical syntax, security layers, and runtime.*
 
 ### 1.1 Core Language
 
 | Component | Status | Description |
 |---|---|---|
-| v2 EXTREME syntax | ✅ v2.0.0 | 50+ regex patterns, 8 mathematical domains, Unicode symbols |
+| v2 mathematical syntax | ✅ v2.0.0 | 50+ regex patterns, 8 mathematical domains, Unicode symbols |
 | Dual-mode parser (v1+v2) | ✅ v2.0.0 | Auto-detects LaTeX v1 vs Unicode v2 syntax |
 | 34 operators total | ✅ v2.0.0 | Arithmetic, comparison, float, memory, control flow, crypto, bitwise, WASI |
 | 127 general-purpose registers | ✅ v2.0.0 | `σ₀`–`σ₁₂₇` with Unicode subscript parsing |
@@ -86,7 +86,7 @@ This roadmap tracks every major component of the Luon programming language from 
 | Native parser (`tools/parser.luon`) | ✅ v2.0.0 | Luon-native parser |
 | WASM emitter (`tools/emitter.luon`) | ✅ v2.0.0 | Luon-native WASM binary emitter |
 
-### 1.3 Security Pillar 1: WASM Obfuscation Engine
+### 1.3 Security Layer 1: WASM Code Transformation Engine
 
 | Component | Status | Description |
 |---|---|---|
@@ -95,27 +95,27 @@ This roadmap tracks every major component of the Luon programming language from 
 | Opaque predicates | ✅ v2.0.0 | Fake computations that always evaluate same |
 | Control flow flattening | ✅ v2.0.0 | `br_table` state machine dispatcher |
 | Register shuffling | ✅ v2.0.0 | Fisher-Yates permutation of locals 1-127 |
-| Metamorphic output | ✅ v2.0.0 | Every compile produces different binary (time+urandom seed) |
+| Polymorphic output | ✅ v2.0.0 | Every compile produces unique binary (time+urandom seed) |
 | `--obfuscate` flag | ✅ v2.0.0 | Opt-in via CLI flag or `LUON_OBFUSCATE=1` env var |
 
-### 1.4 Security Pillar 2: Sealed Executable (.lse)
+### 1.4 Security Layer 2: Sealed Executable (.lse)
 
 | Component | Status | Description |
 |---|---|---|
 | LSE header + magic | ✅ v2.0.0 | `\x7fLSE`, version, seed |
 | Opcode permutation table | ✅ v2.0.0 | Fisher-Yates 64-slot per-seed permutation |
 | BLAKE2b-CTR encryption | ✅ v2.0.0 | Stream cipher for bytecode |
-| Anti-tamper footer | ✅ v2.0.0 | BLAKE2b-256 integrity verification |
+| Integrity verification footer | ✅ v2.0.0 | BLAKE2b-256 integrity verification |
 | LSE encode/decode | ✅ v2.0.0 | Full `lse_format.py` implementation |
 
-### 1.5 Security Pillar 3: Luon VM Runtime
+### 1.5 Security Layer 3: Luon VM Runtime
 
 | Component | Status | Description |
 |---|---|---|
 | Accumulator interpreter | ✅ v2.0.0 | Full LSE bytecode execution |
 | LSE decryption at runtime | ✅ v2.0.0 | Transparent decrypt + execute |
 | Memory sandbox | ✅ v2.0.0 | Isolated linear memory, bounds checking |
-| Anti-debug detection | ✅ v2.0.0 | Debugger/tracer detection |
+| Debug-resistant detection | ✅ v2.0.0 | Debugger/tracer detection |
 | JIT compilation | ✅ v2.0.0 | Just-in-time for performance |
 
 ### 1.6 Native C Runtime
@@ -138,7 +138,7 @@ This roadmap tracks every major component of the Luon programming language from 
 | v2 syntax tests | ✅ v2.0.0 | add42_v2, comprehensive_v2, crypto_v2, memory_v2, float_v2 |
 | Obfuscation correctness tests | ✅ v2.0.0 | Output matches across obfuscated/unobfuscated |
 | Metamorphic difference tests | ✅ v2.0.0 | Binary differs each compile |
-| LSE tests | ✅ v2.0.0 | VM, JIT, sandbox, anti-tamper, anti-debug |
+| LSE tests | ✅ v2.0.0 | VM, JIT, sandbox, integrity verification, debug resistance |
 | Self-hosting tests | ✅ v2.0.0 | gen1==gen2 verification |
 | **Total: 78/78 passing** | ✅ v2.0.0 | All tests green |
 
@@ -403,29 +403,29 @@ This roadmap tracks every major component of the Luon programming language from 
 
 | Feature | Reason for Rejection |
 |---|---|
-| Variable declaration (`let`, `var`, `const`) | Register manual `σ₀`–`σ₁₂₇` is a SECURITY FEATURE. Keywords make code readable to AI and attackers. |
-| Named function calls (by name) | `η_N` (call by index) is a SECURITY FEATURE. Readable function names enable reverse engineering. |
-| `if`/`else` statements | `branch_if` / `⊥_{𝒯}→^{...}` is a SECURITY FEATURE. `if/else` keywords are a direct violation. |
-| `while` loop keyword | `μ` loop primitive is a SECURITY FEATURE. `while` keyword is too conventional. |
-| `for` loop / `for-each` | Absence of `for` loop is a SECURITY FEATURE. `for i in 0..10` is too readable. |
-| `print()` / `println()` | Manual WASI `fd_write` is a SECURITY FEATURE. Built-in `print()` is too easy. |
-| String literals (`"hello"`) | Manual byte writing to memory is a SECURITY FEATURE. String literals are too readable. |
-| Boolean literals (`true`/`false`) | 0/1 integer is a SECURITY FEATURE. `true`/`false` keywords are too conventional. |
-| Array literals (`[1, 2, 3]`) | Manual memory write initialization is a SECURITY FEATURE. |
-| String concatenation (`+`) | `memcpy` manual is a SECURITY FEATURE. |
-| String interpolation (`fmt!`) | Manual WASI fd_write is a SECURITY FEATURE. |
+| Variable declaration (`let`, `var`, `const`) | Manual register `σ₀`–`σ₁₂₇` is a deliberate security design choice. Keywords lower the barrier for automated analysis. |
+| Named function calls (by name) | `η_N` (call by index) is a deliberate security design choice. Readable function names simplify reverse engineering. |
+| `if`/`else` statements | `branch_if` / `⊥_{𝒯}→^{...}` is a deliberate security design choice. `if/else` keywords lower comprehension barriers. |
+| `while` loop keyword | `μ` loop primitive is a deliberate design choice. `while` keyword is too conventional. |
+| `for` loop / `for-each` | Absence of `for` loop raises the comprehension barrier. `for i in 0..10` is too readable. |
+| `print()` / `println()` | Manual WASI `fd_write` is a deliberate design choice. Built-in `print()` lowers barriers. |
+| String literals (`"hello"`) | Manual byte writing to memory raises the comprehension barrier. |
+| Boolean literals (`true`/`false`) | 0/1 integer representation is a deliberate design choice. |
+| Array literals (`[1, 2, 3]`) | Manual memory write initialization raises the comprehension barrier. |
+| String concatenation (`+`) | Manual `memcpy` is a deliberate design choice. |
+| String interpolation (`fmt!`) | Manual WASI fd_write raises the comprehension barrier. |
 | Type inference (`let x = 42`) | Types must be explicit via mathematical notation. |
 | Implicit return | Return must be explicit via `⊥_{𝒯}→^{ex falso}⊤_{𝒯}`. |
 | Operator overloading | Luon already has unique mathematical notation. |
-| Method syntax (`.push()`) | `array_push(arr, 42)` via index call is a SECURITY FEATURE. |
-| Impl blocks | Rust-style `impl` syntax is too readable. |
-| Closures / Lambdas (`\|x\| x + 1`) | Too conventional and readable. |
+| Method syntax (`.push()`) | `array_push(arr, 42)` via index call is a deliberate design choice. |
+| Impl blocks | Rust-style `impl` syntax lowers the comprehension barrier. |
+| Closures / Lambdas (`\|x\| x + 1`) | Too conventional — lowers the comprehension barrier. |
 | Destructuring (`let (x, y) = p`) | Access must be via manual offset. |
-| Error propagation (`?`) | Syntactic sugar makes error handling too easy to read. |
+| Error propagation (`?`) | Syntactic sugar lowers the error handling comprehension barrier. |
 | Try/catch / panic/recover | `try/catch` keywords are too conventional. |
-| Defer / cleanup | `defer` keyword is too readable. Resource cleanup must be manual. |
-| REPL | Makes Luon too easy to learn interactively. Learning curve is a SECURITY FEATURE. |
-| Playground (web-based) | Allows trying Luon without reading documentation. Destroys learning curve defense. |
+| Defer / cleanup | `defer` keyword lowers the comprehension barrier. Resource cleanup must be manual. |
+| REPL | Lowers the learning barrier, reducing the comprehension cost for unauthorized analysis. |
+| Playground (web-based) | Allows trying Luon without reading documentation, reducing the comprehension barrier. |
 | Unsafe blocks (`unsafe {}`) | Gives illusion of safety without ownership model. Safety via WASM sandbox. |
 
 ### Rejected: Anti-Security (Breaks Sandbox/Determinism)
@@ -438,7 +438,7 @@ This roadmap tracks every major component of the Luon programming language from 
 | Mutex / Lock | Threading model is non-deterministic. Contra single-threaded WASM sandbox. |
 | WASM Threads (SharedArrayBuffer) | Spectre/Meltdown attack vector. Non-deterministic execution. |
 | WASM GC | GC pause non-deterministic destroys blockchain finality. Bump allocator is deterministic. |
-| Reflection / Introspection | Destroys 6-pass WASM obfuscation engine. Runtime type inspection = reverse engineering tool. |
+| Reflection / Introspection | Undermines 6-pass WASM code transformation engine. Runtime type inspection simplifies reverse engineering. |
 | Regular expressions | Regex engine vulnerable to ReDoS (exponential backtracking). DoS vector in blockchain VM. |
 
 ### Rejected: Over-Engineering (Impractical for Self-Hosting 27KB Compiler)

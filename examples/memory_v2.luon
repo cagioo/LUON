@@ -1,4 +1,4 @@
-// Kripke Forcing Memory Test — v2 EXTREME Syntax
+// Kripke Forcing Memory Test — v2 Syntax
 // Store byte 'L' (76) to mem[2000], load back
 ∀ₛₚₑ𝒸 Ψ ∈ 𝔘[memory_v2] ⊢_Γ {
   ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {

@@ -3,7 +3,7 @@
 
 
 
-**Version 2.2.0-dev EXTREME — Vesege**
+**Version 2.2.0-dev — Vesege**
 
 Luon is a security-first systems programming language designed for maximum security. All programs are compiled to obfuscated WASM bytecode.
 
@@ -169,7 +169,7 @@ Luon provides structured error feedback:
 
 ```
   ✗ [SYNTAX] → src/main.luon:5
-    No v2 EXTREME syntax detected
+    No v2 syntax detected
     ↳ Functions must start with ∃!Φ ∈ Hom(𝒞,𝒟)[name]
 
   ✗ [BRACE] → src/main.luon

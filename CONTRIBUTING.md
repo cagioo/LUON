@@ -86,7 +86,7 @@ LUON/
 ## Code Style
 
 ### Luon (.luon files)
-- Use **v2 EXTREME syntax exclusively** — conventional keywords are not permitted
+- Use **v2 syntax exclusively** — conventional keywords are not permitted
 - Add comments explaining the purpose of each function
 - Use meaningful register names in comments (e.g., `// σ₂ = counter`, `// σ₃ = loop limit`)
 - One module declaration per file

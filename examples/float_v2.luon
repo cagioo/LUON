@@ -1,4 +1,4 @@
-// Non-Standard Analysis Float Test — v2 EXTREME Syntax
+// Non-Standard Analysis Float Test — v2 Syntax
 // Hyperreal arithmetic: (3.14 + 2.86) * 1.5 = 9.0
 // 3.14 = i64 4614253070214989087, 2.86 = i64 4613937818241073152
 // 1.5 = i64 4609434218613702656
