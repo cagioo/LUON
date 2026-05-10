@@ -175,7 +175,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - **Self-hosting compiler** — `compiler.luon` can compile itself (`gen1 == gen2` verified)
-- **v2 mathematical syntax** — Pure mathematical logic notation across 8 domains
+- **mathematical syntax** — Pure mathematical logic notation across 8 domains
 - **34 operators** — Arithmetic, comparison, float, memory, control flow, crypto, bitwise, WASI
 - **Float f64 support** — Bit-reinterpret architecture for floating-point operations
 - **Standard library** — `stdlib/io.luon`, `stdlib/memory.luon`, `stdlib/string.luon`, `stdlib/wasi.luon`

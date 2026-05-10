@@ -40,7 +40,7 @@
 
 ## 1. Introduction
 
-**Luon** is a enterprise-grade security-oriented programming language designed for WebAssembly (WASM), sandboxed execution, and the Vesege ecosystem. It combines a low-level accumulator-based execution model with a distinctive mathematical syntax known as **v2 mathematical syntax**.
+**Luon** is a security-oriented programming language designed for WebAssembly (WASM), sandboxed execution, and the Vesege ecosystem. It combines a low-level accumulator-based execution model with a distinctive mathematical syntax known as **mathematical syntax**.
 
 Luon is built around five principles:
 
@@ -52,7 +52,7 @@ Luon is built around five principles:
 
 Luon is not intended to be a generic scripting language or a developer-friendly language. Its primary direction is:
 
-- enterprise-grade sandboxed computation,
+- sandboxed computation,
 - smart-contract-style execution with deterministic guarantees,
 - reverse-engineering resistant binary output (polymorphic + sealed executables),
 - WASM-native systems programming,
@@ -280,7 +280,7 @@ Properties:
 
 ## 6. Language Syntax
 
-Luon currently supports v2 mathematical syntax as its primary syntax.
+Luon currently supports mathematical syntax as its primary syntax.
 
 ### 6.1 Module Declaration
 
@@ -1281,7 +1281,7 @@ editor/luon-vscode/
 
 Features:
 
-- TextMate grammar for v2 mathematical syntax,
+- TextMate grammar for mathematical syntax,
 - bracket configuration,
 - comment configuration,
 - 20 code snippets,
