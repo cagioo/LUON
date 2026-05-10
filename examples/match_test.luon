@@ -1,0 +1,37 @@
+// Pattern Matching Test — br_table N-way dispatch
+// Uses -a argument as input
+
+∀𝔘[match_test]^{Obj(𝒞)}
+
+// match_value: 0→100, 1→200, 2→300, default→acc
+∃!Φ ∈ Hom(𝒞,𝒟)[match_value] ⊣^{op} {
+  // block 3 (outermost — exit target)
+  ⊃I^{⟦}_{Obj}
+    // block 2
+    ⊃I^{⟦}_{Obj}
+      // block 1
+      ⊃I^{⟦}_{Obj}
+        // block 0 (br_table dispatch)
+        ⊃I^{⟦}_{Obj}
+          ⊞_{Π}^{br_table}(3, 3)
+        ⟧^{⊃E}
+        // Case 0: return 100
+        (⊣_{Δ;Γ} ∂_Ω)^{seq} := 100
+        ⊬ Gödel σ₂
+      ⟧^{⊃E}
+      // Case 1: return 200
+      (⊣_{Δ;Γ} ∂_Ω)^{seq} := 200
+      ⊬ Gödel σ₁
+    ⟧^{⊃E}
+    // Case 2: return 300
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 300
+    ⊬ Gödel σ₀
+  ⟧^{⊃E}
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
+
+// main: pass -a arg directly to match_value
+∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+  η_{Kan}[match_value]
+  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+}
