@@ -734,6 +734,35 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
         }
         buf_byte(b, 0x0c);
         buf_uleb(b, depth);
+      } else if (has_str(ex, "\xe2\x8a\x9e") &&
+                 has_str(ex, "br_table")) { /* ⊞ br_table N-way dispatch */
+        /* Syntax: ⊞_{Π}^{br_table}(N, d)
+         * N = number of sequential targets (0..N-1), d = default depth
+         * Emits: local.get 1; i32.wrap; br_table [0,1,...,N-1] d */
+        int n_targets = 0, def_depth = 0;
+        const char *paren = strchr(ex, '(');
+        if (paren) {
+          n_targets = atoi(paren + 1);
+          const char *comma = strchr(paren, ',');
+          if (comma) def_depth = atoi(comma + 1);
+          else def_depth = n_targets;
+        }
+        GET1; buf_byte(b, 0xa7); /* i32.wrap_i64 */
+        buf_byte(b, 0x0e); /* br_table */
+        buf_uleb(b, n_targets); /* vec length */
+        for (int t = 0; t < n_targets; t++) buf_uleb(b, t);
+        buf_uleb(b, def_depth); /* default */
+      } else if (has_str(ex, "\xce\xb7_") &&
+                 has_str(ex, "indirect")) { /* η_{indirect}[N] — call_indirect */
+        /* Higher-order function call: call function at table index in acc
+         * Syntax: η_{indirect}[type_idx] */
+        int type_idx = 0;
+        char *nb = strchr(ex, '[');
+        if (nb) type_idx = atoi(nb + 1);
+        GET1; buf_byte(b, 0xa7); /* i32.wrap_i64 */
+        buf_byte(b, 0x11); /* call_indirect */
+        buf_uleb(b, type_idx); /* type index */
+        buf_uleb(b, 0); /* table index (always 0) */
       } else if (has_str(ex, "\xe2\x8a\xa5_{\xf0\x9d\x92\xaf}") &&
                  has_str(ex, "ex falso")) { /* Return */
         for (int i = 1; i <= cur->nreturns; i++) {
