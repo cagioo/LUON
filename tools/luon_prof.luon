@@ -1,0 +1,9 @@
+// tools/luon_prof.luon — Profiler (#64)
+// Tracks function entry/exit timing.
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[luon_prof] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[prof_enter](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

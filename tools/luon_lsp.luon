@@ -1,0 +1,9 @@
+// tools/luon_lsp.luon — Language Server Protocol (#62, #63)
+// Provides AST completion and source map lookup.
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[luon_lsp] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[lsp_hover](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

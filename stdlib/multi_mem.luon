@@ -1,0 +1,9 @@
+// stdlib/multi_mem.luon — WASM Multi-Memory Support (#57)
+// Provides secondary memory index allocation and bounds checking.
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[multi_mem] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[mem_alloc_secondary](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

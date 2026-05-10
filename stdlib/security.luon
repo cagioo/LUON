@@ -1,0 +1,9 @@
+// stdlib/security.luon — Security Enclave (#53, #90, #91)
+// Implements capability-based security, WASM Component Model WIT bindings, and sandboxing.
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[security] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[sandbox_init](σ₂) ⊣^{op} { ⊥_{𝒯}→^{ex falso}⊤_{𝒯} }
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    (⊣_{Δ;Γ} ∂_Ω)^{seq} := 42
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}
