@@ -38,6 +38,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Unreleased
 
+### Fixed — Critical Bugs
+- **Tor (subtract) operator** — Fixed sign error in `luon_compile.h` where `Tor₀^𝔄(∂_Ω, -N)` emitted `acc - (-N)` instead of `acc - N`. Negated extracted literal before emission. This caused infinite loops in any program using decrement (e.g., fibonacci).
+- **PUSH/POP undefined behavior** — Fixed 7 instances in `luon_vm.c` where `PUSH(POP()...)` caused C undefined behavior due to sequence point violations. Separated POP into temporary variable before PUSH.
+- **`examples/add42.luon`** — Fixed to add literal 42 (was incorrectly adding σ₀/input to itself). Now matches README documentation: `input + 42`.
+- **`examples/test_pow.luon`** — Fixed parameter order in `main`: base=4 and exp=3 now correctly produce `4^3 = 64` (was `3^4 = 81`).
+
+### Changed — Code Quality
+- **Zero compiler warnings** — Eliminated all `-Wall -Wextra` warnings: removed unused variables (`bt`, `paren`, `skip_depth`, `ep`, `has_k`), fixed operator precedence (`||` vs `&&`).
+
+### Added — Testing
+- **`tests/test_correctness.sh`** — Runtime correctness test suite (18 test cases) that verifies actual program output against expected values. Covers arithmetic, fibonacci, power, multi-function calls, scoping, tuples, comparisons, loops, and globals.
+
 ### Changed — Compiler Infrastructure
 - **Multiple parameters** — Functions now support N params (auto-detected from σ subscripts in declaration). `luon_compile.h` emits multi-type WASM sections; `luon_vm.c` parses type/function sections for param counts.
 - **Multiple return values (Tuples)** — Functions support `→^{N}` projection syntax for declaring N return values. Compiler emits WASM multi-value returns; VM `vm_exec` refactored to return `i64 *rets` array. Zero heap allocation.

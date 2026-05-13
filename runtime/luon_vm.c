@@ -235,10 +235,10 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
         switch (op) {
         case 0x00: fprintf(stderr, "unreachable\n"); goto done;
         case 0x01: break; /* nop */
-        case 0x02: { int bt=code[pos++]; if(bp<MAX_BLOCKS){blocks[bp].kind=0;blocks[bp].pos=pos;blocks[bp].stack_height=sp;bp++;} break; }
-        case 0x03: { int bt=code[pos++]; if(bp<MAX_BLOCKS){blocks[bp].kind=1;blocks[bp].pos=pos;blocks[bp].stack_height=sp;bp++;} break; }
+        case 0x02: { pos++; /* skip block type */ if(bp<MAX_BLOCKS){blocks[bp].kind=0;blocks[bp].pos=pos;blocks[bp].stack_height=sp;bp++;} break; }
+        case 0x03: { pos++; /* skip block type */ if(bp<MAX_BLOCKS){blocks[bp].kind=1;blocks[bp].pos=pos;blocks[bp].stack_height=sp;bp++;} break; }
         case 0x04: { /* if */
-            int bt=code[pos++]; i64 c=POP();
+            pos++; /* skip block type */ i64 c=POP();
             if(bp<MAX_BLOCKS){blocks[bp].kind=2;blocks[bp].pos=pos;blocks[bp].stack_height=sp;bp++;}
             if(c==0){ skip_block(code, &pos, clen, 1); } /* if skip to else or end */
             break;
@@ -313,12 +313,12 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
         case 0x40: { pos++; int delta=(int)POP(); int old=m->mem_pages; if(delta>0 && old+delta<=256) { m->memory=realloc(m->memory,(old+delta)*65536); memset(m->memory+old*65536,0,delta*65536); m->mem_pages=old+delta; PUSH((i64)old); } else { PUSH((i64)-1); } break; } /* memory.grow */
         case 0x41: { PUSH((i64)(int32_t)read_sleb(code,&pos)); break; }
         case 0x42: { PUSH(read_sleb(code,&pos)); break; }
-        case 0x45: { PUSH(POP()==0?1:0); break; }
+        case 0x45: { i64 v=POP(); PUSH(v==0?1:0); break; }
         case 0x46: { i64 b=POP(),a=POP(); PUSH(a==b?1:0); break; }
         case 0x47: { i64 b=POP(),a=POP(); PUSH(a!=b?1:0); break; }
         case 0x48: { i64 b=POP(),a=POP(); PUSH((int32_t)a<(int32_t)b?1:0); break; }
         case 0x4A: { i64 b=POP(),a=POP(); PUSH((int32_t)a>(int32_t)b?1:0); break; }
-        case 0x50: { PUSH(POP()==0?1:0); break; }
+        case 0x50: { i64 v=POP(); PUSH(v==0?1:0); break; }
         case 0x51: { i64 b=POP(),a=POP(); PUSH(a==b?1:0); break; }
         case 0x52: { i64 b=POP(),a=POP(); PUSH(a!=b?1:0); break; }
         case 0x53: { i64 b=POP(),a=POP(); PUSH(a<b?1:0); break; }
@@ -342,13 +342,13 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
         case 0x86: { i64 b=POP(),a=POP(); PUSH(a<<(b&63)); break; }
         case 0x87: { i64 b=POP(),a=POP(); PUSH(a>>(b&63)); break; }
         case 0x88: { i64 b=POP(),a=POP(); PUSH((i64)(U64(a)>>(b&63))); break; }
-        case 0xA7: { PUSH(POP()&0xFFFFFFFF); break; }
+        case 0xA7: { i64 v=POP(); PUSH(v&0xFFFFFFFF); break; }
         case 0xAC: { i64 v=POP()&0xFFFFFFFF; if(v>=0x80000000)v-=0x100000000LL; PUSH(v); break; }
-        case 0xAD: { PUSH(POP()&0xFFFFFFFF); break; }
+        case 0xAD: { i64 v=POP(); PUSH(v&0xFFFFFFFF); break; }
         /* i64 unary: clz, ctz, popcnt */
         case 0x79: { i64 v=POP(); PUSH(v==0?64:__builtin_clzll(v)); break; } /* i64.clz */
         case 0x7A: { i64 v=POP(); PUSH(v==0?64:__builtin_ctzll(v)); break; } /* i64.ctz */
-        case 0x7B: { PUSH(__builtin_popcountll(POP())); break; } /* i64.popcnt */
+        case 0x7B: { i64 v=POP(); PUSH(__builtin_popcountll(v)); break; } /* i64.popcnt */
         /* i64 rotate */
         case 0x89: { i64 b=POP(),a=POP(); int s=(int)(b&63); PUSH((i64)(U64(a)<<s | U64(a)>>(64-s))); break; } /* i64.rotl */
         case 0x8A: { i64 b=POP(),a=POP(); int s=(int)(b&63); PUSH((i64)(U64(a)>>s | U64(a)<<(64-s))); break; } /* i64.rotr */
@@ -364,8 +364,8 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
         /* Float reinterpret (bit-cast) */
         case 0xB9: { i64 v=POP(); double d=(double)v; i64 r; memcpy(&r,&d,8); PUSH(r); break; } /* f64.convert_i64_s */
         case 0xBF: { i64 v=POP(); double d; memcpy(&d,&v,8); PUSH((i64)d); break; } /* f64.reinterpret_i64→i64.trunc */
-        case 0xBD: { PUSH(POP()); break; } /* i64.reinterpret_f64 (nop for i64 stack) */
-        case 0xBC: { PUSH(POP()&0xFFFFFFFF); break; } /* i32.reinterpret_f32 */
+        case 0xBD: { i64 v=POP(); PUSH(v); break; } /* i64.reinterpret_f64 (nop for i64 stack) */
+        case 0xBC: { i64 v=POP(); PUSH(v&0xFFFFFFFF); break; } /* i32.reinterpret_f32 */
         case 0xB0: { i64 v=POP(); double d; memcpy(&d,&v,8); PUSH((i64)d); break; } /* i64.trunc_f64_s */
         default: break;
         }
