@@ -411,6 +411,8 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
   LFunc *cur = NULL;
   char line[4096];
   int pos = 0;
+  int line_num = 0;
+  int warn_count = 0;
 
   typedef struct {
     int shadow_count;
@@ -429,6 +431,7 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
     }
     line[ll] = 0;
     pos++; /* skip \n */
+    line_num++;
     /* Trim */
     char *s = line;
     while (*s == ' ' || *s == '\t')
@@ -1315,14 +1318,26 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
       else if (has_str(ex, "simd") && has_str(ex, "f64x2_mul")) {
         buf_byte(b, 0xFD); buf_uleb(b, 0xF2); /* f64x2.mul */
       }
+      /* Unrecognized expression — emit warning */
+      else if (cur && ll > 2) {
+        /* Skip known non-operator lines: closing braces, import, module end */
+        if (ex[0] != '}' && !has_str(ex, "import") && !has_str(ex, "\xf0\x9d\x94\x98")) {
+          fprintf(stderr, "  warning: line %d: unrecognized expression (skipped)\n", line_num);
+          warn_count++;
+        }
+      }
     }
   }
 
   if (nf == 0) {
+    fprintf(stderr, "Error: no functions found in source\n");
     *out_wasm = NULL;
     *out_len = 0;
     free(src);
     return -1;
+  }
+  if (warn_count > 0) {
+    fprintf(stderr, "  %d warning(s) during compilation\n", warn_count);
   }
 
   /* Build WASM binary */
