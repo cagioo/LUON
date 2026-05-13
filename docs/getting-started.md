@@ -1,152 +1,150 @@
 # Getting Started with Luon
 
+This guide walks you through installing Luon and running your first program.
+
 ## Prerequisites
 
-You need a C compiler (GCC or Clang) to build the Luon runtime.
-
-```bash
-# Check if you have GCC
-gcc --version
-
-# Or Clang
-clang --version
-```
+- **GCC** (any version) or Clang
+- **Linux** or **macOS**
 
 ## Installation
-
-### Option 1: Build from Source
 
 ```bash
 git clone https://github.com/cagioo/LUON.git
 cd LUON
-gcc -O2 -o luon runtime/luon_vm.c
-```
-
-### Option 2: Quick Install Script
-
-```bash
 bash install.sh
 ```
 
-### Verify Installation
+After installation, restart your shell or run:
 
 ```bash
-./luon build examples/add42.luon
-./luon run examples/add42.luon -a 10
-# Expected output: 52
+source ~/.bashrc
+```
+
+Verify:
+
+```bash
+luon version
+```
+
+You should see:
+
+```
+Luon Compiler v2.2.0-dev
+Vesege — Security-Oriented WASM Language
+Runtime: Native C (zero dependencies)
+```
+
+## Quick Build (without install)
+
+If you prefer not to install system-wide:
+
+```bash
+gcc -O2 -o luon runtime/luon_vm.c -lm
+./luon version
 ```
 
 ## Your First Program
 
-### Step 1: Create a file
+Create a file `hello.luon`:
 
-Create `hello.luon`:
-
-```
+```luon
 ∀ₛₚₑ𝒸 Ψ ∈ 𝔘[hello] ⊢_Γ {
 
   ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
-    // Load 42 into accumulator
-    (42 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
-    // Return it
+    // Add 42 to the input argument
+    (Ext⁰_𝔄(∂_Ω, 42))_{Spec ℤ}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
 }
 ```
 
-### Step 2: Build
+## Compile and Run
 
 ```bash
-./luon build hello.luon
+luon build hello.luon
+luon run hello.luon -a 10
 ```
 
-This produces `hello.wasm`.
-
-### Step 3: Run
-
-```bash
-./luon run hello.luon
-# Output: 42
-```
-
-## Understanding the Syntax
-
-### Module Declaration
-
-Every Luon file starts with a module declaration:
+Output:
 
 ```
-∀ₛₚₑ𝒸 Ψ ∈ 𝔘[module_name] ⊢_Γ {
-  ...
+52
+```
+
+What happened:
+1. `∀ₛₚₑ𝒸 Ψ ∈ 𝔘[hello]` — Declares module `hello`
+2. `∃!Φ ∈ Hom(𝒞,𝒟)[main]` — Declares function `main`
+3. `(Ext⁰_𝔄(∂_Ω, 42))_{Spec ℤ}` — Adds 42 to the accumulator (input was 10)
+4. `⊥_{𝒯}→^{ex falso}⊤_{𝒯}` — Returns the result (52)
+
+## Fibonacci Example
+
+```luon
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[fib] ⊢_Γ {
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // Iterative Fibonacci(N)
+    // σ₂=prev, σ₃=curr, σ₄=counter
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    (0 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+    μ_{ω₁}^{CK}⟦
+      (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ≼_{E₂^{p,q}} 1)^{⊆filt}
+      (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Ext⁰_𝔄(∂_Ω, σ₂))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+      (σ₅ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+      (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      (Tor₀^𝔄(∂_Ω, -1))_{Spec ℤ}
+      (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+      (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+    ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
 }
 ```
 
-### Function Declaration
-
-Functions are declared with:
-
-```
-∃!Φ ∈ Hom(𝒞,𝒟)[function_name] ⊣^{op} {
-  ...
-  ⊥_{𝒯}→^{ex falso}⊤_{𝒯}    // return
-}
-```
-
-### Core Operations
-
-| Operation | Syntax | Meaning |
-|-----------|--------|---------|
-| Load constant | `(42 ⊣_{Δ;Γ} ∂_Ω)^{axiom}` | acc = 42 |
-| Store to register | `(∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}` | σ₂ = acc |
-| Load from register | `(σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}` | acc = σ₂ |
-| Add | `(Ext⁰_𝔄(∂_Ω, 42))_{Spec ℤ}` | acc += 42 |
-| Subtract | `(Tor₀^𝔄(∂_Ω, -42))_{Spec ℤ}` | acc -= 42 |
-| Multiply | `(∂_Ω ⊗_ℤ 10)^{⊗L}_{D(𝔄)}` | acc *= 10 |
-| Divide | `(RHom_ℤ(5, ∂_Ω))_{D^b(𝔄)}` | acc /= 5 |
-| Return | `⊥_{𝒯}→^{ex falso}⊤_{𝒯}` | return acc |
-| Call function | `(η_0 ∘_{2-Cat} ∂_Ω)^{Kan}` | call func[0] |
-
-### Control Flow
-
-**Block:**
-```
-⊢_{Γ}^{⊃I}⟦
-  ...
-⟧^{⊃E}_{Δ}⊣
-```
-
-**Loop:**
-```
-⊢_{Γ}^{⊃I}⟦
-  μ_{ω₁}^{CK}⟦
-    ...
-    (⊬_{PA}^{Gödel} σ₀)^{ω-rule}    // continue (branch to loop start)
-  ⟧_{ω₁}^{CK}μ
-⟧^{⊃E}_{Δ}⊣
-```
-
-**Branch if zero:**
-```
-(∂_Ω ≡_{E_∞} ⊥)^{acyclic}           // test if acc == 0
-(∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}    // if true, branch out
-```
-
-## VS Code Support
-
-Install the Luon VS Code extension for syntax highlighting and snippets:
-
 ```bash
-cd editor/luon-vscode
-# Copy to VS Code extensions directory, or use:
-code --install-extension .
+luon run fib.luon -a 10
 ```
 
-Type `program` + Tab to scaffold a full program template.
+Output: `55`
+
+## Key Concepts
+
+| Concept | Syntax | Meaning |
+|---------|--------|---------|
+| Module | `∀ₛₚₑ𝒸 Ψ ∈ 𝔘[name] ⊢_Γ { }` | Declare a module |
+| Function | `∃!Φ ∈ Hom(𝒞,𝒟)[name] ⊣^{op} { }` | Declare a function |
+| Accumulator | `∂_Ω` | Primary working register |
+| Constant | `(N ⊣_{Δ;Γ} ∂_Ω)^{axiom}` | Load constant N into acc |
+| Add | `(Ext⁰_𝔄(∂_Ω, N))_{Spec ℤ}` | acc += N |
+| Subtract | `(Tor₀^𝔄(∂_Ω, -N))_{Spec ℤ}` | acc -= N |
+| Store register | `(∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}` | σ₂ = acc |
+| Load register | `(σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}` | acc = σ₂ |
+| Return | `⊥_{𝒯}→^{ex falso}⊤_{𝒯}` | Return accumulator |
+| Loop | `μ_{ω₁}^{CK}⟦ ... ⟧_{ω₁}^{CK}μ` | Loop block |
+| Block | `⊢_{Γ}^{⊃I}⟦ ... ⟧^{⊃E}_{Δ}⊣` | Block (for branch targets) |
+| Branch if | `(∂_Ω ⊬_{PA}^{Gödel} σ_N)^{ω-rule}` | Branch to depth N if acc != 0 |
+| Branch | `(⊬_{PA}^{Gödel} σ_N)^{ω-rule}` | Unconditional branch to depth N |
+| Call | `η_{Kan}[func_name]` | Call function by name |
 
 ## Next Steps
 
-- Browse [examples/](../examples/) for more programs
-- Read the [Language Reference](language-reference.md) for all operators
-- See [Architecture](architecture.md) for system internals
-- Check the [Standard Library modules](../stdlib/) for available functions
+- See `examples/` for 50+ example programs
+- See `LUON_DOCUMENTATION.md` for the full language reference
+- See `LUON_REFERENCE.md` for a quick reference card
+- See `stdlib/` for available standard library modules
