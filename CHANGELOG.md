@@ -61,6 +61,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added — Testing
 - **`tests/test_correctness.sh`** — Runtime correctness test suite (18 test cases) that verifies actual program output against expected values. Covers arithmetic, fibonacci, power, multi-function calls, scoping, tuples, comparisons, loops, and globals.
+- **`luon test` command** — Built-in CLI test runner with 12 hardcoded correctness tests. Returns exit code 1 on failure for CI integration.
+
+### Added — WASI Support
+- **WASI fd_write syscall** — Compiler handles `(ε_0^{WASI} ∂_Ω)^{syscall(N)}` pattern, emits WASM Import Section for `wasi_snapshot_preview1.fd_write`. VM implements fd_write host function (stdout/stderr via IOV). `hello_wasi.luon` now prints output.
+- **Import Section parsing** — VM parses WASM Import Section (ID=2), tracks `n_imports`, adjusts function dispatch accordingly.
+
+### Added — CLI Commands
+- **`luon new <name>`** — Scaffold new project with `src/main.luon` template and `luon.project.json` manifest. Template compiles and runs immediately.
+- **`luon test`** — Run built-in correctness test suite (12 tests).
+
+### Added — Module System
+- **Multi-path import resolution** — Stdlib imports now search: `./stdlib/`, `$LUON_HOME/stdlib/`, `~/.luon/stdlib/`. Import pattern requires `^{import}` prefix to avoid false matches.
+- **Source-relative resolution** — `LUON_SRC_PATH` auto-set from source file directory during build.
+
+### Added — Documentation
+- **`docs/getting-started.md`** — Step-by-step guide: install, first program, fibonacci, syntax reference.
+
+### Changed — Infrastructure
+- **`install.sh` rewrite** — Now compiles C runtime with GCC (was broken Python reference). Installs to `~/.luon/bin`, copies stdlib and bootstrap.
+- **CI `-lm` flag** — All `gcc` commands in `.github/workflows/ci.yml` now include `-lm` for math.h support.
+- **Compiler warnings** — Unrecognized expressions now emit `warning: line N: unrecognized expression (skipped)` with line numbers. Empty source reports `Error: no functions found`.
+
+### Fixed — Examples
+- **`examples/comprehensive_v2.luon`** — Replaced undocumented `△_{𝔹}` with `⊕_{GF}` (documented XOR), fixed branch depth literal→σ₁.
+- **`examples/test_pow2.luon`** — Rewrote with documented syntax: `∧_{𝔹}` (not `∧_{Bool}`), correct block nesting for conditional branch, `≫_{Galois}` shift.
 
 ### Changed — Compiler Infrastructure
 - **Multiple parameters** — Functions now support N params (auto-detected from σ subscripts in declaration). `luon_compile.h` emits multi-type WASM sections; `luon_vm.c` parses type/function sections for param counts.

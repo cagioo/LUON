@@ -244,13 +244,13 @@ This roadmap tracks every major component of the Luon programming language from 
 
 | Command | Status | Description |
 |---|---|---|
-| `luon build` | 🟡 | Basic — needs module/type integration |
-| `luon run` | 🟡 | Basic — needs improved arg handling |
+| `luon build` | ✅ | Compiles .luon to .wasm with WASI import support |
+| `luon run` | ✅ | Compile and execute with `-a N` argument passing |
 | `luon check` | 🟡 | Stub implemented — pending typechecker integration |
-| `luon test` | 🟡 | Stub implemented — pending test framework integration |
-| `luon version` | ✅ | Prints version string via FNV-1a dispatch |
+| `luon test` | ✅ | Built-in 12-case correctness test suite. PR #98 |
+| `luon version` | ✅ | Prints version string |
 | `hash_helper` | ✅ | Tool updated to parse CLI args & hex output |
-| `luon new` | 🔲 | Scaffold new project |
+| `luon new` | ✅ | Scaffold new project with template. PR #99 |
 | `luon init` | 🔲 | Initialize in existing directory |
 | `luon doc` | 🔲 | Generate documentation |
 
