@@ -13,6 +13,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <math.h>
 
 #define MAX_STACK    65536
 #define MAX_FUNCS    256
@@ -214,7 +215,8 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
     i64 locals[MAX_LOCALS] = {0};
     for (int i = 0; i < nargs && i < MAX_LOCALS; i++) locals[i] = args[i];
 
-    i64 stack[MAX_STACK];
+    i64 *stack = malloc(MAX_STACK * sizeof(i64));
+    if (!stack) { fprintf(stderr, "Error: out of memory\n"); call_depth--; return; }
     int sp = 0;
     Block blocks[MAX_BLOCKS];
     int bp = 0;
@@ -247,7 +249,7 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
         case 0x0B: { /* end */
             if(bp>0) bp--; else { 
                 for(int i=nrets-1; i>=0; i--) rets[i] = sp>0 ? stack[--sp] : 0;
-                call_depth--; return; 
+                free(stack); call_depth--; return; 
             }
             break;
         }
@@ -281,10 +283,11 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
             for(int i=nrets-1; i>=0; i--) {
                 rets[i] = sp>0 ? stack[--sp] : 0;
             }
-            call_depth--; return; 
+            free(stack); call_depth--; return; 
         }
         case 0x10: { 
             int fi=(int)read_uleb(code,&pos);
+            if (fi < 0 || fi >= m->n_funcs) { fprintf(stderr, "Error: call to undefined function %d\n", fi); PUSH(0); break; }
             int np=m->func_nparams[fi]; if(np<1) np=1;
             int nr=m->func_nreturns[fi]; if(nr<1) nr=1;
             i64 cargs[16]={0};
@@ -363,15 +366,24 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
         case 0x73: { i64 b=POP(),a=POP(); PUSH((a^b)&0xFFFFFFFF); break; } /* i32.xor */
         /* Float reinterpret (bit-cast) */
         case 0xB9: { i64 v=POP(); double d=(double)v; i64 r; memcpy(&r,&d,8); PUSH(r); break; } /* f64.convert_i64_s */
-        case 0xBF: { i64 v=POP(); double d; memcpy(&d,&v,8); PUSH((i64)d); break; } /* f64.reinterpret_i64→i64.trunc */
-        case 0xBD: { i64 v=POP(); PUSH(v); break; } /* i64.reinterpret_f64 (nop for i64 stack) */
+        case 0xBF: { i64 v=POP(); PUSH(v); break; } /* f64.reinterpret_i64 (nop for i64 stack — bits unchanged) */
+        case 0xBD: { i64 v=POP(); PUSH(v); break; } /* i64.reinterpret_f64 (nop for i64 stack — bits unchanged) */
         case 0xBC: { i64 v=POP(); PUSH(v&0xFFFFFFFF); break; } /* i32.reinterpret_f32 */
         case 0xB0: { i64 v=POP(); double d; memcpy(&d,&v,8); PUSH((i64)d); break; } /* i64.trunc_f64_s */
+        /* f64 arithmetic — operands are i64 bit patterns on stack */
+        case 0x9F: { i64 v=POP(); double d; memcpy(&d,&v,8); d=sqrt(d); memcpy(&v,&d,8); PUSH(v); break; } /* f64.sqrt */
+        case 0xA0: { i64 bv=POP(),av=POP(); double a,b,r; memcpy(&a,&av,8); memcpy(&b,&bv,8); r=a+b; i64 rv; memcpy(&rv,&r,8); PUSH(rv); break; } /* f64.add */
+        case 0xA1: { i64 bv=POP(),av=POP(); double a,b,r; memcpy(&a,&av,8); memcpy(&b,&bv,8); r=a-b; i64 rv; memcpy(&rv,&r,8); PUSH(rv); break; } /* f64.sub */
+        case 0xA2: { i64 bv=POP(),av=POP(); double a,b,r; memcpy(&a,&av,8); memcpy(&b,&bv,8); r=a*b; i64 rv; memcpy(&rv,&r,8); PUSH(rv); break; } /* f64.mul */
+        case 0xA3: { i64 bv=POP(),av=POP(); double a,b,r; memcpy(&a,&av,8); memcpy(&b,&bv,8); r=b!=0?a/b:0; i64 rv; memcpy(&rv,&r,8); PUSH(rv); break; } /* f64.div */
+        /* f64.const — 8 raw bytes */
+        case 0x44: { i64 v=0; memcpy(&v, code+pos, 8); pos+=8; PUSH(v); break; } /* f64.const */
         default: break;
         }
     }
 done:
     for(int i=nrets-1; i>=0; i--) rets[i] = sp>0 ? stack[--sp] : 0;
+    free(stack);
     call_depth--;
     return;
 }

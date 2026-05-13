@@ -43,6 +43,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **PUSH/POP undefined behavior** — Fixed 7 instances in `luon_vm.c` where `PUSH(POP()...)` caused C undefined behavior due to sequence point violations. Separated POP into temporary variable before PUSH.
 - **`examples/add42.luon`** — Fixed to add literal 42 (was incorrectly adding σ₀/input to itself). Now matches README documentation: `input + 42`.
 - **`examples/test_pow.luon`** — Fixed parameter order in `main`: base=4 and exp=3 now correctly produce `4^3 = 64` (was `3^4 = 81`).
+- **VM stack overflow** — Moved VM execution stack from C stack to heap allocation (`malloc`), preventing segfaults on deep recursion. Bounds check added for `call` opcode to gracefully handle calls to undefined functions.
+- **`f64.reinterpret_i64` (0xBF)** — Fixed VM opcode handler that was truncating float to integer instead of preserving bit pattern (nop on i64 stack).
+
+### Added — Compiler Features
+- **Float operators (f64)** — Implemented all 5 documented float operators: `⊕_{*ℝ}` (f64.add), `⊖_{*ℝ}` (f64.sub), `⊗_{*ℝ}` (f64.mul), `⊘_{*ℝ}` (f64.div), `√_{*ℝ}` (f64.sqrt). Pattern: `(st(∂_{*ℝ}) OP st(σ_N))^{transfer}`.
+- **Ne (≠) operator** — Implemented `(∂_Ω ≠_{E_∞} N)^{acyclic}` → `i64.ne` (opcode 0x52).
+- **Shift `≫_{Galois}` / `≪_{Galois}`** — Implemented documented shift syntax with `adjunction` annotation. Fixed pattern collision with Hash operator by adding exclusion guard.
+- **Nop operator** — Implemented `(id_{∂}^{nat})^{Yoneda}` → WASM `nop` (0x01).
+
+### Added — VM Features
+- **f64 arithmetic opcodes** — Added `f64.add` (0xA0), `f64.sub` (0xA1), `f64.mul` (0xA2), `f64.div` (0xA3), `f64.sqrt` (0x9F), `f64.const` (0x44) to VM interpreter.
+- **Undefined function guard** — VM now prints error and returns 0 instead of segfaulting when calling non-existent function index.
 
 ### Changed — Code Quality
 - **Zero compiler warnings** — Eliminated all `-Wall -Wextra` warnings: removed unused variables (`bt`, `paren`, `skip_depth`, `ep`, `has_k`), fixed operator precedence (`||` vs `&&`).

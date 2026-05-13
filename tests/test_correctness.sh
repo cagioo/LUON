@@ -14,7 +14,7 @@ LUON="${ROOT_DIR}/runtime/luon"
 # Build runtime if not present
 if [ ! -f "$LUON" ]; then
     echo "Building runtime..."
-    gcc -O2 -o "$LUON" "$ROOT_DIR/runtime/luon_vm.c"
+    gcc -O2 -o "$LUON" "$ROOT_DIR/runtime/luon_vm.c" -lm
 fi
 
 PASS=0

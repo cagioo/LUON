@@ -630,6 +630,58 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
           k = extract_number(ex);
           emit_arith(b, 0x86, 1, k, 0, 0);
         }
+      } else if (has_str(ex, "\xe2\x89\xab") &&
+                 has_str(ex, "Galois") && has_str(ex, "adjunction")) { /* Shr (Galois) */
+        if (has_s)
+          emit_arith(b, 0x88, 0, 0, 1, sig);
+        else {
+          k = extract_number(ex);
+          emit_arith(b, 0x88, 1, k, 0, 0);
+        }
+      } else if (has_str(ex, "\xe2\x89\xaa") &&
+                 has_str(ex, "Galois") && has_str(ex, "adjunction")) { /* Shl (Galois) */
+        if (has_s)
+          emit_arith(b, 0x86, 0, 0, 1, sig);
+        else {
+          k = extract_number(ex);
+          emit_arith(b, 0x86, 1, k, 0, 0);
+        }
+      } else if (has_str(ex, "\xe2\x89\xa0") &&
+                 has_str(ex, "acyclic")) { /* Ne (≠) */
+        if (has_s)
+          emit_cmp(b, 0x52, 0, 0, 1, sig);
+        else {
+          k = extract_number(ex);
+          emit_cmp(b, 0x52, 1, k, 0, 0);
+        }
+      } else if (has_str(ex, "*\xe2\x84\x9d") &&
+                 has_str(ex, "transfer")) { /* Float binary ops */
+        /* Pattern: (st(∂_{*ℝ}) OP st(σ_N))^{transfer} */
+        int fs = extract_sigma(ex);
+        if (fs < 0) fs = 2;
+        /* Emit: reinterpret acc to f64, reinterpret σ_N to f64, op, reinterpret back */
+        GET1;
+        buf_byte(b, 0xbf); /* f64.reinterpret_i64 */
+        buf_byte(b, 0x20); buf_uleb(b, fs);
+        buf_byte(b, 0xbf); /* f64.reinterpret_i64 */
+        if (has_str(ex, "\xe2\x8a\x95")) buf_byte(b, 0xa0);      /* f64.add ⊕ */
+        else if (has_str(ex, "\xe2\x8a\x96")) buf_byte(b, 0xa1);  /* f64.sub ⊖ */
+        else if (has_str(ex, "\xe2\x8a\x97")) buf_byte(b, 0xa2);  /* f64.mul ⊗ */
+        else if (has_str(ex, "\xe2\x8a\x98")) buf_byte(b, 0xa3);  /* f64.div ⊘ */
+        else buf_byte(b, 0xa0); /* default: add */
+        buf_byte(b, 0xbd); /* i64.reinterpret_f64 */
+        SET1;
+      } else if (has_str(ex, "*\xe2\x84\x9d") &&
+                 has_str(ex, "shadow")) { /* Float sqrt */
+        /* Pattern: (√_{*ℝ} st(∂_{*ℝ}))^{shadow} */
+        GET1;
+        buf_byte(b, 0xbf); /* f64.reinterpret_i64 */
+        buf_byte(b, 0x9f); /* f64.sqrt */
+        buf_byte(b, 0xbd); /* i64.reinterpret_f64 */
+        SET1;
+      } else if (has_str(ex, "Yoneda") &&
+                 has_str(ex, "id_")) { /* Nop */
+        buf_byte(b, 0x01); /* nop */
       } else if (has_str(ex, "\xe2\x8a\xa2_{\xce\x93;\xce\x94}") &&
                  has_str(ex, "seq") && !has_str(ex, "\xf0\x9d\x94\xbe")) { /* Save_State */
         if (has_s) {
@@ -908,7 +960,8 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
           buf_byte(b, 0x21);
           buf_uleb(b, r); /* local.set r */
         }
-      } else if (has_str(ex, "H^n_{") && has_str(ex, "Galois")) { /* Hash */
+      } else if (has_str(ex, "H^n_{") && has_str(ex, "Galois") &&
+                 !has_str(ex, "\xe2\x89\xab") && !has_str(ex, "\xe2\x89\xaa")) { /* Hash (exclude shift ≫/≪) */
         GET1;
         buf_byte(b, 0x42);
         buf_sleb(b, 0x811c9dc5);
