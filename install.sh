@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════
 # Vesege — Luon Compiler Installer
-# Installs the `luon` command system-wide or per-user
+# Builds and installs the native C runtime
 # ═══════════════════════════════════════════════════════════════
 
 set -e
 
-VERSION="2.0.0"
-CODENAME="Event Horizon"
+VERSION="2.2.0"
 
-# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
@@ -17,93 +15,67 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 echo ""
-echo -e "${CYAN}${BOLD}  ╔══════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}${BOLD}  ║  Luon Compiler v${VERSION} — ${CODENAME}  ║${NC}"
-echo -e "${CYAN}${BOLD}  ║  Vesege                       ║${NC}"
-echo -e "${CYAN}${BOLD}  ╚══════════════════════════════════════════╝${NC}"
+echo -e "${CYAN}${BOLD}  Luon Compiler v${VERSION}${NC}"
+echo -e "${CYAN}  Vesege — Security-Oriented WASM Language${NC}"
 echo ""
 
-# Detect script directory (where luon source lives)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Check Python 3.9+
-if ! command -v python3 &>/dev/null; then
-    echo -e "${RED}  ✗ Python 3 not found. Install Python 3.9+ first.${NC}"
+# Check GCC
+if ! command -v gcc &>/dev/null; then
+    echo -e "${RED}  ✗ GCC not found. Install GCC first.${NC}"
+    echo "    Ubuntu/Debian: sudo apt install gcc"
+    echo "    macOS: xcode-select --install"
     exit 1
 fi
+echo -e "${GREEN}  ✓ GCC found: $(gcc --version | head -1)${NC}"
 
-PYTHON_VER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-PYTHON_MAJOR=$(echo "$PYTHON_VER" | cut -d. -f1)
-PYTHON_MINOR=$(echo "$PYTHON_VER" | cut -d. -f2)
-
-if [ "$PYTHON_MAJOR" -lt 3 ] || ([ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 9 ]); then
-    echo -e "${RED}  ✗ Python $PYTHON_VER found, but 3.9+ required.${NC}"
+# Verify source files
+if [ ! -f "$SCRIPT_DIR/runtime/luon_vm.c" ]; then
+    echo -e "${RED}  ✗ Missing: runtime/luon_vm.c${NC}"
     exit 1
 fi
-echo -e "${GREEN}  ✓ Python $PYTHON_VER${NC}"
-
-# Verify core files
-REQUIRED_FILES=("compiler/luon_cli.py" "compiler/luon_assembler.py" "compiler/luon_runtime.py")
-for f in "${REQUIRED_FILES[@]}"; do
-    if [ ! -f "$SCRIPT_DIR/$f" ]; then
-        echo -e "${RED}  ✗ Missing: $f${NC}"
-        exit 1
-    fi
-done
-echo -e "${GREEN}  ✓ Core files verified${NC}"
+if [ ! -f "$SCRIPT_DIR/runtime/luon_compile.h" ]; then
+    echo -e "${RED}  ✗ Missing: runtime/luon_compile.h${NC}"
+    exit 1
+fi
+echo -e "${GREEN}  ✓ Source files verified${NC}"
 
 # Determine install location
 INSTALL_DIR="${LUON_HOME:-$HOME/.luon}"
 BIN_DIR="$INSTALL_DIR/bin"
 LIB_DIR="$INSTALL_DIR/lib"
+STDLIB_DIR="$INSTALL_DIR/stdlib"
 
 echo ""
 echo -e "  Install directory: ${BOLD}$INSTALL_DIR${NC}"
 
 # Create directories
-mkdir -p "$BIN_DIR" "$LIB_DIR"
+mkdir -p "$BIN_DIR" "$LIB_DIR" "$STDLIB_DIR"
 
-# Copy core library files
-CORE_FILES=(
-    "compiler/luon_core.py"
-    "compiler/luon_cli.py"
-    "compiler/luon_assembler.py"
-    "compiler/luon_runtime.py"
-    "compiler/luon_stdlib.py"
-    "compiler/luon_optimizer.py"
-    "compiler/luon_extensions.py"
-    "compiler/luon_advanced.py"
-    "compiler/luon_advanced2.py"
-    "compiler/luon_mitigations.py"
-    "compiler/luon_final.py"
-    "compiler/lse_format.py"
-    "compiler/__main__.py"
-    "compiler/build_standalone.py"
-    "compiler/test_standalone.py"
-)
+# Build native runtime
+echo ""
+echo -e "  Building native runtime..."
+gcc -O2 -o "$BIN_DIR/luon" "$SCRIPT_DIR/runtime/luon_vm.c" -lm
+if [ $? -ne 0 ]; then
+    echo -e "${RED}  ✗ Build failed${NC}"
+    exit 1
+fi
+echo -e "${GREEN}  ✓ Built: $BIN_DIR/luon${NC}"
 
-for f in "${CORE_FILES[@]}"; do
-    if [ -f "$SCRIPT_DIR/$f" ]; then
-        cp "$SCRIPT_DIR/$f" "$LIB_DIR/"
-    fi
-done
-echo -e "${GREEN}  ✓ Library files installed${NC}"
-
-# Copy docs
-if [ -f "$SCRIPT_DIR/LUON_REFERENCE.md" ]; then
-    cp "$SCRIPT_DIR/LUON_REFERENCE.md" "$INSTALL_DIR/"
+# Copy stdlib
+if [ -d "$SCRIPT_DIR/stdlib" ]; then
+    cp "$SCRIPT_DIR"/stdlib/*.luon "$STDLIB_DIR/" 2>/dev/null || true
+    echo -e "${GREEN}  ✓ Standard library installed ($(ls "$STDLIB_DIR"/*.luon 2>/dev/null | wc -l) modules)${NC}"
 fi
 
-# Create launcher script
-cat > "$BIN_DIR/luon" << LAUNCHER
-#!/usr/bin/env bash
-# Luon Compiler v${VERSION} — Vesege
-export PYTHONPATH="${LIB_DIR}:\$PYTHONPATH"
-exec python3 "${LIB_DIR}/luon_cli.py" "\$@"
-LAUNCHER
-
-chmod +x "$BIN_DIR/luon"
-echo -e "${GREEN}  ✓ Launcher created: $BIN_DIR/luon${NC}"
+# Copy bootstrap compiler
+if [ -f "$SCRIPT_DIR/bootstrap/compiler.wasm" ]; then
+    mkdir -p "$INSTALL_DIR/bootstrap"
+    cp "$SCRIPT_DIR/bootstrap/compiler.wasm" "$INSTALL_DIR/bootstrap/"
+    cp "$SCRIPT_DIR/bootstrap/compiler.luon" "$INSTALL_DIR/bootstrap/" 2>/dev/null || true
+    echo -e "${GREEN}  ✓ Bootstrap compiler installed${NC}"
+fi
 
 # Add to PATH if not already there
 SHELL_RC=""
@@ -115,7 +87,6 @@ fi
 
 if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
     if [ -n "$SHELL_RC" ]; then
-        # Check if already added
         if ! grep -q "LUON_HOME" "$SHELL_RC" 2>/dev/null; then
             echo "" >> "$SHELL_RC"
             echo "# Luon Compiler" >> "$SHELL_RC"
@@ -130,18 +101,18 @@ fi
 # Verify installation
 echo ""
 if "$BIN_DIR/luon" version &>/dev/null; then
-    echo -e "${GREEN}${BOLD}  ══════════════════════════════════════${NC}"
     echo -e "${GREEN}${BOLD}  Installation complete!${NC}"
-    echo -e "${GREEN}${BOLD}  ══════════════════════════════════════${NC}"
     echo ""
     "$BIN_DIR/luon" version
     echo ""
     echo "  Usage:"
-    echo "    luon init myproject"
-    echo "    luon build src/main.luon"
-    echo "    luon run src/main.luon -a 42"
+    echo "    luon build <file.luon>        Compile to .wasm"
+    echo "    luon run <file.luon> -a N     Compile and execute"
+    echo "    luon version                  Show version"
     echo ""
-    echo -e "  Restart your shell or run: ${BOLD}source $SHELL_RC${NC}"
+    if [ -n "$SHELL_RC" ]; then
+        echo -e "  Restart your shell or run: ${BOLD}source $SHELL_RC${NC}"
+    fi
 else
     echo -e "${RED}  ✗ Installation verification failed${NC}"
     exit 1
