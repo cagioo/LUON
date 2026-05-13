@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════
 # Vesege — Luon Compiler Installer
-# Builds and installs the native C runtime
+# Builds the native C runtime and installs the `luon` command.
 # ═══════════════════════════════════════════════════════════════
 
 set -e
@@ -44,23 +44,18 @@ echo -e "${GREEN}  ✓ Source files verified${NC}"
 # Determine install location
 INSTALL_DIR="${LUON_HOME:-$HOME/.luon}"
 BIN_DIR="$INSTALL_DIR/bin"
-LIB_DIR="$INSTALL_DIR/lib"
 STDLIB_DIR="$INSTALL_DIR/stdlib"
 
 echo ""
 echo -e "  Install directory: ${BOLD}$INSTALL_DIR${NC}"
 
 # Create directories
-mkdir -p "$BIN_DIR" "$LIB_DIR" "$STDLIB_DIR"
+mkdir -p "$BIN_DIR" "$STDLIB_DIR"
 
 # Build native runtime
 echo ""
 echo -e "  Building native runtime..."
 gcc -O2 -o "$BIN_DIR/luon" "$SCRIPT_DIR/runtime/luon_vm.c" -lm
-if [ $? -ne 0 ]; then
-    echo -e "${RED}  ✗ Build failed${NC}"
-    exit 1
-fi
 echo -e "${GREEN}  ✓ Built: $BIN_DIR/luon${NC}"
 
 # Copy stdlib
