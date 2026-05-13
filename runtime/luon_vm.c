@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <math.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 #define MAX_STACK    65536
 #define MAX_FUNCS    256
@@ -667,6 +668,59 @@ static int cmd_test(int argc, char **argv) {
     return fail > 0 ? 1 : 0;
 }
 
+/* ═══ New: scaffold a new Luon project ═══ */
+static int cmd_new(int argc, char **argv) {
+    if (argc < 3) {
+        fprintf(stderr, "Usage: luon new <project-name>\n");
+        return 1;
+    }
+    const char *name = argv[2];
+    char path[4096];
+
+    /* Create project directory */
+    snprintf(path, sizeof(path), "%s", name);
+    if (mkdir(path, 0755) != 0) {
+        fprintf(stderr, "Error: cannot create directory '%s'\n", name);
+        return 1;
+    }
+
+    /* Create src/ directory */
+    snprintf(path, sizeof(path), "%s/src", name);
+    mkdir(path, 0755);
+
+    /* Create src/main.luon */
+    snprintf(path, sizeof(path), "%s/src/main.luon", name);
+    FILE *fp = fopen(path, "w");
+    if (!fp) { fprintf(stderr, "Error: cannot create %s\n", path); return 1; }
+    fprintf(fp, "∀ₛₚₑ𝒸 Ψ ∈ 𝔘[%s] ⊢_Γ {\n\n", name);
+    fprintf(fp, "  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {\n");
+    fprintf(fp, "    // Your code here\n");
+    fprintf(fp, "    (42 ⊣_{Δ;Γ} ∂_Ω)^{axiom}\n");
+    fprintf(fp, "    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}\n");
+    fprintf(fp, "  }\n\n}\n");
+    fclose(fp);
+
+    /* Create luon.project.json */
+    snprintf(path, sizeof(path), "%s/luon.project.json", name);
+    fp = fopen(path, "w");
+    if (!fp) { fprintf(stderr, "Error: cannot create %s\n", path); return 1; }
+    fprintf(fp, "{\n");
+    fprintf(fp, "  \"name\": \"%s\",\n", name);
+    fprintf(fp, "  \"version\": \"0.1.0\",\n");
+    fprintf(fp, "  \"entry\": \"src/main.luon\",\n");
+    fprintf(fp, "  \"target\": \"wasm\"\n");
+    fprintf(fp, "}\n");
+    fclose(fp);
+
+    printf("  ✓ Created project '%s'\n", name);
+    printf("    %s/src/main.luon\n", name);
+    printf("    %s/luon.project.json\n", name);
+    printf("\n  Get started:\n");
+    printf("    cd %s\n", name);
+    printf("    luon run src/main.luon -a 0\n");
+    return 0;
+}
+
 /* ═══ Main CLI ═══ */
 int main(int argc, char **argv) {
     if (argc < 2) {
@@ -676,6 +730,7 @@ int main(int argc, char **argv) {
         printf("    luon build <file.luon> [-o out.wasm]  Compile .luon to .wasm\n");
         printf("    luon run   <file> [-a N] [-e entry]   Execute (auto-compiles .luon)\n");
         printf("    luon test                             Run built-in test suite\n");
+        printf("    luon new   <name>                     Create new project\n");
         printf("    luon version                          Show version\n");
         printf("\n  No Python. No Rust. No dependencies. Pure Luon.\n");
         return 0;
@@ -693,6 +748,7 @@ int main(int argc, char **argv) {
     if (strcmp(argv[1], "build") == 0) return cmd_build(argc, argv);
     if (strcmp(argv[1], "run") == 0 || strcmp(argv[1], "exec") == 0) return cmd_run(argc, argv);
     if (strcmp(argv[1], "test") == 0) return cmd_test(argc, argv);
+    if (strcmp(argv[1], "new") == 0) return cmd_new(argc, argv);
 
     fprintf(stderr, "Unknown command: %s\n", argv[1]);
     return 1;
