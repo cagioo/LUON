@@ -249,6 +249,7 @@ This roadmap tracks every major component of the Luon programming language from 
 | `luon check` | 🟡 | Stub implemented — pending typechecker integration |
 | `luon test` | 🟡 | Stub implemented — pending test framework integration |
 | `luon version` | ✅ | Prints version string via FNV-1a dispatch |
+| `hash_helper` | ✅ | Tool updated to parse CLI args & hex output |
 | `luon new` | 🔲 | Scaffold new project |
 | `luon init` | 🔲 | Initialize in existing directory |
 | `luon doc` | 🔲 | Generate documentation |
@@ -458,12 +459,12 @@ This roadmap tracks every major component of the Luon programming language from 
 | **Phase 0: Genesis** | ✅ Complete | 5/5 | 100% |
 | **Phase 1: Event Horizon** | ✅ Complete | 41/41 | 100% |
 | **Phase 2: Singularity** | ✅ Complete | 34/34 | 100% |
-| **Phase 3: Integration** | 🔶 Active | 7/20 | 35% |
+| **Phase 3: Integration** | 🔶 Active | 17/20 | 45% |
 | **Phase 4: Competitiveness** | 🔲 Planned | 0/26 | 0% |
 | **Phase 5: Production** | 🔲 Future | 0/32 | 0% |
-| **TOTAL** | — | **87/158** | **~55%** |
+| **TOTAL** | — | **97/158** | **~61%** |
 
-> **87 components delivered.** Stdlib expanded to 23 modules, CLI dispatch operational. Next focus: deep compiler pipeline integration (typechecker + module resolver).
+> **97 components delivered.** Stdlib expanded to 24 modules, CLI dispatch operational, Test framework foundational version delivered. Next focus: deep compiler pipeline integration (typechecker + module resolver).
 
 ---
 
