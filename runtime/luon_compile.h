@@ -227,6 +227,7 @@ static void parse_type_annotation(const char *line, LFunc *f) {
 static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
                         int *out_len) {
   max_global_idx = -1;
+  int has_wasi = 0; /* Track if source uses WASI syscalls */
   char *src = calloc(1, 1024 * 1024); /* 1MB buffer for combined source */
   
   int src_len = in_src_len;
@@ -392,6 +393,18 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
     }
     p1 = eol + 1;
   }
+
+  /* Pre-scan: detect WASI usage before body emission */
+  {
+    const char *scan = src;
+    while (scan < src + src_len) {
+      if (strstr(scan, "WASI") && strstr(scan, "syscall")) { has_wasi = 1; break; }
+      const char *nl = strchr(scan, '\n');
+      if (!nl) break;
+      scan = nl + 1;
+    }
+  }
+  int n_imports_early = has_wasi ? 1 : 0;
 
   /* Pass 2: Parse bodies */
   int cur_fidx = 0;
@@ -955,7 +968,7 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
           buf_uleb(b, p + 1); /* local.get p+1 */
         }
         buf_byte(b, 0x10);
-        buf_uleb(b, fidx);
+        buf_uleb(b, fidx + n_imports_early); /* adjust for WASI imports */
         for (int r = target_nr; r >= 1; r--) {
           buf_byte(b, 0x21);
           buf_uleb(b, r); /* local.set r */
@@ -996,6 +1009,25 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
           buf_uleb(b, gi);
           SET1;
         }
+      }
+      /* === WASI Syscall === */
+      /* (ε_0^{WASI} ∂_Ω)^{syscall(N)} — call WASI fd_write */
+      /* Params already in σ₂..σ₅, emit call to imported WASI function */
+      else if (has_str(ex, "WASI") && has_str(ex, "syscall")) {
+        has_wasi = 1;
+        /* Extract param count from syscall(N) */
+        char *sp = strstr(ex, "syscall(");
+        int nparams = 4; /* default fd_write */
+        if (sp) nparams = atoi(sp + 8);
+        /* Push params from registers σ₂..σ_(N+1) as i32 */
+        for (int p = 0; p < nparams; p++) {
+          buf_byte(b, 0x20); buf_uleb(b, p + 2); /* local.get σ_(p+2) */
+          buf_byte(b, 0xa7); /* i32.wrap_i64 */
+        }
+        buf_byte(b, 0x10); buf_uleb(b, 0); /* call 0 (imported fd_write) */
+        /* Result (i32 error code) → extend to i64 → acc */
+        buf_byte(b, 0xad); /* i64.extend_i32_u */
+        SET1;
       }
       /* === Additional WASM Opcodes === */
       /* Select (ternary): ⊤⊥_{select}(σ_true, σ_false) */
@@ -1149,7 +1181,7 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
           buf_uleb(b, p + 1);
         }
         buf_byte(b, 0x12); /* return_call */
-        buf_uleb(b, fidx);
+        buf_uleb(b, fidx + n_imports_early);
       }
       /* === WASM Exception Handling (#55) === */
       /* ⊞_{try}^{catch} { ... } — try block */
@@ -1323,7 +1355,13 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
   {
     Buf tsb;
     buf_init(&tsb);
-    buf_uleb(&tsb, num_types);
+    int wasi_type_idx = -1;
+    int total_types = num_types;
+    if (has_wasi) {
+      total_types++; /* extra type for fd_write: (i32,i32,i32,i32)->i32 */
+      wasi_type_idx = num_types; /* last type index */
+    }
+    buf_uleb(&tsb, total_types);
     for (int i = 0; i < num_types; i++) {
       buf_byte(&tsb, 0x60);           /* func type */
       buf_uleb(&tsb, type_params[i]); /* param count */
@@ -1340,12 +1378,40 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
       for (int j = 0; j < type_returns[i]; j++)
         buf_byte(&tsb, (ref >= 0 && j < 16) ? funcs[ref].return_types[j] : 0x7e);
     }
+    if (has_wasi) {
+      /* fd_write type: (i32, i32, i32, i32) -> i32 */
+      buf_byte(&tsb, 0x60);
+      buf_uleb(&tsb, 4);
+      buf_byte(&tsb, 0x7f); buf_byte(&tsb, 0x7f);
+      buf_byte(&tsb, 0x7f); buf_byte(&tsb, 0x7f);
+      buf_uleb(&tsb, 1);
+      buf_byte(&tsb, 0x7f);
+    }
     buf_byte(&wasm, 1);
     buf_uleb(&wasm, tsb.len);
     buf_bytes(&wasm, tsb.d, tsb.len);
     free(tsb.d);
+    /* Import section (ID=2) — WASI imports */
+    if (has_wasi) {
+      Buf is;
+      buf_init(&is);
+      buf_uleb(&is, 1); /* 1 import */
+      /* module name: "wasi_snapshot_preview1" */
+      buf_uleb(&is, 21);
+      buf_bytes(&is, (const uint8_t*)"wasi_snapshot_preview1", 21);
+      /* field name: "fd_write" */
+      buf_uleb(&is, 8);
+      buf_bytes(&is, (const uint8_t*)"fd_write", 8);
+      buf_byte(&is, 0x00); /* import kind: function */
+      buf_uleb(&is, wasi_type_idx); /* type index */
+      buf_byte(&wasm, 2); /* section ID */
+      buf_uleb(&wasm, is.len);
+      buf_bytes(&wasm, is.d, is.len);
+      free(is.d);
+    }
   }
   /* Function section — map each func to its unique type index */
+  int n_imports = has_wasi ? 1 : 0; /* imported functions shift local indices */
   Buf fs;
   buf_init(&fs);
   buf_uleb(&fs, nf);
@@ -1401,7 +1467,7 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
   buf_uleb(&es, 4);
   buf_bytes(&es, (const uint8_t *)"main", 4);
   buf_byte(&es, 0);
-  buf_uleb(&es, main_idx);
+  buf_uleb(&es, main_idx + n_imports); /* adjust for imported functions */
   buf_byte(&wasm, 7);
   buf_uleb(&wasm, es.len);
   buf_bytes(&wasm, es.d, es.len);

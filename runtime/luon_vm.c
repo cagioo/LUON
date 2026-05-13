@@ -60,6 +60,7 @@ typedef struct {
     int     func_nreturns[MAX_FUNCS];
     int     type_nreturns[64];
     int     func_type[MAX_FUNCS];    /* type index per function */
+    int     n_imports;               /* number of imported functions */
 } Module;
 
 /* ═══ LEB128 Decoding ═══ */
@@ -108,6 +109,25 @@ static int parse_module(const u8 *data, int len, Module *m) {
                 int nr = (int)read_uleb(data, &pos);
                 m->type_nreturns[i] = nr;
                 for (int j = 0; j < nr; j++) pos++; /* skip result types */
+            }
+        } else if (sid == 2) { /* Import section */
+            int cnt = (int)read_uleb(data, &pos);
+            for (int i = 0; i < cnt; i++) {
+                int mlen = (int)read_uleb(data, &pos); pos += mlen; /* skip module name */
+                int flen = (int)read_uleb(data, &pos); pos += flen; /* skip field name */
+                int kind = data[pos++];
+                if (kind == 0) { /* function import */
+                    read_uleb(data, &pos); /* skip type index */
+                    m->n_imports++;
+                } else if (kind == 1) { /* table */
+                    pos++; read_uleb(data, &pos); /* elem type + limits */
+                    if (data[pos-1] & 1) read_uleb(data, &pos);
+                } else if (kind == 2) { /* memory */
+                    int flags = data[pos++]; read_uleb(data, &pos);
+                    if (flags & 1) read_uleb(data, &pos);
+                } else if (kind == 3) { /* global */
+                    pos += 2; /* type + mutability */
+                }
             }
         } else if (sid == 3) { /* Function section */
             int cnt = (int)read_uleb(data, &pos);
@@ -287,13 +307,38 @@ static void vm_exec(Module *m, int fidx, i64 *args, int nargs, i64 *rets, int nr
         }
         case 0x10: { 
             int fi=(int)read_uleb(code,&pos);
-            if (fi < 0 || fi >= m->n_funcs) { fprintf(stderr, "Error: call to undefined function %d\n", fi); PUSH(0); break; }
-            int np=m->func_nparams[fi]; if(np<1) np=1;
-            int nr=m->func_nreturns[fi]; if(nr<1) nr=1;
+            if (fi < m->n_imports) {
+                /* WASI host function call */
+                /* Currently only fd_write (import index 0): fd_write(fd, iovs, iovs_len, nwritten) */
+                i64 p3=POP(), p2=POP(), p1=POP(), p0=POP();
+                int fd=(int)p0, iovs_ptr=(int)p1, iovs_cnt=(int)p2, nwritten_ptr=(int)p3;
+                int total=0;
+                for (int iov=0; iov<iovs_cnt; iov++) {
+                    int iov_addr = (iovs_ptr + iov*8) & (MEM_SIZE-1);
+                    int buf_ptr=0, buf_len=0;
+                    memcpy(&buf_ptr, m->memory+iov_addr, 4);
+                    memcpy(&buf_len, m->memory+iov_addr+4, 4);
+                    buf_ptr &= (MEM_SIZE-1);
+                    if (buf_len > 0 && buf_ptr+buf_len <= MEM_SIZE) {
+                        if (fd==1) fwrite(m->memory+buf_ptr, 1, buf_len, stdout);
+                        else if (fd==2) fwrite(m->memory+buf_ptr, 1, buf_len, stderr);
+                        total += buf_len;
+                    }
+                }
+                if (nwritten_ptr > 0 && nwritten_ptr < MEM_SIZE-4) {
+                    memcpy(m->memory+nwritten_ptr, &total, 4);
+                }
+                PUSH(0); /* return errno=0 (success) */
+                break;
+            }
+            int local_fi = fi - m->n_imports;
+            if (local_fi < 0 || local_fi >= m->n_funcs) { fprintf(stderr, "Error: call to undefined function %d\n", fi); PUSH(0); break; }
+            int np=m->func_nparams[local_fi]; if(np<1) np=1;
+            int nr=m->func_nreturns[local_fi]; if(nr<1) nr=1;
             i64 cargs[16]={0};
             i64 crets[16]={0};
             for(int i=np-1;i>=0;i--) cargs[i]=POP();
-            vm_exec(m,fi,cargs,np,crets,nr);
+            vm_exec(m,local_fi,cargs,np,crets,nr);
             for(int i=0;i<nr;i++) PUSH(crets[i]);
             break;
         }
@@ -530,11 +575,14 @@ static int cmd_run(int argc, char **argv) {
     int fidx = find_export(&m, entry);
     if (fidx < 0) { fprintf(stderr, "Error: export '%s' not found\n", entry); free(wasm_data); free(m.memory); return 1; }
 
+    int local_fidx = fidx - m.n_imports; /* adjust for imported functions */
+    if (local_fidx < 0 || local_fidx >= m.n_funcs) { fprintf(stderr, "Error: invalid export index\n"); free(wasm_data); free(m.memory); return 1; }
+
     call_depth = 0;
     i64 run_args[1] = {arg};
     i64 run_rets[16] = {0};
-    int nr = m.func_nreturns[fidx]; if(nr<1) nr=1;
-    vm_exec(&m, fidx, run_args, 1, run_rets, nr);
+    int nr = m.func_nreturns[local_fidx]; if(nr<1) nr=1;
+    vm_exec(&m, local_fidx, run_args, 1, run_rets, nr);
     for(int i=0;i<nr;i++) {
         printf("%lld%s", (long long)run_rets[i], i==nr-1?"":" ");
     }
