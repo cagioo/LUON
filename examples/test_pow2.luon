@@ -1,0 +1,48 @@
+∀ₛₚₑ𝒸 Ψ ∈ 𝔘[pow_test] ⊢_Γ {
+  ∃!Φ ∈ Hom(𝒞,𝒟)[pow] ⊣^{op} {
+    // pow(base=acc, exp=σ₂): base^exp via binary exponentiation
+    // σ₃ = base, σ₄ = result (starts at 1)
+    (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+    (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+    ⊢_{Γ}^{⊃I}⟦
+      μ_{ω₁}^{CK}⟦
+        // if exp == 0, break
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
+        // if exp & 1: result *= base
+        (1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+        ⊢_{Γ}^{⊃I}⟦
+          (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (∂_Ω ∧_{𝔹} 1)^{∧-intro}
+          (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+          (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+          (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+          (∂_Ω ⊗_ℤ σ₃)^{⊗L}_{D(𝔄)}
+          (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq}
+        ⟧^{⊃E}_{Δ}⊣
+        // base *= base
+        (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ⊗_ℤ σ₃)^{⊗L}_{D(𝔄)}
+        (∂_Ω ⊢_{Γ;Δ} σ₃)^{seq}
+        // exp >>= 1
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        (∂_Ω ≫_{Galois} 1)^{adjunction}
+        (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+        (⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+      ⟧_{ω₁}^{CK}μ
+    ⟧^{⊃E}_{Δ}⊣
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
+  ∃!Φ ∈ Hom(𝒞,𝒟)[main] ⊣^{op} {
+    // pow(base=3, exp=4) = 81
+    (4 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    (∂_Ω ⊢_{Γ;Δ} σ₂)^{seq}
+    (3 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+    η_{Kan}[pow]
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+}

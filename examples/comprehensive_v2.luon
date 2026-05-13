@@ -14,7 +14,7 @@
       // if counter <= 0, break
       (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
       (∂_Ω ≼_{E₂^{p,q}} 0)^{⊆filt}
-      (∂_Ω ⊬_{PA}^{Gödel} 1)^{ω-rule}
+      (∂_Ω ⊬_{PA}^{Gödel} σ₁)^{ω-rule}
       // sum += counter
       (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
       (Ext⁰_𝔄(∂_Ω, σ₄))_{Spec ℤ}
@@ -28,7 +28,7 @@
     ⟧^{⊃E}_{Δ}⊣
     // result = sum XOR 0xFF
     (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
-    (∂_Ω △_{𝔹} 255)^{Aut(𝔽₂)}
+    (∂_Ω ⊕_{GF} 255)^{⊕-intro}
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 }
