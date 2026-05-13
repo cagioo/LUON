@@ -1116,6 +1116,16 @@ tools/module_resolver.luon
 
 Provides module registration, lookup, status management, and cycle-state tracking.
 
+### 15.6 Hash Helper
+
+File:
+
+```text
+tools/hash_helper.c
+```
+
+A native C utility used to pre-calculate FNV-1a hashes (both in decimal and hexadecimal format) for Luon operators and function names. It supports command-line arguments for dynamic hash generation, facilitating easy inclusion of mathematical opcodes directly into the VM.
+
 ---
 
 ## 16. Runtime Architecture

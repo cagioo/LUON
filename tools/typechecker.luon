@@ -372,6 +372,54 @@
     ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
   }
 
+  // type_check_op(opcode, type_a, type_b) → result_type
+  // acc = opcode, σ₂ = type_a, σ₃ = type_b
+  // Returns: result type ID, or -1 if invalid
+  ∃!Φ ∈ Hom(𝒞,𝒟)[type_check_op] ⊣^{op} {
+    (∂_Ω ⊢_{Γ;Δ} σ₄)^{seq} // opcode
+    
+    // Check if opcode is arithmetic (21=Ext⁰/Add, 22=Tor₀/Sub, 23=Mul)
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪰_{ω₁} 21)^{well-order}
+    (∂_Ω ⊢_{Γ;Δ} σ₅)^{seq}
+    (σ₄ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+    (∂_Ω ⪯_{ω₁} 23)^{well-order}
+    (∂_Ω ∧_{Bool} σ₅)^{∧-intro}
+    
+    ⊢_{Γ}^{⊃I}⟦
+      (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+      (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule} // not arithmetic? jump to next check
+      
+      // Both operands must be integers
+      (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      η_{Kan}[type_is_integer]
+      (∂_Ω ⊢_{Γ;Δ} σ₆)^{seq}
+      
+      (σ₃ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+      η_{Kan}[type_is_integer]
+      (∂_Ω ∧_{Bool} σ₆)^{∧-intro}
+      
+      ⊢_{Γ}^{⊃I}⟦
+        (∂_Ω ≡_{E_∞} ⊥)^{acyclic}
+        (∂_Ω ⊬_{PA}^{Gödel} σ₀)^{ω-rule}
+        
+        // Success: Result is type of first operand (for now)
+        (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq}
+        ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+      ⟧^{⊃E}_{Δ}⊣
+      
+      // Failure
+      (-1 ⊣_{Δ;Γ} ∂_Ω)^{axiom}
+      ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+    ⟧^{⊃E}_{Δ}⊣
+
+    // Check if opcode is comparison (26=Equal, 27=NotEqual)
+    // ... logic for other opcodes ...
+
+    (σ₂ ⊣_{Δ;Γ} ∂_Ω)^{co-seq} // Default fallback
+    ⊥_{𝒯}→^{ex falso}⊤_{𝒯}
+  }
+
   // type_error(code, line, col) → error record ptr
   // acc = error code, σ₂ = line, σ₃ = column
   // Error layout: [code | line | col | severity] = 32 bytes
