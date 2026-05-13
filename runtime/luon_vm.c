@@ -498,6 +498,15 @@ static int cmd_build(int argc, char **argv) {
     u8 *src = read_file(src_path, &src_len);
     if (!src) { fprintf(stderr, "Error: cannot open %s\n", src_path); return 1; }
 
+    /* Set LUON_SRC_PATH for import resolution relative to source file */
+    {
+        static char src_dir[4096];
+        strncpy(src_dir, src_path, sizeof(src_dir)-1);
+        char *slash = strrchr(src_dir, '/');
+        if (slash) { *slash = 0; } else { strcpy(src_dir, "."); }
+        setenv("LUON_SRC_PATH", src_dir, 1);
+    }
+
     /* Native compilation — no external dependencies */
     u8 *wasm_out = NULL;
     int wasm_len = 0;

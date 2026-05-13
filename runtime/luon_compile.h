@@ -247,7 +247,7 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
     char line0[512] = {0};
     memcpy(line0, p0, ll);
 
-    if (strstr(line0, "import") && strstr(line0, "\xf0\x9d\x94\x98[")) {
+    if (strstr(line0, "^{import}") && strstr(line0, "\xf0\x9d\x94\x98[")) {
       char *nb = strstr(line0, "\xf0\x9d\x94\x98[");
       if (nb) {
         char *ne = strchr(nb + 5, ']');
@@ -258,10 +258,32 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
             nl = 63;
           memcpy(modname, nb + 5, nl);
 
-          char filepath[256];
-          snprintf(filepath, sizeof(filepath), "stdlib/%s.luon", modname);
+          /* Try multiple search paths for stdlib module */
+          char filepath[512];
+          FILE *f = NULL;
 
-          FILE *f = fopen(filepath, "rb");
+          /* 1. Relative to CWD: stdlib/<mod>.luon */
+          snprintf(filepath, sizeof(filepath), "stdlib/%s.luon", modname);
+          f = fopen(filepath, "rb");
+
+          /* 2. LUON_SRC_PATH environment (set by CLI for source-relative resolution) */
+          if (!f) {
+            char *luon_home = getenv("LUON_HOME");
+            if (luon_home) {
+              snprintf(filepath, sizeof(filepath), "%s/stdlib/%s.luon", luon_home, modname);
+              f = fopen(filepath, "rb");
+            }
+          }
+
+          /* 4. ~/.luon/stdlib/<mod>.luon */
+          if (!f) {
+            char *home = getenv("HOME");
+            if (home) {
+              snprintf(filepath, sizeof(filepath), "%s/.luon/stdlib/%s.luon", home, modname);
+              f = fopen(filepath, "rb");
+            }
+          }
+
           if (f) {
             fseek(f, 0, SEEK_END);
             long flen = ftell(f);
@@ -274,8 +296,8 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
             }
             fclose(f);
           } else {
-            printf("Warning: could not import module %s (file %s not found)\n",
-                   modname, filepath);
+            fprintf(stderr, "  error: could not import module '%s' (not found in stdlib paths)\n",
+                    modname);
           }
         }
       }
