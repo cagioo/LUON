@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <math.h>
+#include <dirent.h>
 
 #define MAX_STACK    65536
 #define MAX_FUNCS    256
@@ -603,6 +604,69 @@ static int cmd_run(int argc, char **argv) {
     return 0;
 }
 
+/* ═══ Test: compile and run all .luon files in a directory ═══ */
+static int cmd_test(int argc, char **argv) {
+    (void)argc; (void)argv;
+    int pass = 0, fail = 0;
+    typedef struct { const char *file; i64 arg; i64 expected; } TestCase;
+    TestCase tests[] = {
+        {"examples/add42.luon", 10, 52},
+        {"examples/add42.luon", 0, 42},
+        {"examples/fibonacci.luon", 1, 1},
+        {"examples/fibonacci.luon", 5, 5},
+        {"examples/fibonacci.luon", 10, 55},
+        {"examples/fibonacci.luon", 20, 6765},
+        {"examples/test_pow.luon", 0, 64},
+        {"examples/calculator.luon", 5, 70},
+        {"examples/named_call_test.luon", 3, 20},
+        {"examples/arithmetic.luon", 10, 190},
+        {"examples/global_test.luon", 0, 42},
+        {"examples/loop_test.luon", 10, 0},
+        {NULL, 0, 0}
+    };
+
+    printf("  Luon Test Suite\n  ═══════════════\n\n");
+    for (int t = 0; tests[t].file; t++) {
+        int src_len = 0;
+        u8 *src = read_file(tests[t].file, &src_len);
+        if (!src) {
+            printf("  ⚠ SKIP: %s (not found)\n", tests[t].file);
+            continue;
+        }
+        u8 *wasm_out = NULL; int wasm_len = 0;
+        if (compile_luon((const char*)src, src_len, &wasm_out, &wasm_len) != 0 || !wasm_out) {
+            printf("  ❌ FAIL: %s (compile error)\n", tests[t].file);
+            fail++; free(src); continue;
+        }
+        Module m;
+        if (parse_module(wasm_out, wasm_len, &m) != 0) {
+            printf("  ❌ FAIL: %s (parse error)\n", tests[t].file);
+            fail++; free(src); free(wasm_out); continue;
+        }
+        int fidx = find_export(&m, "main");
+        if (fidx < 0) {
+            printf("  ❌ FAIL: %s (no main)\n", tests[t].file);
+            fail++; free(src); free(wasm_out); free(m.memory); continue;
+        }
+        int local_fidx = fidx - m.n_imports;
+        call_depth = 0;
+        i64 args[1] = {tests[t].arg};
+        i64 rets[16] = {0};
+        int nr = m.func_nreturns[local_fidx]; if(nr<1) nr=1;
+        vm_exec(&m, local_fidx, args, 1, rets, nr);
+        if (rets[0] == tests[t].expected) {
+            printf("  ✅ PASS: %s -a %lld = %lld\n", tests[t].file, (long long)tests[t].arg, (long long)rets[0]);
+            pass++;
+        } else {
+            printf("  ❌ FAIL: %s -a %lld = %lld (expected %lld)\n", tests[t].file, (long long)tests[t].arg, (long long)rets[0], (long long)tests[t].expected);
+            fail++;
+        }
+        free(src); free(wasm_out); free(m.memory);
+    }
+    printf("\n  Results: %d passed, %d failed\n", pass, fail);
+    return fail > 0 ? 1 : 0;
+}
+
 /* ═══ Main CLI ═══ */
 int main(int argc, char **argv) {
     if (argc < 2) {
@@ -611,6 +675,7 @@ int main(int argc, char **argv) {
         printf("  Usage:\n");
         printf("    luon build <file.luon> [-o out.wasm]  Compile .luon to .wasm\n");
         printf("    luon run   <file> [-a N] [-e entry]   Execute (auto-compiles .luon)\n");
+        printf("    luon test                             Run built-in test suite\n");
         printf("    luon version                          Show version\n");
         printf("\n  No Python. No Rust. No dependencies. Pure Luon.\n");
         return 0;
@@ -627,6 +692,7 @@ int main(int argc, char **argv) {
 
     if (strcmp(argv[1], "build") == 0) return cmd_build(argc, argv);
     if (strcmp(argv[1], "run") == 0 || strcmp(argv[1], "exec") == 0) return cmd_run(argc, argv);
+    if (strcmp(argv[1], "test") == 0) return cmd_test(argc, argv);
 
     fprintf(stderr, "Unknown command: %s\n", argv[1]);
     return 1;
