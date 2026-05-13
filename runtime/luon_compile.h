@@ -65,7 +65,6 @@ static int64_t extract_number(const char *line) {
       if (comma && p > comma) {
         return strtoll(p, NULL, 10);
       }
-      const char *paren = strrchr(line, ')');
       if (!comma)
         return strtoll(p, NULL, 10);
       p++;
@@ -290,7 +289,7 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
     static int build_mode = 0; /* 0=debug, 1=release — set externally */
     char *wp = src;
     const char *rp = src;
-    int skip_depth = 0;
+    (void)0; /* skip_depth reserved for future nested cfg blocks */
     while (rp < src + src_len) {
       const char *eol = strchr(rp, '\n');
       if (!eol) eol = src + src_len;
@@ -421,7 +420,7 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
     char *s = line;
     while (*s == ' ' || *s == '\t')
       s++;
-    if (!*s || s[0] == '/' && s[1] == '/')
+    if (!*s || (s[0] == '/' && s[1] == '/'))
       continue;
     /* Module decl */
     if (strstr(s, "\xe2\x88\x80") && strstr(s, "\xf0\x9d\x94\x98"))
@@ -442,7 +441,6 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
     char *exprs[32];
     int ne = 0;
     int bd = 0;
-    char *ep = s;
     exprs[ne++] = s;
     for (char *c = s; *c; c++) {
       if (*c == '{')
@@ -465,7 +463,7 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
       Buf *b = &cur->body;
       int64_t k = 0;
       int sig = -1;
-      int has_k = 0, has_s = 0;
+      int has_s = 0;
 
       /* Extract operands */
       sig = extract_sigma(ex);
@@ -482,11 +480,13 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
       } else if (has_str(ex, "Tor\xe2\x82\x80") &&
                  has_str(ex, "Spec")) { /* Sub */
         k = extract_number(ex);
-        has_k = 1;
         if (has_s && sig >= 0) {
           emit_arith(b, 0x7d, 0, 0, 1, sig);
         } else {
-          emit_arith(b, 0x7d, 1, k, 0, 0);
+          /* Negate: documentation says Tor(∂_Ω, -N) means acc -= N,
+             so extracted literal is -N, we need to subtract -N which is +N.
+             Fix: negate k so that i64.sub produces correct result. */
+          emit_arith(b, 0x7d, 1, -k, 0, 0);
         }
       } else if (has_str(ex, "\xe2\x8a\x97_\xe2\x84\xa4") &&
                  has_str(ex, "\xe2\x8a\x97L")) { /* Mul */
@@ -630,6 +630,58 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
           k = extract_number(ex);
           emit_arith(b, 0x86, 1, k, 0, 0);
         }
+      } else if (has_str(ex, "\xe2\x89\xab") &&
+                 has_str(ex, "Galois") && has_str(ex, "adjunction")) { /* Shr (Galois) */
+        if (has_s)
+          emit_arith(b, 0x88, 0, 0, 1, sig);
+        else {
+          k = extract_number(ex);
+          emit_arith(b, 0x88, 1, k, 0, 0);
+        }
+      } else if (has_str(ex, "\xe2\x89\xaa") &&
+                 has_str(ex, "Galois") && has_str(ex, "adjunction")) { /* Shl (Galois) */
+        if (has_s)
+          emit_arith(b, 0x86, 0, 0, 1, sig);
+        else {
+          k = extract_number(ex);
+          emit_arith(b, 0x86, 1, k, 0, 0);
+        }
+      } else if (has_str(ex, "\xe2\x89\xa0") &&
+                 has_str(ex, "acyclic")) { /* Ne (≠) */
+        if (has_s)
+          emit_cmp(b, 0x52, 0, 0, 1, sig);
+        else {
+          k = extract_number(ex);
+          emit_cmp(b, 0x52, 1, k, 0, 0);
+        }
+      } else if (has_str(ex, "*\xe2\x84\x9d") &&
+                 has_str(ex, "transfer")) { /* Float binary ops */
+        /* Pattern: (st(∂_{*ℝ}) OP st(σ_N))^{transfer} */
+        int fs = extract_sigma(ex);
+        if (fs < 0) fs = 2;
+        /* Emit: reinterpret acc to f64, reinterpret σ_N to f64, op, reinterpret back */
+        GET1;
+        buf_byte(b, 0xbf); /* f64.reinterpret_i64 */
+        buf_byte(b, 0x20); buf_uleb(b, fs);
+        buf_byte(b, 0xbf); /* f64.reinterpret_i64 */
+        if (has_str(ex, "\xe2\x8a\x95")) buf_byte(b, 0xa0);      /* f64.add ⊕ */
+        else if (has_str(ex, "\xe2\x8a\x96")) buf_byte(b, 0xa1);  /* f64.sub ⊖ */
+        else if (has_str(ex, "\xe2\x8a\x97")) buf_byte(b, 0xa2);  /* f64.mul ⊗ */
+        else if (has_str(ex, "\xe2\x8a\x98")) buf_byte(b, 0xa3);  /* f64.div ⊘ */
+        else buf_byte(b, 0xa0); /* default: add */
+        buf_byte(b, 0xbd); /* i64.reinterpret_f64 */
+        SET1;
+      } else if (has_str(ex, "*\xe2\x84\x9d") &&
+                 has_str(ex, "shadow")) { /* Float sqrt */
+        /* Pattern: (√_{*ℝ} st(∂_{*ℝ}))^{shadow} */
+        GET1;
+        buf_byte(b, 0xbf); /* f64.reinterpret_i64 */
+        buf_byte(b, 0x9f); /* f64.sqrt */
+        buf_byte(b, 0xbd); /* i64.reinterpret_f64 */
+        SET1;
+      } else if (has_str(ex, "Yoneda") &&
+                 has_str(ex, "id_")) { /* Nop */
+        buf_byte(b, 0x01); /* nop */
       } else if (has_str(ex, "\xe2\x8a\xa2_{\xce\x93;\xce\x94}") &&
                  has_str(ex, "seq") && !has_str(ex, "\xf0\x9d\x94\xbe")) { /* Save_State */
         if (has_s) {
@@ -908,7 +960,8 @@ static int compile_luon(const char *in_src, int in_src_len, uint8_t **out_wasm,
           buf_byte(b, 0x21);
           buf_uleb(b, r); /* local.set r */
         }
-      } else if (has_str(ex, "H^n_{") && has_str(ex, "Galois")) { /* Hash */
+      } else if (has_str(ex, "H^n_{") && has_str(ex, "Galois") &&
+                 !has_str(ex, "\xe2\x89\xab") && !has_str(ex, "\xe2\x89\xaa")) { /* Hash (exclude shift ≫/≪) */
         GET1;
         buf_byte(b, 0x42);
         buf_sleb(b, 0x811c9dc5);
