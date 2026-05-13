@@ -1364,14 +1364,14 @@ Luon 2.2.0-dev is a strong foundation. The following are genuine technical limit
 
 Known limitations:
 
-1. The CLI is still a foundation and needs complete command dispatch.
-2. Module resolver exists but is not fully integrated into the compiler pipeline.
-3. Type checker exists but requires deeper compiler integration.
-4. Function calls rely on function indices (this is BY DESIGN for security — not a limitation).
-5. Formatter, linter, and LSP are not yet implemented.
-6. Package manager is specified but not implemented.
-7. Generics, traits, iterators are planned but not complete.
-8. Ownership/borrow checker not yet implemented.
+1. Module resolver exists but is not fully integrated into the compiler pipeline (import resolution works via source concatenation, not semantic linking).
+2. Type checker exists but requires deeper compiler integration.
+3. Formatter, linter, and LSP are not yet implemented as real tools (stubs only).
+4. Package manager is specified but not implemented beyond `luon.project.json` generation.
+5. Generics, traits, iterators exist as stdlib runtime patterns but not as compiler-level features.
+6. Ownership/borrow checker exists as stdlib pattern but not enforced by compiler.
+7. WASI support is limited to `fd_write` (stdout/stderr). `fd_read`, `path_open`, `proc_exit`, `args_get`, `clock_time_get` not yet implemented in VM.
+8. Float comparison operators (`≻_{*ℝ}`, `≺_{*ℝ}`) not yet implemented in compiler.
 
 Recently resolved (no longer limitations):
 
@@ -1384,6 +1384,15 @@ Recently resolved (no longer limitations):
 - ~~Pattern matching~~ — ✅ `⊞_{Π}^{br_table}(N, d)` N-way dispatch. PR #62.
 - ~~Higher-order functions~~ — ✅ `η_{indirect}[type_idx]` via `call_indirect`. PR #62.
 - ~~Type annotations~~ — ✅ `:(ℤ₆₄, ℤ₃₂) → ℤ₆₄` syntax. PR #63.
+- ~~WASI I/O (fd_write)~~ — ✅ Compiler emits Import Section, VM implements fd_write host function. PR #92.
+- ~~Float operators~~ — ✅ All 5 f64 ops implemented: `⊕_{*ℝ}`, `⊖_{*ℝ}`, `⊗_{*ℝ}`, `⊘_{*ℝ}`, `√_{*ℝ}`. PR #89.
+- ~~Ne (≠) operator~~ — ✅ `(∂_Ω ≠_{E_∞} N)^{acyclic}` → `i64.ne`. PR #89.
+- ~~Shift `≫_{Galois}`~~ — ✅ Documented shift syntax now works. PR #89.
+- ~~install.sh broken~~ — ✅ Rewritten for native C runtime. PR #94.
+- ~~No error messages~~ — ✅ Compiler reports line-numbered warnings for unrecognized syntax. PR #95.
+- ~~Import path resolution~~ — ✅ Multi-path search: CWD, LUON_HOME, ~/.luon/stdlib/. PR #96.
+- ~~No test command~~ — ✅ `luon test` with 12 built-in correctness tests. PR #98.
+- ~~No project scaffolding~~ — ✅ `luon new <name>` creates project template. PR #99.
 
 > **Note:** The absence of conventional syntax (`if/else`, `for`, `while`, `let`, `print`, string literals) is NOT a limitation — it is a deliberate security feature. See Section 2.2.
 
